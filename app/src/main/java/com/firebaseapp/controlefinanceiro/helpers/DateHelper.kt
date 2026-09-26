@@ -7,6 +7,52 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
+fun firstDayOfCurrentMonth(): Date {
+    val calendar = Calendar.getInstance()
+    calendar.set(Calendar.DAY_OF_MONTH, 1)
+    calendar.set(Calendar.HOUR_OF_DAY, 0)
+    calendar.set(Calendar.MINUTE, 0)
+    calendar.set(Calendar.SECOND, 0)
+    calendar.set(Calendar.MILLISECOND, 0)
+    return calendar.time
+}
+
+fun lastDayOfCurrentMonth(): Date {
+    val calendar = Calendar.getInstance()
+    calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH))
+
+    calendar.set(Calendar.HOUR_OF_DAY, 23)
+    calendar.set(Calendar.MINUTE, 59)
+    calendar.set(Calendar.SECOND, 59)
+    calendar.set(Calendar.MILLISECOND, 999)
+
+    return calendar.time
+}
+
+fun setStartOfDay(calendar: Calendar) {
+    calendar.set(Calendar.HOUR_OF_DAY, 0)
+    calendar.set(Calendar.MINUTE, 0)
+    calendar.set(Calendar.SECOND, 0)
+    calendar.set(Calendar.MILLISECOND, 0)
+}
+
+fun setEndOfDay(calendar: Calendar) {
+    calendar.set(Calendar.HOUR_OF_DAY, 23)
+    calendar.set(Calendar.MINUTE, 59)
+    calendar.set(Calendar.SECOND, 59)
+    calendar.set(Calendar.MILLISECOND, 999)
+}
+
+fun toMonthYear(date: Date): String {
+
+    val formatter = SimpleDateFormat(
+        "MMMM YYYY",
+        Locale.getDefault()
+    )
+
+    val monthYear = formatter.format(date)
+    return monthYear
+}
 fun dateToUtcMillis(date: Date): Long {
     val localCal = Calendar.getInstance()
     localCal.time = date

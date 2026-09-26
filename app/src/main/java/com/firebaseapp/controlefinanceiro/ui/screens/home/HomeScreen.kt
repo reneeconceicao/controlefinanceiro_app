@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,17 +45,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
 import com.firebaseapp.controlefinanceiro.defaults.paddingTiny
+import com.firebaseapp.controlefinanceiro.helpers.currencyFormat
 import com.firebaseapp.controlefinanceiro.helpers.formatedPriceIndicator
+import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
 import com.firebaseapp.controlefinanceiro.ui.components.AnimatedText
 import com.firebaseapp.controlefinanceiro.ui.components.CardBordered
 import java.math.BigDecimal
+import java.util.Calendar
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier, navigateToRegister: () -> Unit) {
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    navigateToRegister: () -> Unit,
+    viewModel: HomeViewModel = viewModel(factory = ViewModelProviders.Factory),
+) {
+
+    val homeUiState = viewModel.homeUiState.collectAsState()
 
     Scaffold(
         modifier = modifier
@@ -65,12 +76,6 @@ fun HomeScreen(modifier: Modifier = Modifier, navigateToRegister: () -> Unit) {
                 onClick = {
                     navigateToRegister()
                 },
-//                Modifier
-//                    .windowInsetsPadding(
-//                        WindowInsets.safeDrawing.only(
-//                            WindowInsetsSides.Horizontal
-//                        )
-//                    )
             ) {
 
                 Row(
@@ -92,81 +97,35 @@ fun HomeScreen(modifier: Modifier = Modifier, navigateToRegister: () -> Unit) {
 
 
             val number = remember { mutableStateOf(BigDecimal.ZERO) }
-            val list = remember { mutableStateOf((1..20).toList()) }
-            val grouped = list.value.groupBy { it % 2 == 0 }
+
+            val grouped = homeUiState.value.list.groupBy {
+                Calendar.getInstance().apply {
+                    time = it.date
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.time
+            }
 
             Text(
                 text = stringResource(R.string.app_name),
                 Modifier
-                    .padding(paddingDefault())
-                    .clickable {
-                        Log.d("TAG", "HomeScreen: $innerPadding")
-                        number.value = number.value.add(BigDecimal("40"))
-                    },
+                    .padding(paddingDefault()),
                 fontSize = 24.sp,
             )
 
 
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(paddingDefault()),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = {},
-                    modifier = Modifier.padding(horizontal = paddingDefault()),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onBackground
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                        contentDescription = "Back",
-                        Modifier.size(32.dp)
+            HomeHeader(
+                homeUiState = homeUiState.value,
+                onNextMonthClick = {
+                    viewModel.changePeriod(1)
 
-                    )
+                },
+                onPreviousMonthClick = {
+                    viewModel.changePeriod(-1)
                 }
-
-                Text("September 2026")
-
-                Button(
-                    onClick = {},
-                    modifier = Modifier.padding(horizontal = paddingDefault()),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onBackground
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = "Forward",
-                        Modifier.size(32.dp)
-
-                    )
-                }
-
-            }
-
-
-            CardBordered(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = paddingDefault(), vertical = paddingTiny())
-            ) {
-                AnimatedText(
-                    number,
-                    Modifier
-                        .padding(paddingDefault())
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    fontSize = 24.sp,
-                    color = colorResource(R.color.dark_green),
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            )
 
             LazyColumn(contentPadding = PaddingValues(bottom = 120.dp)) {
                 grouped.forEach { bool, ints ->
@@ -180,13 +139,14 @@ fun HomeScreen(modifier: Modifier = Modifier, navigateToRegister: () -> Unit) {
                                 .padding(horizontal = paddingDefault(), vertical = paddingTiny())
                         ) {
                             Text(
-                                formatedPriceIndicator(number.toBigDecimal()),
+                                //formatedPriceIndicator(number.toBigDecimal()),
+                                number.notes,
                                 Modifier.padding(paddingDefault()),
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (number < 10) colorResource(R.color.dark_green) else colorResource(
-                                    R.color.dark_red
-                                )
+//                                color = if (number < 10) colorResource(R.color.dark_green) else colorResource(
+//                                    R.color.dark_red
+//                                )
                             )
                         }
                     }
@@ -195,6 +155,75 @@ fun HomeScreen(modifier: Modifier = Modifier, navigateToRegister: () -> Unit) {
         }
     }
 
+}
+
+
+@Composable
+fun HomeHeader(
+    homeUiState: HomeUiState,
+    onNextMonthClick: () -> Unit,
+    onPreviousMonthClick: () -> Unit
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(paddingDefault()),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Button(
+            onClick = onPreviousMonthClick,
+            modifier = Modifier.padding(horizontal = paddingDefault()),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent,
+                contentColor = MaterialTheme.colorScheme.onBackground
+            )
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                contentDescription = "Back",
+                Modifier.size(32.dp)
+
+            )
+        }
+
+        Text(homeUiState.periodLabel)
+
+        Button(
+            onClick = onNextMonthClick,
+            modifier = Modifier.padding(horizontal = paddingDefault()),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent,
+                contentColor = MaterialTheme.colorScheme.onBackground
+            )
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = "Forward",
+                Modifier.size(32.dp)
+
+            )
+        }
+
+    }
+
+
+    CardBordered(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = paddingDefault(), vertical = paddingTiny())
+    ) {
+        Text(
+            currencyFormat(homeUiState.total) ,
+            Modifier
+                .padding(paddingDefault())
+                .fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            fontSize = 24.sp,
+            color = colorResource(R.color.dark_green),
+            fontWeight = FontWeight.Bold
+        )
+    }
 }
 
 

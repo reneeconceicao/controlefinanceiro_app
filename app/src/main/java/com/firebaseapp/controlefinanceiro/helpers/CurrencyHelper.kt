@@ -31,3 +31,16 @@ fun currencyFormat(value: String): String {
     }
     return NumberFormat.getCurrencyInstance().format(0)
 }
+
+fun currencyFormat(bigDecimal: BigDecimal): String {
+
+    val formatter = NumberFormat.getCurrencyInstance()
+    formatter.currency?.defaultFractionDigits?.let {
+        return if (it > 0) {
+            NumberFormat.getCurrencyInstance().format(bigDecimal)
+        } else {
+            NumberFormat.getCurrencyInstance().format(bigDecimal)
+        }
+    }
+    return NumberFormat.getCurrencyInstance().format(bigDecimal)
+}

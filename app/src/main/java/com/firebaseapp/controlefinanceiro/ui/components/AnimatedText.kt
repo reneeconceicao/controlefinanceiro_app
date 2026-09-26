@@ -23,7 +23,7 @@ import java.math.BigDecimal
 
 @Composable
 fun AnimatedText(
-    value: MutableState<BigDecimal>,
+    value: Float,
     modifier: Modifier = Modifier,
     color: Color = Color.Unspecified,
     fontSize: TextUnit = TextUnit.Unspecified,
@@ -44,8 +44,8 @@ fun AnimatedText(
 
 
     val animatedValue by animateFloatAsState(
-        targetValue = value.value.toFloat(),
-        animationSpec = tween(durationMillis = 500),
+        targetValue = value,
+        animationSpec = tween(durationMillis = 1000),
         label = "counter"
     )
 
