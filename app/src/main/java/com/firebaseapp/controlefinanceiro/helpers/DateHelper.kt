@@ -43,6 +43,17 @@ fun setEndOfDay(calendar: Calendar) {
     calendar.set(Calendar.MILLISECOND, 999)
 }
 
+fun toYear(date: Date): String {
+
+    val formatter = SimpleDateFormat(
+        "YYYY",
+        Locale.getDefault()
+    )
+
+    val year = formatter.format(date)
+    return year
+}
+
 fun toMonthYear(date: Date): String {
 
     val formatter = SimpleDateFormat(
@@ -52,6 +63,20 @@ fun toMonthYear(date: Date): String {
 
     val monthYear = formatter.format(date)
     return monthYear
+}
+
+fun toDay(date: Date): String {
+    val formatterWeek = SimpleDateFormat(
+        "EEEE",
+        Locale.getDefault()
+    )
+
+    val formatter = DateFormat.getDateInstance(
+        DateFormat.SHORT,
+        Locale.getDefault()
+    )
+
+    return "${ formatterWeek.format(date) }, ${formatter.format(date)}"
 }
 fun dateToUtcMillis(date: Date): Long {
     val localCal = Calendar.getInstance()

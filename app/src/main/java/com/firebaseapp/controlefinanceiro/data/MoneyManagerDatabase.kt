@@ -13,7 +13,7 @@ import com.firebaseapp.controlefinanceiro.data.entities.Category
 /**
  * Database class with a singleton Instance object.
  */
-@Database(entities = [Word::class, Category::class], version = 1, exportSchema = false)
+@Database(entities = [Word::class, Category::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class MoneyManagerDatabase : RoomDatabase() {
 

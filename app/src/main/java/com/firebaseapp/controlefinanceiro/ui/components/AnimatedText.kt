@@ -18,12 +18,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
+import com.firebaseapp.controlefinanceiro.helpers.currencyFormat
 import com.firebaseapp.controlefinanceiro.helpers.formatedPrice
 import java.math.BigDecimal
 
 @Composable
 fun AnimatedText(
-    value: Float,
+    value: BigDecimal,
     modifier: Modifier = Modifier,
     color: Color = Color.Unspecified,
     fontSize: TextUnit = TextUnit.Unspecified,
@@ -43,14 +44,15 @@ fun AnimatedText(
 ) {
 
 
+
     val animatedValue by animateFloatAsState(
-        targetValue = value,
+        targetValue =  value.toFloat(),
         animationSpec = tween(durationMillis = 1000),
         label = "counter"
     )
 
     Text(
-        text = formatedPrice(animatedValue.toBigDecimal()),
+        text = currencyFormat(animatedValue.toString()),
         modifier = modifier,
         color = color,
         fontSize = fontSize,

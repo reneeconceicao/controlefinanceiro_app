@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.data.entities.Word
+import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
@@ -69,6 +70,7 @@ import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
 import com.firebaseapp.controlefinanceiro.ui.components.CategoriesPickerModal
 import com.firebaseapp.controlefinanceiro.ui.components.CurrencyOutlinedTextField
 import com.firebaseapp.controlefinanceiro.ui.components.DatePickerModal
+import java.math.BigDecimal
 import java.util.Date
 
 
@@ -81,7 +83,7 @@ fun RegisterScreen(
 ) {
 
     var selectedOption by rememberSaveable { mutableIntStateOf(0) }
-    var price by rememberSaveable { mutableStateOf("") }
+    var price by rememberSaveable { mutableStateOf("0") }
     var date by rememberSaveable { mutableStateOf(Date(System.currentTimeMillis())) }
     var notes by rememberSaveable { mutableStateOf("") }
     var category by rememberSaveable { mutableStateOf("") }
@@ -151,7 +153,15 @@ fun RegisterScreen(
                 actions = {
                     Button(
                         onClick = {
-                            val word = Word(date = date, hours = price.toDouble(), minutes = 0.0, notes = notes)
+
+                            val word = Word(
+                                date = date,
+                                type = if (selectedOption == 0) WordType.Income else WordType.Expense,
+                                value = BigDecimal(price),
+                                categoryId = 0,
+                                categoryName = "",
+                                notes = notes
+                            )
                             viewModel.insertWord(word)
                             navigateBack()
                         },
@@ -162,7 +172,10 @@ fun RegisterScreen(
                             contentColor = MaterialTheme.colorScheme.onBackground
                         )
                     ) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(paddingSmall()), verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(paddingSmall()),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Icon(imageVector = Icons.Default.Check, "")
                             Text("SAVE")
 
@@ -285,7 +298,6 @@ fun ButtonsOptions(selectedOption: Int, onOptionSelected: (Int) -> Unit) {
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
     ) {
-
 
 
         Card(

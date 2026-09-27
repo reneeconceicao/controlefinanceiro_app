@@ -27,9 +27,12 @@ import androidx.room.PrimaryKey
 data class Category(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val personName: String,
-    val personNotes: String,
-    val personPhone: String,
-    val latitude: Double?,
-    val longitude: Double?,
+    val categoryName: String,
+    val categoryType: CategoryType,
+    val position: Int,
 )
+
+enum class CategoryType(val value: String) {
+    Income("category_income"),
+    Expense("category_expense")
+}

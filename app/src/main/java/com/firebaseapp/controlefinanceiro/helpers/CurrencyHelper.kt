@@ -1,5 +1,7 @@
 package com.firebaseapp.controlefinanceiro.helpers
 
+import com.firebaseapp.controlefinanceiro.data.entities.Word
+import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import java.math.BigDecimal
 import java.text.NumberFormat
 
@@ -7,11 +9,11 @@ fun formatedPrice(value: BigDecimal): String {
     return NumberFormat.getCurrencyInstance().format(value)
 }
 
-fun formatedPriceIndicator(value: BigDecimal): String {
-    return if (value > BigDecimal.ZERO) {
-        "+ ${NumberFormat.getCurrencyInstance().format(value)}"
+fun formatedPriceIndicator(word: Word): String {
+    return if (word.type == WordType.Income) {
+        "+ ${currencyFormat(word.value.toString())}"
     } else {
-        "- ${NumberFormat.getCurrencyInstance().format(value)}"
+        "- ${currencyFormat(word.value.toString())}"
     }
 }
 
@@ -32,15 +34,3 @@ fun currencyFormat(value: String): String {
     return NumberFormat.getCurrencyInstance().format(0)
 }
 
-fun currencyFormat(bigDecimal: BigDecimal): String {
-
-    val formatter = NumberFormat.getCurrencyInstance()
-    formatter.currency?.defaultFractionDigits?.let {
-        return if (it > 0) {
-            NumberFormat.getCurrencyInstance().format(bigDecimal)
-        } else {
-            NumberFormat.getCurrencyInstance().format(bigDecimal)
-        }
-    }
-    return NumberFormat.getCurrencyInstance().format(bigDecimal)
-}

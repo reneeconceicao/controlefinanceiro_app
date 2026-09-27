@@ -23,6 +23,6 @@ interface CategoryDao {
     @Query("SELECT * from categories WHERE id = :id")
     fun getCategory(id: Int): Flow<Category?>
 
-    @Query("SELECT * from categories WHERE personName LIKE :query OR personNotes LIKE :query ORDER BY personName ASC")
+    @Query("SELECT * from categories WHERE categoryName LIKE :query ORDER BY categoryName ASC")
     fun getAllCategories(query: String) : Flow<List<Category>>
 }

@@ -1,5 +1,6 @@
 package com.firebaseapp.controlefinanceiro.ui.screens.home
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -8,18 +9,21 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.firebaseapp.controlefinanceiro.data.entities.Word
+import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import com.firebaseapp.controlefinanceiro.data.repositories.WordRepository
 import com.firebaseapp.controlefinanceiro.helpers.firstDayOfCurrentMonth
 import com.firebaseapp.controlefinanceiro.helpers.lastDayOfCurrentMonth
 import com.firebaseapp.controlefinanceiro.helpers.setEndOfDay
 import com.firebaseapp.controlefinanceiro.helpers.setStartOfDay
 import com.firebaseapp.controlefinanceiro.helpers.toMonthYear
+import com.firebaseapp.controlefinanceiro.helpers.toYear
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -31,17 +35,37 @@ import java.util.Date
 class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
 
 
-    val fromDate = MutableStateFlow(firstDayOfCurrentMonth())
-    val toDate = MutableStateFlow(lastDayOfCurrentMonth())
+    val fromDate = MutableStateFlow(Date(Long.MIN_VALUE))
+    val toDate = MutableStateFlow(Date(Long.MAX_VALUE))
+
+    val currentFilter = MutableStateFlow(DateFilter.ALL)
+
+    private val selectedMonth = MutableStateFlow(Date())
+
+    private val selectedYear = MutableStateFlow(Date())
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val homeUiState: StateFlow<HomeUiState> =
-        combine(fromDate, toDate) { fromDate, toDate -> fromDate to toDate }
-            .flatMapLatest { (fromDate, toDate) ->
+        combine(fromDate, toDate, currentFilter) { fromDate, toDate, filter -> Triple(fromDate, toDate, filter) }
+            .flatMapLatest { (fromDate, toDate, filter) ->
+
                 wordRepository.getWordsByDateStream(fromDate, toDate).map { list ->
-                    val periodLabel = toMonthYear(fromDate)
-                    val total = BigDecimal(list.sumOf { it.hours })
-                    HomeUiState(list = list, total = total, periodLabel = periodLabel)
+                    val periodLabel = when (currentFilter.value) {
+                        DateFilter.ALL -> "All time"
+                        DateFilter.MONTH -> toMonthYear(fromDate)
+                        DateFilter.YEAR -> toYear(fromDate)
+                    }
+                    val expenses = list.filter { it.type == WordType.Expense }.sumOf { it.value }
+                    val income = list.filter { it.type == WordType.Income }.sumOf { it.value }
+                    val total = income - expenses
+
+
+                    HomeUiState(
+                        list = list,
+                        total = total,
+                        periodLabel = periodLabel,
+                        currentFilter = filter
+                    )
                 }
             }
             .stateIn(
@@ -51,23 +75,96 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
             )
 
     fun changePeriod(value: Int) {
+        when (currentFilter.value) {
+            DateFilter.ALL -> {
+                fromDate.value = Date(Long.MIN_VALUE)
+                toDate.value = Date(Long.MAX_VALUE)
+            }
+
+            DateFilter.MONTH -> {
+                val calendar = Calendar.getInstance()
+
+                calendar.time = selectedMonth.value
+                calendar.add(Calendar.MONTH, value)
+                selectedMonth.value = calendar.time
+
+                calendar.set(Calendar.DAY_OF_MONTH, 1)
+                setStartOfDay(calendar)
+                fromDate.value = calendar.time
+
+
+                val lastDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+                calendar.set(Calendar.DAY_OF_MONTH, lastDay)
+                setEndOfDay(calendar)
+                toDate.value = calendar.time
+
+            }
+
+            DateFilter.YEAR -> {
+                val calendar = Calendar.getInstance()
+
+                calendar.time = selectedYear.value
+                calendar.add(Calendar.YEAR, value)
+                selectedYear.value = calendar.time
+
+                calendar.set(Calendar.MONTH, Calendar.JANUARY)
+                calendar.set(Calendar.DAY_OF_MONTH, 1)
+                setStartOfDay(calendar)
+                fromDate.value = calendar.time
+
+
+                calendar.set(Calendar.MONTH, Calendar.DECEMBER)
+                calendar.set(Calendar.DAY_OF_MONTH, 31)
+                setEndOfDay(calendar)
+                toDate.value = calendar.time
+
+            }
+        }
+
+
+    }
+
+    fun changeFilter(filter: DateFilter) {
+        currentFilter.value = filter
+
         val calendar = Calendar.getInstance()
 
+        when (currentFilter.value) {
 
-        calendar.time = fromDate.value
-        calendar.add(Calendar.MONTH, value)
+            DateFilter.ALL -> {
+                fromDate.value = Date(Long.MIN_VALUE)
+                toDate.value = Date(Long.MAX_VALUE)
+            }
 
-        calendar.set(Calendar.DAY_OF_MONTH, 1)
-        setStartOfDay(calendar)
-        fromDate.value = calendar.time
+            DateFilter.MONTH -> {
+                calendar.time = selectedMonth.value
+
+                calendar.set(Calendar.DAY_OF_MONTH, 1)
+                setStartOfDay(calendar)
+                fromDate.value = calendar.time
+
+                val lastDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+                calendar.set(Calendar.DAY_OF_MONTH, lastDay)
+                setEndOfDay(calendar)
+                toDate.value = calendar.time
+            }
+
+            DateFilter.YEAR -> {
+                calendar.time = selectedYear.value
+
+                calendar.set(Calendar.MONTH, Calendar.JANUARY)
+                calendar.set(Calendar.DAY_OF_MONTH, 1)
+                setStartOfDay(calendar)
+                fromDate.value = calendar.time
+
+                calendar.set(Calendar.MONTH, Calendar.DECEMBER)
+                calendar.set(Calendar.DAY_OF_MONTH, 31)
+                setEndOfDay(calendar)
+                toDate.value = calendar.time
+            }
 
 
-        val lastDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
-        calendar.set(Calendar.DAY_OF_MONTH, lastDay)
-        setEndOfDay(calendar)
-        toDate.value = calendar.time
-
-
+        }
     }
 
     companion object {
@@ -79,5 +176,12 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
 data class HomeUiState(
     val list: List<Word> = listOf(),
     val total: BigDecimal = BigDecimal.ZERO,
-    val periodLabel: String = toMonthYear(Date())
+    val currentFilter: DateFilter = DateFilter.ALL,
+    val periodLabel: String = "All time"
 )
+
+enum class DateFilter {
+    ALL,
+    MONTH,
+    YEAR
+}
