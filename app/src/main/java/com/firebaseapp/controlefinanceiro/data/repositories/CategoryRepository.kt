@@ -18,10 +18,13 @@ package com.firebaseapp.controlefinanceiro.data.repositories
 
 import com.firebaseapp.controlefinanceiro.data.dao.CategoryDao
 import com.firebaseapp.controlefinanceiro.data.entities.Category
+import com.firebaseapp.controlefinanceiro.data.entities.CategoryType
 import kotlinx.coroutines.flow.Flow
 
 class CategoryRepository(private val categoryDao: CategoryDao) {
      fun getAllCategoryStream(query: String): Flow<List<Category>> = categoryDao.getAllCategories(query)
+
+     fun getCategoriesByTypeStream(type: CategoryType): Flow<List<Category>> = categoryDao.getCategoriesByType(type)
 
      fun getCategoryStream(id: Int): Flow<Category?> = categoryDao.getCategory(id)
 

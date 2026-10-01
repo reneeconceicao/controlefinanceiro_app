@@ -27,7 +27,7 @@ interface WordDao {
     @Query("SELECT * from words ORDER BY date ASC")
     fun getAllWords() : Flow<List<Word>>
 
-    @Query("SELECT * from words WHERE date BETWEEN :from AND :to ORDER BY date ASC")
+    @Query("SELECT * from words WHERE date BETWEEN :from AND :to ORDER BY date DESC")
     fun getWordsByDate(from: Date, to: Date) : Flow<List<Word>>
 
 

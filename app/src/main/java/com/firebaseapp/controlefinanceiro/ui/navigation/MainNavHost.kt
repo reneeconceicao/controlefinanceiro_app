@@ -15,7 +15,8 @@ fun MainNavHost(
     navController: NavHostController,
     startDestination: MainDestination,
     modifier: Modifier = Modifier,
-    navigateToRegister: () -> Unit
+    navigateToRegister: () -> Unit,
+    navigateToEdit: (Int) -> Unit
 ) {
     NavHost(
         navController,
@@ -24,7 +25,11 @@ fun MainNavHost(
         MainDestination.entries.forEach { destination ->
             composable(destination.route) {
                 when (destination) {
-                    MainDestination.HOME -> HomeScreen(modifier = modifier, navigateToRegister = navigateToRegister)
+                    MainDestination.HOME -> HomeScreen(
+                        modifier = modifier,
+                        navigateToRegister = navigateToRegister,
+                        navigateToEdit = navigateToEdit
+                    )
 
                     MainDestination.BUDGET -> BudgetsScreen(modifier = modifier)
                     MainDestination.REPORT -> ReportScreen(modifier = modifier)

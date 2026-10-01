@@ -16,10 +16,10 @@ fun CardBordered(modifier: Modifier = Modifier, content: @Composable ColumnScope
     Card(
         modifier,
         colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
+            containerColor = Color.Transparent,
         ),
         shape = RoundedCornerShape(18.dp),
-        border = BorderStroke(0.1.dp, MaterialTheme.colorScheme.outline),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground),
         content = content
     )
 }

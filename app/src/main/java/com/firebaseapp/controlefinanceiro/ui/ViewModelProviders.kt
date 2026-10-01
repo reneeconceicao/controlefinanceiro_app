@@ -1,11 +1,13 @@
 package com.firebaseapp.controlefinanceiro.ui
 
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.firebaseapp.controlefinanceiro.MoneyManagerApplication
 import com.firebaseapp.controlefinanceiro.ui.screens.home.HomeViewModel
+import com.firebaseapp.controlefinanceiro.ui.screens.main.EditViewModel
 import com.firebaseapp.controlefinanceiro.ui.screens.main.RegisterViewModel
 
 
@@ -17,7 +19,11 @@ object ViewModelProviders {
         }
 
         initializer {
-            RegisterViewModel(getApplication().wordRepository)
+            RegisterViewModel(getApplication().wordRepository, getApplication().categoryRepository)
+        }
+
+        initializer {
+            EditViewModel(getApplication().wordRepository, getApplication().categoryRepository, createSavedStateHandle())
         }
     }
 }

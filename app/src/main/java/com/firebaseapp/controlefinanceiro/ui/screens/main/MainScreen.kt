@@ -13,10 +13,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.firebaseapp.controlefinanceiro.ui.navigation.MainNavHost
 import com.firebaseapp.controlefinanceiro.ui.navigation.MainDestination
@@ -24,23 +23,30 @@ import com.firebaseapp.controlefinanceiro.ui.navigation.MainDestination
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    navigateToRegister: () -> Unit
+    navigateToRegister: () -> Unit,
+    navigateToEdit: (Int) -> Unit
 ) {
     val navController = rememberNavController()
     val startDestination = MainDestination.HOME
-    var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
             NavigationBar(windowInsets = NavigationBarDefaults.windowInsets) {
-                MainDestination.entries.forEachIndexed { index, destination ->
+                MainDestination.entries.forEachIndexed { _, destination ->
                     NavigationBarItem(
-                        selected = selectedDestination == index,
+                        selected = currentRoute == destination.route,
                         onClick = {
-                            navController.navigate(route = destination.route)
-                            selectedDestination = index
+                            navController.navigate(route = destination.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    inclusive = false
+                                }
+                                launchSingleTop = true
+                            }
                         },
                         icon = {
                             Icon(
@@ -58,7 +64,8 @@ fun MainScreen(
             navController,
             startDestination,
             modifier = Modifier.padding(innerPadding),
-            navigateToRegister = navigateToRegister
+            navigateToRegister = navigateToRegister,
+            navigateToEdit = navigateToEdit
         )
     }
 }

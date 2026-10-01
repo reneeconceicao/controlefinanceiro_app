@@ -3,35 +3,43 @@ package com.firebaseapp.controlefinanceiro.ui.screens.main
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.firebaseapp.controlefinanceiro.data.entities.Category
 import com.firebaseapp.controlefinanceiro.data.entities.CategoryType
-import com.firebaseapp.controlefinanceiro.data.entities.Word
-import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import com.firebaseapp.controlefinanceiro.data.repositories.CategoryRepository
 import com.firebaseapp.controlefinanceiro.data.repositories.WordRepository
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.math.BigDecimal
-import java.util.Date
-import kotlin.Int
 
-class RegisterViewModel(
+class EditViewModel(
     private val wordRepository: WordRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
+
+    private val wordId: Int = checkNotNull(savedStateHandle["wordId"])
 
     init {
 
         viewModelScope.launch {
+            val word = wordRepository.getWordStream(wordId).stateIn(viewModelScope).value
+
+            word?.let {
+                uiState = RegisterUiState(details = it.toDetails())
+            }
+
+
             val categories =
                 categoryRepository.getAllCategoryStream("%%")
                     .stateIn(viewModelScope).value
 
             categoriesExpense = categories.filter { it.categoryType == CategoryType.Expense }
             categoriesIncome = categories.filter { it.categoryType == CategoryType.Income }
+
+            loading = false
         }
     }
 
@@ -41,56 +49,18 @@ class RegisterViewModel(
 
     var categoriesIncome by mutableStateOf(listOf<Category>())
 
+    var loading by mutableStateOf(true)
+
     fun updateUiState(details: RegisterDetails) {
         this.uiState = RegisterUiState(
             details = details,
         )
     }
 
-    fun insertWord(details: RegisterDetails) {
+    fun updateWord() {
         viewModelScope.launch {
-            wordRepository.insertWord(details.toWord())
+            wordRepository.updateWord(uiState.details.toWord())
         }
     }
 
-}
-
-data class RegisterUiState(
-
-    var details: RegisterDetails = RegisterDetails(),
-
-    )
-
-data class RegisterDetails(
-    var id: Int = 0,
-    var selectedOption: Int = 0,
-    var price: String = "0",
-    var date: Date = Date(System.currentTimeMillis()),
-    var notes: String = "",
-    var currentCategoryId: Int = 0,
-    var categoryName: String = "",
-)
-
-fun RegisterDetails.toWord(): Word {
-    return Word(
-        id = id,
-        date = date,
-        type = if (selectedOption == 0) WordType.Expense else WordType.Income,
-        value = BigDecimal(price),
-        categoryId = currentCategoryId,
-        categoryName = categoryName,
-        notes = notes
-    )
-}
-
-fun Word.toDetails(): RegisterDetails {
-    return RegisterDetails (
-        id = id,
-        selectedOption = if (type == WordType.Expense) 0 else 1,
-        price = value.toString(),
-        date = date,
-        notes = notes ,
-        currentCategoryId = categoryId,
-        categoryName = categoryName,
-    )
 }

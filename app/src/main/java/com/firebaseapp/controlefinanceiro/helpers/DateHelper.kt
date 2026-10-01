@@ -1,5 +1,6 @@
 package com.firebaseapp.controlefinanceiro.helpers
 
+import androidx.compose.ui.text.capitalize
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -56,8 +57,16 @@ fun toYear(date: Date): String {
 
 fun toMonthYear(date: Date): String {
 
+    val yearFirst = setOf("ja", "zh", "ko")
+
+    val pattern = if (Locale.getDefault().language in yearFirst) {
+        "yyyy/MM"
+    } else {
+        "MM/yyyy"
+    }
+
     val formatter = SimpleDateFormat(
-        "MMMM YYYY",
+        pattern,
         Locale.getDefault()
     )
 
@@ -65,7 +74,7 @@ fun toMonthYear(date: Date): String {
     return monthYear
 }
 
-fun toDay(date: Date): String {
+fun toDateWithWeekDay(date: Date): String {
     val formatterWeek = SimpleDateFormat(
         "EEEE",
         Locale.getDefault()
@@ -77,6 +86,45 @@ fun toDay(date: Date): String {
     )
 
     return "${ formatterWeek.format(date) }, ${formatter.format(date)}"
+}
+
+fun toDay(date: Date): String {
+
+    val calendar = Calendar.getInstance()
+    calendar.time = date
+
+    val today = Calendar.getInstance()
+
+    if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+        calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+    ) {
+        return "Today"
+    }
+
+    today.add(Calendar.DAY_OF_YEAR, -1)
+    if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+        calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+    ) {
+        return "Yesterday"
+    }
+
+    today.add(Calendar.DAY_OF_YEAR, 2)
+    if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+        calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+    ) {
+        return "Tomorrow"
+    }
+
+    val formatter = SimpleDateFormat(
+        "d MMM",
+        Locale.getDefault()
+    )
+
+    val result = formatter.format(date).replaceFirstChar {
+        it.titlecase(Locale.getDefault())
+    }
+
+    return result
 }
 fun dateToUtcMillis(date: Date): Long {
     val localCal = Calendar.getInstance()

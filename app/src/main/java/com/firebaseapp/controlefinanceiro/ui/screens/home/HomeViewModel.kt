@@ -44,6 +44,8 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
 
     private val selectedYear = MutableStateFlow(Date())
 
+    val loading = mutableStateOf(true)
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val homeUiState: StateFlow<HomeUiState> =
         combine(fromDate, toDate, currentFilter) { fromDate, toDate, filter -> Triple(fromDate, toDate, filter) }
@@ -59,6 +61,7 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
                     val income = list.filter { it.type == WordType.Income }.sumOf { it.value }
                     val total = income - expenses
 
+                    loading.value = false
 
                     HomeUiState(
                         list = list,
@@ -73,6 +76,8 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
                 started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
                 initialValue = HomeUiState()
             )
+
+
 
     fun changePeriod(value: Int) {
         when (currentFilter.value) {

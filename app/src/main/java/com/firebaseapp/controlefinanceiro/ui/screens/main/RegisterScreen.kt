@@ -1,6 +1,5 @@
 package com.firebaseapp.controlefinanceiro.ui.screens.main
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,11 +7,14 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -42,7 +44,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -60,8 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.firebaseapp.controlefinanceiro.R
-import com.firebaseapp.controlefinanceiro.data.entities.Word
-import com.firebaseapp.controlefinanceiro.data.entities.WordType
+import com.firebaseapp.controlefinanceiro.data.entities.Category
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
@@ -70,11 +70,10 @@ import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
 import com.firebaseapp.controlefinanceiro.ui.components.CategoriesPickerModal
 import com.firebaseapp.controlefinanceiro.ui.components.CurrencyOutlinedTextField
 import com.firebaseapp.controlefinanceiro.ui.components.DatePickerModal
-import java.math.BigDecimal
 import java.util.Date
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun RegisterScreen(
     modifier: Modifier = Modifier,
@@ -82,57 +81,9 @@ fun RegisterScreen(
     viewModel: RegisterViewModel = viewModel(factory = ViewModelProviders.Factory)
 ) {
 
-    var selectedOption by rememberSaveable { mutableIntStateOf(0) }
-    var price by rememberSaveable { mutableStateOf("0") }
-    var date by rememberSaveable { mutableStateOf(Date(System.currentTimeMillis())) }
-    var notes by rememberSaveable { mutableStateOf("") }
-    var category by rememberSaveable { mutableStateOf("") }
-    var categories by rememberSaveable { mutableStateOf(listOf("")) }
+    val registerUiState = viewModel.uiState
 
-    LaunchedEffect(selectedOption) {
 
-        if (selectedOption == 0) {
-            categories = listOf(
-                "Food",
-                "Car",
-                "House",
-                "Table",
-                "Kart",
-                "Father",
-                "Beach",
-                "Rest",
-                "Bindable",
-                "Basket",
-                "Clothes",
-                "Flights",
-                "Food",
-                "Car",
-                "House",
-                "Table",
-                "Kart",
-                "Father",
-                "Beach",
-                "Rest",
-                "Bindable",
-                "Basket",
-                "Clothes",
-                "Flights"
-            )
-        } else {
-            categories = listOf(
-                "Fish",
-                "Sea",
-                "Rest"
-            )
-        }
-
-        if (category !in categories) {
-            category = ""
-        }
-    }
-
-    var showDatePicker by rememberSaveable() { mutableStateOf(false) }
-    var showCategoriesList by rememberSaveable() { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier
@@ -153,16 +104,7 @@ fun RegisterScreen(
                 actions = {
                     Button(
                         onClick = {
-
-                            val word = Word(
-                                date = date,
-                                type = if (selectedOption == 0) WordType.Income else WordType.Expense,
-                                value = BigDecimal(price),
-                                categoryId = 0,
-                                categoryName = "",
-                                notes = notes
-                            )
-                            viewModel.insertWord(word)
+                            viewModel.insertWord(registerUiState.details)
                             navigateBack()
                         },
                         Modifier.padding(end = paddingDefault()),
@@ -188,106 +130,170 @@ fun RegisterScreen(
             )
         }
     ) { innerPadding ->
-        Box(
-            modifier = Modifier.padding(innerPadding),
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding)
+                .imePadding(),
         ) {
 
 
-            if (showDatePicker) {
-                DatePickerModal(
-                    date = date,
-                    onDateSelected = { selectedDate ->
-                        if (selectedDate != null) {
-                            date = selectedDate
-                        }
-                    },
-                    onDismiss = {
-                        showDatePicker = false
-                    }
-                )
-            }
-
-            if (showCategoriesList) {
-                CategoriesPickerModal(
-                    categories = categories,
-                    onItemSelected = { category = it },
-                    currentOption = selectedOption,
-                    onDismissRequest = { showCategoriesList = false })
-            }
-
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(
-                        paddingSmall()
-                    )
-            ) {
-
-
-                ButtonsOptions(selectedOption, onOptionSelected = {
-                    selectedOption = it
-                })
-
-
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(paddingSmall())
-                ) {
-                    CurrencyOutlinedTextField(
-                        value = price,
-                        onValueChange = {
-                            price = it
-                            Log.d("TAG", "RegisterScreen: $price")
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = paddingSmall()),
-                        shape = RoundedCornerShape(paddingSmall()),
-                        textStyle = TextStyle(fontSize = 24.sp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = if (selectedOption == 0) colorResource(R.color.dark_green)
-                            else colorResource(R.color.dark_red),
-                        ),
-                    )
-
-
-                    DatePickerField(date, onClick = { showDatePicker = true })
-
-                    CategoryPickerField(
-                        category = category,
-                        onClick = { showCategoriesList = true },
-                        onRemoveCategory = { category = "" }
-                    )
-
-                    OutlinedTextField(
-                        value = notes,
-                        onValueChange = {
-                            notes = it
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = paddingSmall())
-                            .padding(vertical = paddingSmall()),
-
-                        label = { Text("Notes") },
-                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
-                    )
-
-
-                }
-
-
-//                SaveButton(selectedOption) {
-//
-//                }
-
-            }
+            RegisterScreenBody(
+                registerUiState = registerUiState,
+                onUpdate = viewModel::updateUiState,
+                categoriesExpense = viewModel.categoriesExpense,
+                categoriesIncome = viewModel.categoriesIncome,
+            )
 
         }
     }
 
+}
+
+@Composable
+fun RegisterScreenBody(
+    registerUiState: RegisterUiState,
+    onUpdate: (RegisterDetails) -> Unit,
+    categoriesExpense: List<Category> = listOf(),
+    categoriesIncome: List<Category> = listOf()
+) {
+
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
+    var showCategoriesList by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(registerUiState.details.selectedOption) {
+
+        if (registerUiState.details.selectedOption == 0) {
+            if (registerUiState.details.currentCategoryId !in categoriesExpense.map { it.id }) {
+                onUpdate(
+                    registerUiState.details.copy(
+                        currentCategoryId = 0,
+                        categoryName = ""
+                    )
+                )
+            }
+        }
+
+        if (registerUiState.details.selectedOption == 1) {
+            if (registerUiState.details.currentCategoryId !in categoriesIncome.map { it.id }) {
+                onUpdate(
+                    registerUiState.details.copy(
+                        currentCategoryId = 0,
+                        categoryName = ""
+                    )
+                )
+            }
+        }
+
+    }
+
+    if (showDatePicker) {
+        DatePickerModal(
+            date = registerUiState.details.date,
+            onDateSelected = { selectedDate ->
+                if (selectedDate != null) {
+                    onUpdate(registerUiState.details.copy(date = selectedDate))
+                }
+            },
+            onDismiss = {
+                showDatePicker = false
+            }
+        )
+    }
+
+    if (showCategoriesList) {
+        CategoriesPickerModal(
+            categories = if (registerUiState.details.selectedOption == 0) categoriesExpense else categoriesIncome,
+            onItemSelected = {
+                onUpdate(
+                    registerUiState.details.copy(
+                        categoryName = it.categoryName,
+                        currentCategoryId = it.id
+                    )
+                )
+            },
+            currentOption = registerUiState.details.selectedOption,
+            onDismissRequest = { showCategoriesList = false })
+    }
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .padding(
+                paddingSmall()
+            )
+    ) {
+
+
+        ButtonsOptions(registerUiState.details.selectedOption, onOptionSelected = {
+            onUpdate(registerUiState.details.copy(selectedOption = it))
+        })
+
+
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(paddingSmall())
+        ) {
+            CurrencyOutlinedTextField(
+                value = registerUiState.details.price,
+                onValueChange = {
+                    onUpdate(registerUiState.details.copy(price = it))
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = paddingSmall()),
+                shape = RoundedCornerShape(paddingSmall()),
+                textStyle = TextStyle(fontSize = 24.sp),
+                colors = OutlinedTextFieldDefaults.colors(
+
+                    cursorColor = if (registerUiState.details.selectedOption == 0) colorResource(
+                        R.color.dark_red
+                    )
+                    else colorResource(R.color.dark_green),
+                    focusedBorderColor = if (registerUiState.details.selectedOption == 0) colorResource(
+                        R.color.dark_red
+                    )
+                    else colorResource(R.color.dark_green),
+                ),
+            )
+
+
+            DatePickerField(
+                registerUiState.details.date,
+                onClick = { showDatePicker = true })
+
+
+            CategoryPickerField(
+                categoryId = registerUiState.details.currentCategoryId,
+                categoryName = registerUiState.details.categoryName,
+                onClick = { showCategoriesList = true },
+                onRemoveCategory = {
+                    onUpdate(registerUiState.details.copy(currentCategoryId = 0, categoryName = ""))
+                }
+            )
+
+
+
+            OutlinedTextField(
+                value = registerUiState.details.notes,
+                onValueChange = {
+                    onUpdate(registerUiState.details.copy(notes = it))
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = paddingSmall())
+                    .padding(vertical = paddingSmall()),
+
+                label = { Text("Notes") },
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+            )
+
+
+        }
+
+    }
 }
 
 @Composable
@@ -309,13 +315,13 @@ fun ButtonsOptions(selectedOption: Int, onOptionSelected: (Int) -> Unit) {
                 },
             colors = CardDefaults.cardColors(
                 containerColor = if (selectedOption == 0) colorResource(
-                    R.color.dark_green
+                    R.color.dark_red
                 ) else Color.Gray,
-                contentColor = Color.White//if (selectedOption == 0) Color.White else Color.LightGray
+                contentColor = Color.White//if (selectedOption == 1) MaterialTheme.colorScheme.onPrimary else Color.White
             )
         ) {
             Text(
-                "+ Income",
+                "- Expense",
                 Modifier
                     .padding(paddingDefault())
                     .fillMaxWidth(),
@@ -333,13 +339,13 @@ fun ButtonsOptions(selectedOption: Int, onOptionSelected: (Int) -> Unit) {
                 },
             colors = CardDefaults.cardColors(
                 containerColor = if (selectedOption == 1) colorResource(
-                    R.color.dark_red
+                    R.color.dark_green
                 ) else Color.Gray,
-                contentColor = Color.White//if (selectedOption == 1) MaterialTheme.colorScheme.onPrimary else Color.White
+                contentColor = Color.White//if (selectedOption == 0) Color.White else Color.LightGray
             )
         ) {
             Text(
-                "- Expense",
+                "+ Income",
                 Modifier
                     .padding(paddingDefault())
                     .fillMaxWidth(),
@@ -394,7 +400,8 @@ fun DatePickerField(date: Date, onClick: () -> Unit) {
 
 @Composable
 fun CategoryPickerField(
-    category: String,
+    categoryId: Int = 0,
+    categoryName: String = "",
     onClick: () -> Unit,
     onRemoveCategory: () -> Unit
 ) {
@@ -428,9 +435,11 @@ fun CategoryPickerField(
                 .padding(paddingSmall())
                 .padding(vertical = paddingSmall()),
         )
-        Text(category.ifEmpty { "No Category" }, fontWeight = FontWeight.SemiBold)
+        Text(
+            categoryName.ifEmpty { "No Category" },
+            fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.weight(1f))
-        if (category.isNotEmpty()) {
+        if (categoryId != 0) {
             Button(
                 onClick = onRemoveCategory,
                 colors = ButtonDefaults.buttonColors(

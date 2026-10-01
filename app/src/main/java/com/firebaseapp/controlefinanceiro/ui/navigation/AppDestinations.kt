@@ -9,7 +9,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 enum class AppDestination(
     val route: String,
+    val routeWithArgs: String = ""
 ) {
     MAIN("main"),
     REGISTER("register"),
+
+    EDIT(route = "edit", routeWithArgs = "edit/{wordId}")
 }

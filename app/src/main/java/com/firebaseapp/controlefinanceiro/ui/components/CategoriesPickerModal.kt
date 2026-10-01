@@ -24,21 +24,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import com.firebaseapp.controlefinanceiro.data.entities.Category
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoriesPickerModal(
-    categories: List<String>,
+    categories: List<Category>,
     currentOption: Int,
-    onItemSelected: (String) -> Unit,
+    onItemSelected: (Category) -> Unit,
     onDismissRequest: () -> Unit
 ) {
     ModalBottomSheet(onDismissRequest = onDismissRequest) {
         Box(Modifier.fillMaxWidth()) {
 
             Text(
-                if (currentOption == 0) "Select a income category" else "Select a expense category",
+                if (currentOption == 0) "Select a expense category" else "Select a income category",
                 modifier = Modifier.align(Alignment.Center),
                 fontWeight = FontWeight.Bold
             )
@@ -57,13 +58,13 @@ fun CategoriesPickerModal(
             }
         }
         LazyColumn {
-            items(categories) { item ->
+            items(categories) { category ->
                 ListItem(
-                    headlineContent = { Text(item) },
+                    headlineContent = { Text(category.categoryName) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            onItemSelected(item)
+                            onItemSelected(category)
                             onDismissRequest()
                         }
                 )
