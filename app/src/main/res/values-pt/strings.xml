@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">Controle Financeiro</string>
+    <string name="home">Início</string>
+    <string name="budgets">Orçamentos</string>
+    <string name="reporting">Relatórios</string>
+    <string name="settings">Ajustes</string>
+    <string name="back">Voltar</string>
+    <string name="register">Registro</string>
+    <string name="save">SALVAR</string>
+    <string name="notes">Anotações</string>
+    <string name="add_income">+ Entrada</string>
+    <string name="add_expense">- Saída</string>
+    <string name="select_the_date">Escolha a data</string>
+    <string name="category_two_dots">"Categoria: "</string>
+    <string name="no_category">Sem Categoria</string>
+    <string name="select_a_expense_category">Selecione uma categoria de saída</string>
+    <string name="select_a_income_category">Selecione uma categoria de entrada</string>
+    <string name="select_a_category">Selecione uma categoria</string>
+    <string name="all_time">Todo o período</string>
+    <string name="add_register">Registrar</string>
+    <string name="no_register_found">Nenhum registro encontrado</string>
+    <string name="all">Tudo</string>
+    <string name="month">Mês</string>
+    <string name="year">Ano</string>
+    <string name="total_balance">Saldo total</string>
+    <string name="monthly_balance">Saldo do mês</string>
+    <string name="yearly_balance">Saldo do ano</string>
+    <string name="today">Hoje</string>
+    <string name="yesterday">Ontem</string>
+    <string name="tomorrow">Amanhã</string>
+
+</resources>

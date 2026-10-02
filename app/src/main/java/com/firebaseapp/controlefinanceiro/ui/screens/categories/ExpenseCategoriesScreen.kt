@@ -1,4 +1,4 @@
-package com.firebaseapp.controlefinanceiro.ui.screens.home
+package com.firebaseapp.controlefinanceiro.ui.screens.categories
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -13,9 +13,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,6 +28,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
@@ -33,63 +38,82 @@ import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.firebaseapp.controlefinanceiro.R
-import com.firebaseapp.controlefinanceiro.data.entities.WordType
+import com.firebaseapp.controlefinanceiro.data.entities.CategoryType
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
+import com.firebaseapp.controlefinanceiro.defaults.paddingTiny
 import com.firebaseapp.controlefinanceiro.helpers.currencyFormat
-import com.firebaseapp.controlefinanceiro.helpers.formatedPriceIndicator
-import com.firebaseapp.controlefinanceiro.helpers.toDay
 import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
 import com.firebaseapp.controlefinanceiro.ui.components.CardBordered
+import com.firebaseapp.controlefinanceiro.ui.screens.home.DateFilter
+import com.firebaseapp.controlefinanceiro.ui.screens.home.HomeUiState
 import java.math.BigDecimal
-import java.util.Calendar
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
+fun ExpenseCategoriesScreen(
+    navigateBack: () -> Unit,
     modifier: Modifier = Modifier,
-    navigateToRegister: () -> Unit,
-    navigateToEdit: (id: Int) -> Unit,
-    viewModel: HomeViewModel = viewModel(factory = ViewModelProviders.Factory),
+    viewModel: ExpenseCategoriesViewModel = viewModel(factory = ViewModelProviders.Factory),
 ) {
 
-    val homeUiState = viewModel.homeUiState.collectAsState()
+    val homeUiState = viewModel.categoriesUiState.collectAsState()
 
     Scaffold(
         modifier = modifier
             .fillMaxSize(),
+        contentWindowInsets = WindowInsets.safeDrawing,
+        topBar = {
+            TopAppBar(
+                windowInsets = TopAppBarDefaults.windowInsets,
+                title = { Text("Expense categories") },
+                navigationIcon = {
+                    IconButton(onClick = navigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            "Back"
+                        )
+                    }
+                },
+            )
+        },
         floatingActionButton = {
 
             FloatingActionButton(
+
                 onClick = {
-                    navigateToRegister()
+
                 },
             ) {
                 Row(
@@ -98,46 +122,22 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "")
-                    Text(stringResource(R.string.add_register))
+                    Text("Register")
                 }
             }
 
 
         }) { innerPadding ->
-        AnimatedVisibility(visible = !viewModel.loading.value, enter = fadeIn()) {
+        AnimatedVisibility(visible = !viewModel.loading, enter = fadeIn()) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding)
+                    .imePadding()
             ) {
 
-                Text(
-                    text = stringResource(R.string.app_name),
-                    Modifier
-                        .padding(paddingDefault()),
-                    fontSize = 24.sp,
-                )
-
-                HomeHeader(
-                    homeUiState = homeUiState.value,
-                    onNextMonthClick = {
-                        viewModel.changePeriod(1)
-
-                    },
-                    onPreviousMonthClick = {
-                        viewModel.changePeriod(-1)
-                    },
-                    onChangeToAllFilter = {
-                        viewModel.changeFilter(DateFilter.ALL)
-                    },
-                    onChangeToMonthFilter = {
-                        viewModel.changeFilter(DateFilter.MONTH)
-                    },
-                    onChangeToYearFilter = {
-                        viewModel.changeFilter(DateFilter.YEAR)
-                    }
-                )
-
-                HomeList(homeUiState = homeUiState.value, onEditNavigate = navigateToEdit)
+                CategoriesList(categoriesUiState = homeUiState.value, onEditNavigate = {} )
             }
         }
     }
@@ -145,35 +145,27 @@ fun HomeScreen(
 }
 
 @Composable
-fun HomeList(
-    homeUiState: HomeUiState,
+fun CategoriesList(
+    categoriesUiState: CategoriesUiState,
     onEditNavigate: (Int) -> Unit,
 ) {
 
-    val grouped = homeUiState.list.groupBy {
-        Calendar.getInstance().apply {
-            time = it.date
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.time
-    }
+    val list = categoriesUiState.list
 
     AnimatedContent(
-        targetState = grouped,
+        targetState = list,
         transitionSpec = {
             fadeIn() togetherWith fadeOut()
         }
     ) { target ->
-        if (target.values.isEmpty()) {
+        if (target.isEmpty()) {
             Column(
                 Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
                 Text(
-                    stringResource(R.string.no_register_found),
+                    "No categories found",
                     Modifier
                         .padding(paddingLarge())
                         .padding(top = paddingLarge())
@@ -185,22 +177,16 @@ fun HomeList(
 
         } else {
             LazyColumn(contentPadding = PaddingValues(bottom = 120.dp)) {
-                target.forEach { (date, words) ->
-                    item {
-                        Text(
-                            toDay(date),
-                            modifier = Modifier
-                                .padding(start = paddingDefault())
-                                .padding(top = paddingSmall())
-                        )
-                    }
-                    items(items = words) { word ->
+
+
+                    items(items = list) { category ->
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    onEditNavigate(word.id)
+                                    onEditNavigate(category.id)
                                 }
+
                         ) {
 
                             Row(
@@ -217,7 +203,7 @@ fun HomeList(
 
                                 ) {
                                     Icon(
-                                        imageVector = if (word.type == WordType.Income) Icons.Default.ArrowOutward else Icons.Default.Payments,
+                                        imageVector = if (category.categoryType == CategoryType.Income) Icons.Default.ArrowOutward else Icons.Default.Payments,
                                         "",
                                         Modifier
                                             .align(Alignment.Center)
@@ -227,17 +213,14 @@ fun HomeList(
 
 
                                 Text(
-                                    formatedPriceIndicator(word),
+                                    category.categoryName,
                                     Modifier
                                         .padding(paddingDefault())
 
                                         .padding(vertical = paddingSmall()),
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (word.type == WordType.Income)
-                                        colorResource(R.color.dark_green)
-                                    else
-                                        MaterialTheme.colorScheme.onBackground
+
                                 )
                             }
                             HorizontalDivider(
@@ -246,7 +229,7 @@ fun HomeList(
                                 DividerDefaults.color
                             )
                         }
-                    }
+
                 }
             }
         }
@@ -297,7 +280,7 @@ fun FilterChips(
         horizontalArrangement = Arrangement.spacedBy(paddingDefault()),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        var selected by rememberSaveable { mutableIntStateOf(0) }
+        var selected by remember { mutableIntStateOf(0) }
 
         FilterChip(
             onClick = {
@@ -305,14 +288,14 @@ fun FilterChips(
                 onChangeToAllFilter()
             },
             label = {
-                Text(stringResource(R.string.all), Modifier.padding(paddingSmall()), fontSize = 16.sp)
+                Text("All", Modifier.padding(paddingSmall()), fontSize = 16.sp)
             },
             selected = selected == 0,
             leadingIcon = if (selected == 0) {
                 {
                     Icon(
                         imageVector = Icons.Filled.Done,
-                        contentDescription = "",
+                        contentDescription = "Done icon",
                         modifier = Modifier.size(FilterChipDefaults.IconSize)
                     )
                 }
@@ -328,14 +311,14 @@ fun FilterChips(
                 onChangeToMonthFilter()
             },
             label = {
-                Text(stringResource(R.string.month), Modifier.padding(paddingSmall()), fontSize = 16.sp)
+                Text("Month", Modifier.padding(paddingSmall()), fontSize = 16.sp)
             },
             selected = selected == 1,
             leadingIcon = if (selected == 1) {
                 {
                     Icon(
                         imageVector = Icons.Filled.Done,
-                        contentDescription = "",
+                        contentDescription = "Done icon",
                         modifier = Modifier.size(FilterChipDefaults.IconSize)
                     )
                 }
@@ -351,14 +334,14 @@ fun FilterChips(
                 onChangeToYearFilter()
             },
             label = {
-                Text(stringResource(R.string.year), Modifier.padding(paddingSmall()), fontSize = 16.sp)
+                Text("Year", Modifier.padding(paddingSmall()), fontSize = 16.sp)
             },
             selected = selected == 2,
             leadingIcon = if (selected == 2) {
                 {
                     Icon(
                         imageVector = Icons.Filled.Done,
-                        contentDescription = "",
+                        contentDescription = "Done icon",
                         modifier = Modifier.size(FilterChipDefaults.IconSize)
                     )
                 }
@@ -380,9 +363,9 @@ fun BalancePanel(homeUiState: HomeUiState) {
     ) {
         Column {
             val balanceLabel = when (homeUiState.currentFilter) {
-                DateFilter.ALL -> stringResource(R.string.total_balance)
-                DateFilter.MONTH -> stringResource(R.string.monthly_balance)
-                DateFilter.YEAR -> stringResource(R.string.yearly_balance)
+                DateFilter.ALL -> "Total balance"
+                DateFilter.MONTH -> "Monthly balance"
+                DateFilter.YEAR -> "Yearly balance"
             }
             Text(
                 balanceLabel,
@@ -442,7 +425,7 @@ fun PeriodSelector(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                    contentDescription = "",
+                    contentDescription = "Back",
                     Modifier.size(paddingExtraLarge())
 
                 )
@@ -450,8 +433,7 @@ fun PeriodSelector(
         }
 
         Text(
-            if (homeUiState.periodLabel == HomeViewModel.ALL_TIME_FLAG)
-                stringResource(R.string.all_time) else homeUiState.periodLabel,
+            homeUiState.periodLabel,
             Modifier.padding(paddingDefault()),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold
@@ -468,7 +450,7 @@ fun PeriodSelector(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = "",
+                    contentDescription = "Forward",
                     Modifier.size(32.dp)
 
                 )

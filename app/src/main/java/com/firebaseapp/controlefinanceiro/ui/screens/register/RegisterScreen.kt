@@ -1,4 +1,4 @@
-package com.firebaseapp.controlefinanceiro.ui.screens.main
+package com.firebaseapp.controlefinanceiro.ui.screens.register
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -53,6 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -78,6 +79,7 @@ import java.util.Date
 fun RegisterScreen(
     modifier: Modifier = Modifier,
     navigateBack: () -> Unit,
+    navigateCategories: (Int) -> Unit,
     viewModel: RegisterViewModel = viewModel(factory = ViewModelProviders.Factory)
 ) {
 
@@ -92,12 +94,12 @@ fun RegisterScreen(
         topBar = {
             TopAppBar(
                 windowInsets = TopAppBarDefaults.windowInsets,
-                title = { Text("Register") },
+                title = { Text(stringResource(R.string.register)) },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            "Back"
+                            stringResource(R.string.back)
                         )
                     }
                 },
@@ -119,7 +121,7 @@ fun RegisterScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(imageVector = Icons.Default.Check, "")
-                            Text("SAVE")
+                            Text(stringResource(R.string.save))
 
                         }
 
@@ -143,6 +145,7 @@ fun RegisterScreen(
                 onUpdate = viewModel::updateUiState,
                 categoriesExpense = viewModel.categoriesExpense,
                 categoriesIncome = viewModel.categoriesIncome,
+                navigateCategories = navigateCategories
             )
 
         }
@@ -155,7 +158,8 @@ fun RegisterScreenBody(
     registerUiState: RegisterUiState,
     onUpdate: (RegisterDetails) -> Unit,
     categoriesExpense: List<Category> = listOf(),
-    categoriesIncome: List<Category> = listOf()
+    categoriesIncome: List<Category> = listOf(),
+    navigateCategories: (Int) -> Unit
 ) {
 
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
@@ -213,6 +217,7 @@ fun RegisterScreenBody(
                 )
             },
             currentOption = registerUiState.details.selectedOption,
+            //navigateCategories = navigateCategories,
             onDismissRequest = { showCategoriesList = false })
     }
 
@@ -286,7 +291,7 @@ fun RegisterScreenBody(
                     .padding(horizontal = paddingSmall())
                     .padding(vertical = paddingSmall()),
 
-                label = { Text("Notes") },
+                label = { Text(stringResource(R.string.notes)) },
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
             )
 
@@ -321,7 +326,7 @@ fun ButtonsOptions(selectedOption: Int, onOptionSelected: (Int) -> Unit) {
             )
         ) {
             Text(
-                "- Expense",
+                stringResource(R.string.add_expense),
                 Modifier
                     .padding(paddingDefault())
                     .fillMaxWidth(),
@@ -345,7 +350,7 @@ fun ButtonsOptions(selectedOption: Int, onOptionSelected: (Int) -> Unit) {
             )
         ) {
             Text(
-                "+ Income",
+                stringResource(R.string.add_income),
                 Modifier
                     .padding(paddingDefault())
                     .fillMaxWidth(),
@@ -383,7 +388,7 @@ fun DatePickerField(date: Date, onClick: () -> Unit) {
         )
 
         Text(
-            "Select the date",
+            stringResource(R.string.select_the_date),
             Modifier
                 .align(Alignment.TopStart)
                 .padding(paddingSmall()),
@@ -430,13 +435,13 @@ fun CategoryPickerField(
 
 
         Text(
-            "Category: ",
+            stringResource(R.string.category_two_dots),
             Modifier
                 .padding(paddingSmall())
                 .padding(vertical = paddingSmall()),
         )
         Text(
-            categoryName.ifEmpty { "No Category" },
+            categoryName.ifEmpty { stringResource(R.string.no_category) },
             fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.weight(1f))
         if (categoryId != 0) {
@@ -450,32 +455,6 @@ fun CategoryPickerField(
             ) {
                 Icon(imageVector = Icons.Outlined.RemoveCircleOutline, "")
             }
-        }
-    }
-}
-
-@Composable
-fun SaveButton(selectedOption: Int, onClick: () -> Unit) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(paddingDefault())
-    ) {
-        Button(
-            onClick = onClick, Modifier.weight(1f), colors = ButtonDefaults.buttonColors(
-                containerColor = if (selectedOption == 0) colorResource(
-                    R.color.dark_green
-                ) else colorResource(
-                    R.color.dark_red
-                ),
-            )
-        ) {
-            Text(
-                if (selectedOption == 0) "Register income" else "Register expense",
-                Modifier.padding(paddingSmall()),
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
         }
     }
 }

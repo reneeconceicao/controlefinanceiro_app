@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -23,7 +24,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.data.entities.Category
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
 
@@ -33,19 +36,22 @@ fun CategoriesPickerModal(
     categories: List<Category>,
     currentOption: Int,
     onItemSelected: (Category) -> Unit,
+    //navigateCategories: (Int) -> Unit,
     onDismissRequest: () -> Unit
 ) {
     ModalBottomSheet(onDismissRequest = onDismissRequest) {
         Box(Modifier.fillMaxWidth()) {
 
             Text(
-                if (currentOption == 0) "Select a expense category" else "Select a income category",
+                stringResource(R.string.select_a_category),
                 modifier = Modifier.align(Alignment.Center),
                 fontWeight = FontWeight.Bold
             )
 
             Button(
-                onClick = {},
+                onClick = {
+                    onDismissRequest()
+                },
                 Modifier
                     .padding(horizontal = paddingSmall())
                     .align(Alignment.CenterEnd),
@@ -54,7 +60,7 @@ fun CategoriesPickerModal(
                     containerColor = Color.Transparent
                 )
             ) {
-                Icon(imageVector = Icons.Default.Settings, "")
+                Icon(imageVector = Icons.Default.Close, "")
             }
         }
         LazyColumn {

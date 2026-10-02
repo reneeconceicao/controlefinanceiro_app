@@ -34,3 +34,22 @@ fun currencyFormat(value: String): String {
     return NumberFormat.getCurrencyInstance().format(0)
 }
 
+
+fun toBigDecimal(value: String): BigDecimal {
+    val formattedString = value.replace(Regex("\\D"), "")
+
+    if (formattedString.isEmpty()) {
+        return BigDecimal.ZERO
+    }
+
+    val formatter = NumberFormat.getCurrencyInstance()
+    val fractionDigits = formatter.currency?.defaultFractionDigits ?: 0
+
+    return if (fractionDigits > 0) {
+        BigDecimal(formattedString)
+            .movePointLeft(fractionDigits)
+    } else {
+        BigDecimal(formattedString)
+    }
+}
+

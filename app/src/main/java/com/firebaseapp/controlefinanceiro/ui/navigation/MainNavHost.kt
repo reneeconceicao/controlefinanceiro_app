@@ -5,7 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.firebaseapp.controlefinanceiro.ui.screens.budgets.BudgetsScreen
+import com.firebaseapp.controlefinanceiro.ui.screens.budgets.BudgetScreen
 import com.firebaseapp.controlefinanceiro.ui.screens.home.HomeScreen
 import com.firebaseapp.controlefinanceiro.ui.screens.reports.ReportScreen
 import com.firebaseapp.controlefinanceiro.ui.screens.settings.SettingsScreen
@@ -16,7 +16,9 @@ fun MainNavHost(
     startDestination: MainDestination,
     modifier: Modifier = Modifier,
     navigateToRegister: () -> Unit,
-    navigateToEdit: (Int) -> Unit
+    navigateToEdit: (Int) -> Unit,
+    navigateExpenseCategories: () -> Unit,
+    navigateIncomeCategories: () -> Unit,
 ) {
     NavHost(
         navController,
@@ -31,11 +33,18 @@ fun MainNavHost(
                         navigateToEdit = navigateToEdit
                     )
 
-                    MainDestination.BUDGET -> BudgetsScreen(modifier = modifier)
+                    MainDestination.BUDGET -> BudgetScreen(modifier = modifier, {}, {})
                     MainDestination.REPORT -> ReportScreen(modifier = modifier)
-                    MainDestination.SETTINGS -> SettingsScreen(modifier = modifier)
+                    MainDestination.SETTINGS -> SettingsScreen(
+                        modifier = modifier,
+                        navigateExpenseCategories = navigateExpenseCategories,
+                        navigateIncomeCategories = navigateIncomeCategories
+
+                    )
                 }
             }
         }
     }
 }
+
+

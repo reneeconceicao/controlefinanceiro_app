@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -24,7 +25,9 @@ import com.firebaseapp.controlefinanceiro.ui.navigation.MainDestination
 @Composable
 fun MainScreen(
     navigateToRegister: () -> Unit,
-    navigateToEdit: (Int) -> Unit
+    navigateToEdit: (Int) -> Unit,
+    navigateExpenseCategories: () -> Unit,
+    navigateIncomeCategories: () -> Unit,
 ) {
     val navController = rememberNavController()
     val startDestination = MainDestination.HOME
@@ -51,10 +54,10 @@ fun MainScreen(
                         icon = {
                             Icon(
                                 destination.icon,
-                                contentDescription = destination.contentDescription
+                                contentDescription = stringResource(destination.contentDescription)
                             )
                         },
-                        label = { Text(destination.label) }
+                        label = { Text( stringResource(destination.label) ) }
                     )
                 }
             }
@@ -65,7 +68,9 @@ fun MainScreen(
             startDestination,
             modifier = Modifier.padding(innerPadding),
             navigateToRegister = navigateToRegister,
-            navigateToEdit = navigateToEdit
+            navigateToEdit = navigateToEdit,
+            navigateExpenseCategories = navigateExpenseCategories,
+            navigateIncomeCategories = navigateIncomeCategories,
         )
     }
 }

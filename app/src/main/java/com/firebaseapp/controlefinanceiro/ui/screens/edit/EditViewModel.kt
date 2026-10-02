@@ -1,4 +1,4 @@
-package com.firebaseapp.controlefinanceiro.ui.screens.main
+package com.firebaseapp.controlefinanceiro.ui.screens.edit
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,6 +10,10 @@ import com.firebaseapp.controlefinanceiro.data.entities.Category
 import com.firebaseapp.controlefinanceiro.data.entities.CategoryType
 import com.firebaseapp.controlefinanceiro.data.repositories.CategoryRepository
 import com.firebaseapp.controlefinanceiro.data.repositories.WordRepository
+import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterDetails
+import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterUiState
+import com.firebaseapp.controlefinanceiro.ui.screens.register.toDetails
+import com.firebaseapp.controlefinanceiro.ui.screens.register.toWord
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 

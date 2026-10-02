@@ -1,12 +1,5 @@
 package com.firebaseapp.controlefinanceiro.ui.navigation
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.ui.graphics.vector.ImageVector
-
 enum class AppDestination(
     val route: String,
     val routeWithArgs: String = ""
@@ -14,5 +7,9 @@ enum class AppDestination(
     MAIN("main"),
     REGISTER("register"),
 
-    EDIT(route = "edit", routeWithArgs = "edit/{wordId}")
+    EDIT(route = "edit", routeWithArgs = "edit/{wordId}"),
+
+    EXPENSE_CATEGORIES(route = "expense_categories", routeWithArgs = "expense_categories/{categoryType}"),
+
+    INCOME_CATEGORIES(route = "income_categories", routeWithArgs = "income_categories/{categoryType}")
 }

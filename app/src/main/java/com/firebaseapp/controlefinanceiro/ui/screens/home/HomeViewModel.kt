@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.data.entities.Word
 import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import com.firebaseapp.controlefinanceiro.data.repositories.WordRepository
@@ -17,6 +18,7 @@ import com.firebaseapp.controlefinanceiro.helpers.setEndOfDay
 import com.firebaseapp.controlefinanceiro.helpers.setStartOfDay
 import com.firebaseapp.controlefinanceiro.helpers.toMonthYear
 import com.firebaseapp.controlefinanceiro.helpers.toYear
+import com.firebaseapp.controlefinanceiro.ui.screens.home.HomeViewModel.Companion.ALL_TIME_FLAG
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -46,6 +48,7 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
 
     val loading = mutableStateOf(true)
 
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val homeUiState: StateFlow<HomeUiState> =
         combine(fromDate, toDate, currentFilter) { fromDate, toDate, filter -> Triple(fromDate, toDate, filter) }
@@ -53,7 +56,7 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
 
                 wordRepository.getWordsByDateStream(fromDate, toDate).map { list ->
                     val periodLabel = when (currentFilter.value) {
-                        DateFilter.ALL -> "All time"
+                        DateFilter.ALL -> ALL_TIME_FLAG
                         DateFilter.MONTH -> toMonthYear(fromDate)
                         DateFilter.YEAR -> toYear(fromDate)
                     }
@@ -174,6 +177,8 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
 
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
+
+        const val ALL_TIME_FLAG = "all_time_flag"
     }
 
 }
@@ -182,7 +187,7 @@ data class HomeUiState(
     val list: List<Word> = listOf(),
     val total: BigDecimal = BigDecimal.ZERO,
     val currentFilter: DateFilter = DateFilter.ALL,
-    val periodLabel: String = "All time"
+    val periodLabel: String = ALL_TIME_FLAG
 )
 
 enum class DateFilter {

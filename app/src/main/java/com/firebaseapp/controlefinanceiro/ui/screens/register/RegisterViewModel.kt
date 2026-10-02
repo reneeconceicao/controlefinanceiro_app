@@ -1,4 +1,4 @@
-package com.firebaseapp.controlefinanceiro.ui.screens.main
+package com.firebaseapp.controlefinanceiro.ui.screens.register
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -11,6 +11,7 @@ import com.firebaseapp.controlefinanceiro.data.entities.Word
 import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import com.firebaseapp.controlefinanceiro.data.repositories.CategoryRepository
 import com.firebaseapp.controlefinanceiro.data.repositories.WordRepository
+import com.firebaseapp.controlefinanceiro.helpers.toBigDecimal
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
@@ -76,7 +77,7 @@ fun RegisterDetails.toWord(): Word {
         id = id,
         date = date,
         type = if (selectedOption == 0) WordType.Expense else WordType.Income,
-        value = BigDecimal(price),
+        value = toBigDecimal(price),
         categoryId = currentCategoryId,
         categoryName = categoryName,
         notes = notes

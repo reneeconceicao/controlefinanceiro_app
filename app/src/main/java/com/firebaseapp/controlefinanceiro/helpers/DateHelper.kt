@@ -1,6 +1,11 @@
 package com.firebaseapp.controlefinanceiro.helpers
 
+import android.content.Context
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.capitalize
+import com.firebaseapp.controlefinanceiro.R
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -88,6 +93,7 @@ fun toDateWithWeekDay(date: Date): String {
     return "${ formatterWeek.format(date) }, ${formatter.format(date)}"
 }
 
+@Composable
 fun toDay(date: Date): String {
 
     val calendar = Calendar.getInstance()
@@ -98,21 +104,21 @@ fun toDay(date: Date): String {
     if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
         calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
     ) {
-        return "Today"
+        return stringResource(R.string.today)
     }
 
     today.add(Calendar.DAY_OF_YEAR, -1)
     if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
         calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
     ) {
-        return "Yesterday"
+        return stringResource(R.string.yesterday)
     }
 
     today.add(Calendar.DAY_OF_YEAR, 2)
     if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
         calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
     ) {
-        return "Tomorrow"
+        return stringResource(R.string.tomorrow)
     }
 
     val formatter = SimpleDateFormat(
