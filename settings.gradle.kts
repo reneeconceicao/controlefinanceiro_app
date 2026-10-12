@@ -24,3 +24,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "ControleFinanceiro"
 include(":app")
+include(":lucide_icons")
+
+project(":lucide_icons").projectDir =
+    file("../../Libs/LucideComposeIcons/compose_lucide_icons")

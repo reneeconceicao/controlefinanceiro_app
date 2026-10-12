@@ -7,15 +7,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.firebaseapp.controlefinanceiro.data.entities.Category
 import com.firebaseapp.controlefinanceiro.data.entities.CategoryType
+import com.firebaseapp.controlefinanceiro.data.repositories.BudgetRepository
 import com.firebaseapp.controlefinanceiro.data.repositories.CategoryRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class ExpenseCategoriesViewModel(
     private val categoryRepository: CategoryRepository,
+    private val budgetRepository: BudgetRepository,
 ) : ViewModel() {
 
     var loading by mutableStateOf(true)
@@ -32,6 +35,12 @@ class ExpenseCategoriesViewModel(
             initialValue = CategoriesUiState()
         )
 
+    fun updateCategory(category: Category) {
+        viewModelScope.launch {
+            categoryRepository.updateCategory(category)
+            budgetRepository.updateBudgetsIcons(category.id)
+        }
+    }
 
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L

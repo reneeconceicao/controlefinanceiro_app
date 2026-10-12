@@ -12,6 +12,8 @@ import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import com.firebaseapp.controlefinanceiro.data.repositories.CategoryRepository
 import com.firebaseapp.controlefinanceiro.data.repositories.WordRepository
 import com.firebaseapp.controlefinanceiro.helpers.toBigDecimal
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
@@ -24,24 +26,23 @@ class RegisterViewModel(
 ) : ViewModel() {
 
 
-    init {
-
-        viewModelScope.launch {
-            val categories =
-                categoryRepository.getAllCategoryStream("%%")
-                    .stateIn(viewModelScope).value
-
-            categoriesExpense = categories.filter { it.categoryType == CategoryType.Expense }
-            categoriesIncome = categories.filter { it.categoryType == CategoryType.Income }
-        }
-    }
-
     var uiState by mutableStateOf(RegisterUiState())
 
-    var categoriesExpense by mutableStateOf(listOf<Category>())
+//    var categoriesExpense by mutableStateOf(listOf<Category>())
 
-    var categoriesIncome by mutableStateOf(listOf<Category>())
+    val categoriesExpense: StateFlow<List<Category>> = categoryRepository.getCategoriesByTypeStream(
+        CategoryType.Expense
+    ).stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000L),
+        emptyList())
 
+    var categoriesIncome:  StateFlow<List<Category>> = categoryRepository.getCategoriesByTypeStream(
+        CategoryType.Income
+    ).stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000L),
+        emptyList())
     fun updateUiState(details: RegisterDetails) {
         this.uiState = RegisterUiState(
             details = details,
@@ -70,6 +71,7 @@ data class RegisterDetails(
     var notes: String = "",
     var currentCategoryId: Int = 0,
     var categoryName: String = "",
+    var categoryIcon: String = ""
 )
 
 fun RegisterDetails.toWord(): Word {
@@ -80,18 +82,20 @@ fun RegisterDetails.toWord(): Word {
         value = toBigDecimal(price),
         categoryId = currentCategoryId,
         categoryName = categoryName,
+        categoryIcon = categoryIcon,
         notes = notes
     )
 }
 
 fun Word.toDetails(): RegisterDetails {
-    return RegisterDetails (
+    return RegisterDetails(
         id = id,
         selectedOption = if (type == WordType.Expense) 0 else 1,
         price = value.toString(),
         date = date,
-        notes = notes ,
+        notes = notes,
         currentCategoryId = categoryId,
+        categoryIcon = categoryIcon,
         categoryName = categoryName,
     )
 }

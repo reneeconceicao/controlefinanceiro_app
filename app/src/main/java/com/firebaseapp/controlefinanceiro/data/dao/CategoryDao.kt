@@ -16,10 +16,10 @@ interface CategoryDao {
     suspend fun insert(category: Category): Long
 
     @Update
-    suspend fun update(person: Category)
+    suspend fun update(category: Category)
 
     @Delete
-    suspend fun delete(person: Category)
+    suspend fun delete(category: Category)
 
     @Query("SELECT * from categories WHERE id = :id")
     fun getCategory(id: Int): Flow<Category?>
@@ -28,5 +28,7 @@ interface CategoryDao {
     fun getCategoriesByType(type: CategoryType) : Flow<List<Category>>
     @Query("SELECT * from categories WHERE categoryName LIKE :query ORDER BY position ASC")
     fun getAllCategories(query: String) : Flow<List<Category>>
+
+
 
 }

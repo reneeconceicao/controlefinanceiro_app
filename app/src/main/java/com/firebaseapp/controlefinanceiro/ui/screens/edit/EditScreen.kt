@@ -2,11 +2,8 @@ package com.firebaseapp.controlefinanceiro.ui.screens.edit
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,25 +12,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
-import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
 import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
 import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterScreenBody
 
@@ -49,7 +39,13 @@ fun EditScreen(
 
     val registerUiState = viewModel.uiState
 
-    AnimatedVisibility(!viewModel.loading, enter = slideInHorizontally { it }) {
+    val categoriesExpense by viewModel.categoriesExpense.collectAsState()
+
+    val categoriesIncome by viewModel.categoriesIncome.collectAsState()
+
+    val isCategoriesLoaded by viewModel.isCategoriesLoaded.collectAsState()
+
+    AnimatedVisibility(isCategoriesLoaded, enter = slideInHorizontally { it }) {
 
         Scaffold(
             modifier = modifier
@@ -67,32 +63,6 @@ fun EditScreen(
                             )
                         }
                     },
-                    actions = {
-                        Button(
-                            onClick = {
-                                viewModel.updateWord()
-                                navigateBack()
-                            },
-                            Modifier.padding(end = paddingDefault()),
-                            border = BorderStroke(1.dp, Color.Gray),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Transparent,
-                                contentColor = MaterialTheme.colorScheme.onBackground
-                            )
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(paddingSmall()),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(imageVector = Icons.Default.Check, "")
-                                Text("SAVE")
-
-                            }
-
-                        }
-
-                    }
-
                 )
             }
         ) { innerPadding ->
@@ -104,11 +74,16 @@ fun EditScreen(
             ) {
 
 
+
                 RegisterScreenBody(
                     registerUiState = registerUiState,
                     onUpdate = viewModel::updateUiState,
-                    categoriesExpense = viewModel.categoriesExpense,
-                    categoriesIncome = viewModel.categoriesIncome,
+                    onSave = {
+                        viewModel.updateWord()
+                        navigateBack()
+                    },
+                    categoriesExpense = categoriesExpense,
+                    categoriesIncome = categoriesIncome,
                     navigateCategories = navigateCategories,
                 )
 

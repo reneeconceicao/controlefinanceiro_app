@@ -6,7 +6,6 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,16 +19,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowOutward
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DividerDefaults
@@ -49,15 +45,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.firebaseapp.compose_lucide_icons.helpers.IconsHelper
 import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
@@ -212,17 +209,33 @@ fun HomeList(
                                 Box(
                                     Modifier
                                         .size(paddingExtraLarge())
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.outlineVariant)
+                                        //.clip(CircleShape)
+                                        //.background(MaterialTheme.colorScheme.outlineVariant)
 
                                 ) {
-                                    Icon(
-                                        imageVector = if (word.type == WordType.Income) Icons.Default.ArrowOutward else Icons.Default.Payments,
-                                        "",
-                                        Modifier
-                                            .align(Alignment.Center)
-                                            .size(paddingDefault())
-                                    )
+
+                                    val icon = word.categoryIcon
+
+                                    if (icon.isNotEmpty()) {
+
+                                        Icon(
+                                            painter = IconsHelper.iconByName(icon),
+                                            "",
+                                            Modifier
+                                                .align(Alignment.Center)
+                                                .size(24.dp)
+                                        )
+                                    } else {
+                                        Icon(
+                                            painter = if (word.type == WordType.Income) painterResource(
+                                                R.drawable.__banknote_arrow_up
+                                            ) else painterResource(R.drawable.__banknote_arrow_down),
+                                            "",
+                                            Modifier
+                                                .align(Alignment.Center)
+                                                .size(24.dp)
+                                        )
+                                    }
                                 }
 
 
@@ -240,12 +253,15 @@ fun HomeList(
                                         MaterialTheme.colorScheme.onBackground
                                 )
                             }
-                            HorizontalDivider(
-                                Modifier,
-                                DividerDefaults.Thickness,
-                                DividerDefaults.color
-                            )
+
                         }
+                    }
+                    item {
+                        HorizontalDivider(
+                            Modifier,
+                            DividerDefaults.Thickness,
+                            DividerDefaults.color
+                        )
                     }
                 }
             }
@@ -398,9 +414,8 @@ fun BalancePanel(homeUiState: HomeUiState) {
             else colorResource(R.color.dark_red)
 
 
-            val signal = if (homeUiState.total < BigDecimal.ZERO) "-" else ""
             Text(
-                "$signal${currencyFormat(homeUiState.total.toString())}",
+                currencyFormat(homeUiState.total.toString()),
 
                 Modifier
                     .padding(bottom = paddingDefault())

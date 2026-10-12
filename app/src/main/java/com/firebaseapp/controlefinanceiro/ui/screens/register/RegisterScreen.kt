@@ -1,6 +1,9 @@
 package com.firebaseapp.controlefinanceiro.ui.screens.register
 
+import android.media.MediaPlayer
+import android.view.SoundEffectConstants
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -18,14 +21,17 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -35,14 +41,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,24 +58,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.firebaseapp.compose_lucide_icons.helpers.IconsHelper
 import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.data.entities.Category
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
+import com.firebaseapp.controlefinanceiro.defaults.paddingLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
+import com.firebaseapp.controlefinanceiro.defaults.paddingTiny
 import com.firebaseapp.controlefinanceiro.helpers.dateToString
 import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
+import com.firebaseapp.controlefinanceiro.ui.calculator.FieldsCalculator
 import com.firebaseapp.controlefinanceiro.ui.components.CategoriesPickerModal
-import com.firebaseapp.controlefinanceiro.ui.components.CurrencyOutlinedTextField
 import com.firebaseapp.controlefinanceiro.ui.components.DatePickerModal
 import java.util.Date
 
@@ -84,6 +95,10 @@ fun RegisterScreen(
 ) {
 
     val registerUiState = viewModel.uiState
+
+    val categoriesExpense by viewModel.categoriesExpense.collectAsState()
+
+    val categoriesIncome by viewModel.categoriesIncome.collectAsState()
 
 
 
@@ -103,33 +118,8 @@ fun RegisterScreen(
                         )
                     }
                 },
-                actions = {
-                    Button(
-                        onClick = {
-                            viewModel.insertWord(registerUiState.details)
-                            navigateBack()
-                        },
-                        Modifier.padding(end = paddingDefault()),
-                        border = BorderStroke(1.dp, Color.Gray),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = MaterialTheme.colorScheme.onBackground
-                        )
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(paddingSmall()),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(imageVector = Icons.Default.Check, "")
-                            Text(stringResource(R.string.save))
 
-                        }
-
-                    }
-
-                }
-
-            )
+                )
         }
     ) { innerPadding ->
         Column(
@@ -143,9 +133,14 @@ fun RegisterScreen(
             RegisterScreenBody(
                 registerUiState = registerUiState,
                 onUpdate = viewModel::updateUiState,
-                categoriesExpense = viewModel.categoriesExpense,
-                categoriesIncome = viewModel.categoriesIncome,
+                onSave = {
+                    viewModel.insertWord(it)
+                    navigateBack()
+                },
+                categoriesExpense = categoriesExpense,
+                categoriesIncome = categoriesIncome,
                 navigateCategories = navigateCategories
+
             )
 
         }
@@ -157,13 +152,16 @@ fun RegisterScreen(
 fun RegisterScreenBody(
     registerUiState: RegisterUiState,
     onUpdate: (RegisterDetails) -> Unit,
+    onSave: (RegisterDetails) -> Unit,
     categoriesExpense: List<Category> = listOf(),
     categoriesIncome: List<Category> = listOf(),
-    navigateCategories: (Int) -> Unit
-) {
+    navigateCategories: (Int) -> Unit,
+
+    ) {
 
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var showCategoriesList by rememberSaveable { mutableStateOf(false) }
+    val haptic = LocalHapticFeedback.current
 
     LaunchedEffect(registerUiState.details.selectedOption) {
 
@@ -172,7 +170,8 @@ fun RegisterScreenBody(
                 onUpdate(
                     registerUiState.details.copy(
                         currentCategoryId = 0,
-                        categoryName = ""
+                        categoryName = "",
+                        categoryIcon = ""
                     )
                 )
             }
@@ -183,7 +182,8 @@ fun RegisterScreenBody(
                 onUpdate(
                     registerUiState.details.copy(
                         currentCategoryId = 0,
-                        categoryName = ""
+                        categoryName = "",
+                        categoryIcon = ""
                     )
                 )
             }
@@ -211,93 +211,221 @@ fun RegisterScreenBody(
             onItemSelected = {
                 onUpdate(
                     registerUiState.details.copy(
+                        currentCategoryId = it.id,
                         categoryName = it.categoryName,
-                        currentCategoryId = it.id
+                        categoryIcon = it.categoryIcon
                     )
                 )
+
             },
             currentOption = registerUiState.details.selectedOption,
             //navigateCategories = navigateCategories,
             onDismissRequest = { showCategoriesList = false })
     }
 
-    Column(
+    Box(
         Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
+            .fillMaxSize()
             .padding(
                 paddingSmall()
             )
     ) {
 
 
-        ButtonsOptions(registerUiState.details.selectedOption, onOptionSelected = {
-            onUpdate(registerUiState.details.copy(selectedOption = it))
-        })
-
-
-        Column(
+        Box(
             Modifier
-                .fillMaxWidth()
-                .padding(paddingSmall())
+                .fillMaxSize()
+            //.background(Color.Red)
+            //.padding(paddingSmall())
         ) {
-            CurrencyOutlinedTextField(
-                value = registerUiState.details.price,
-                onValueChange = {
-                    onUpdate(registerUiState.details.copy(price = it))
-                },
-                modifier = Modifier
+
+            Column(
+                Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = paddingSmall()),
-                shape = RoundedCornerShape(paddingSmall()),
-                textStyle = TextStyle(fontSize = 24.sp),
-                colors = OutlinedTextFieldDefaults.colors(
+                    .align(Alignment.TopCenter)
+                    .padding(bottom = 120.dp)
 
-                    cursorColor = if (registerUiState.details.selectedOption == 0) colorResource(
-                        R.color.dark_red
-                    )
-                    else colorResource(R.color.dark_green),
-                    focusedBorderColor = if (registerUiState.details.selectedOption == 0) colorResource(
-                        R.color.dark_red
-                    )
-                    else colorResource(R.color.dark_green),
-                ),
-            )
+                //.verticalScroll(rememberScrollState())
+            ) {
 
 
-            DatePickerField(
-                registerUiState.details.date,
-                onClick = { showDatePicker = true })
+                ButtonsOptions(registerUiState.details.selectedOption, onOptionSelected = {
+                    onUpdate(registerUiState.details.copy(selectedOption = it))
+                })
+
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 96.dp)
+                ) {
+                    items(if (registerUiState.details.selectedOption == 0) categoriesExpense else categoriesIncome) { category ->
+
+                        Column(
+                            modifier = Modifier
+                                .padding(paddingDefault())
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+
+                                    onUpdate(
+                                        registerUiState.details.copy(
+                                            currentCategoryId = category.id,
+                                            categoryName = category.categoryName,
+                                            categoryIcon = category.categoryIcon
+                                        )
+                                    )
+
+                                },
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            if (registerUiState.details.currentCategoryId == category.id) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(
+                                    paddingTiny()
+                                )) {
+                                    Box(
+                                        Modifier
+
+                                            .background(
+                                                color = colorResource(R.color.yellow),
+                                                shape = CircleShape
+                                            )
+                                    ) {
+                                        Column(
+                                            Modifier
+                                                .padding(paddingDefault())
+                                                .size(24.dp)
+                                        ) {
+                                            Icon(
+                                                painter = IconsHelper.iconByName(category.categoryIcon),
+                                                contentDescription = "",
+
+                                                //colorFilter = ColorFilter.tint(Color.Blue)
+                                            )
 
 
-            CategoryPickerField(
-                categoryId = registerUiState.details.currentCategoryId,
-                categoryName = registerUiState.details.categoryName,
-                onClick = { showCategoriesList = true },
-                onRemoveCategory = {
-                    onUpdate(registerUiState.details.copy(currentCategoryId = 0, categoryName = ""))
+                                        }
+                                    }
+                                    Text(category.categoryName)
+                                }
+                            } else {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(
+                                    paddingTiny()
+                                )) {
+                                    Box(
+                                        Modifier
+
+                                            .background(
+                                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                                shape = CircleShape
+                                            )
+                                    ) {
+                                        Column(
+                                            Modifier
+                                                .padding(paddingDefault())
+                                                .size(24.dp)
+                                        ) {
+                                            Icon(
+                                                painter = IconsHelper.iconByName(category.categoryIcon),
+                                                contentDescription = "",
+
+
+                                                //colorFilter = ColorFilter.tint(Color.Blue)
+                                            )
+
+
+                                        }
+                                    }
+                                    Text(category.categoryName)
+                                }
+                            }
+                        }
+                    }
+
+                    item {
+                        Column(
+                            modifier = Modifier
+                                .padding(paddingDefault())
+                                .clickable {
+                                    navigateCategories(registerUiState.details.selectedOption)
+                                },
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(
+                                paddingTiny()
+                            )) {
+                                Box(
+                                    Modifier
+
+                                        .background(
+                                            color = MaterialTheme.colorScheme.surfaceVariant,
+                                            shape = CircleShape
+                                        )
+                                ) {
+                                    Column(
+                                        Modifier
+                                            .padding(paddingDefault())
+                                            .size(24.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Add,
+                                            contentDescription = "",
+                                            Modifier.size(24.dp),
+                                            //colorFilter = ColorFilter.tint(Color.Blue)
+                                        )
+
+
+                                    }
+                                }
+                                Text(stringResource(R.string.settings))
+                            }
+
+
+
+                        }
+                    }
                 }
-            )
+
+            }
 
 
 
-            OutlinedTextField(
-                value = registerUiState.details.notes,
-                onValueChange = {
-                    onUpdate(registerUiState.details.copy(notes = it))
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = paddingSmall())
-                    .padding(vertical = paddingSmall()),
+            if (registerUiState.details.currentCategoryId != 0) {
+                Surface(
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = paddingLarge())
+                        .fillMaxWidth()
+                        .imePadding(),
 
-                label = { Text(stringResource(R.string.notes)) },
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
-            )
+                    shape = RoundedCornerShape(
+                        topStart = 20.dp,
+                        topEnd = 20.dp,
+                        bottomEnd = 20.dp,
+                        bottomStart = 20.dp
+                    ),
+                    shadowElevation = 8.dp,
+                    color = MaterialTheme.colorScheme.surface
+                ) {
+                    Column(Modifier.padding(vertical = paddingDefault())) {
+
+                        FieldsCalculator(
+                            initialValue = registerUiState.details.price,
+                            initialDate = registerUiState.details.date,
+                            notes = registerUiState.details.notes,
+                            onEntryValue = {
+                                onSave(registerUiState.details.copy(price = it))
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            },
+                            onUpdateNotes = { onUpdate(registerUiState.details.copy(notes = it)) },
+                            onUpdatePrice = { onUpdate(registerUiState.details.copy(price = it)) },
+                            showDateDialog = { showDatePicker = true })
 
 
+                    }
+                }
+            }
         }
-
     }
 }
 
@@ -407,16 +535,17 @@ fun DatePickerField(date: Date, onClick: () -> Unit) {
 fun CategoryPickerField(
     categoryId: Int = 0,
     categoryName: String = "",
+    categoryIcon: String = "",
     onClick: () -> Unit,
     onRemoveCategory: () -> Unit
 ) {
 
-    Row(
-        modifier = Modifier
+    Box(
+        Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(paddingDefault()))
             .padding(paddingSmall())
-            .padding(top = paddingSmall())
+            .padding(top = paddingDefault())
             .border(
                 0.5.dp,
                 Color.Gray,
@@ -427,26 +556,25 @@ fun CategoryPickerField(
                 interactionSource = remember { MutableInteractionSource() })
             {
                 onClick()
-            },
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically
+            }
 
     ) {
-
-
-        Text(
-            stringResource(R.string.category_two_dots),
+        Spacer(
             Modifier
-                .padding(paddingSmall())
-                .padding(vertical = paddingSmall()),
+                .padding(vertical = paddingExtraLarge() + paddingDefault())
         )
+
         Text(
-            categoryName.ifEmpty { stringResource(R.string.no_category) },
-            fontWeight = FontWeight.SemiBold)
-        Spacer(Modifier.weight(1f))
+            stringResource(R.string.select_a_category),
+            Modifier
+                .align(Alignment.TopStart)
+                .padding(paddingSmall()),
+        )
+
         if (categoryId != 0) {
             Button(
                 onClick = onRemoveCategory,
+                Modifier.align(Alignment.TopEnd),
                 colors = ButtonDefaults.buttonColors(
                     contentColor = Color.Red,
                     containerColor = Color.Transparent
@@ -456,5 +584,37 @@ fun CategoryPickerField(
                 Icon(imageVector = Icons.Outlined.RemoveCircleOutline, "")
             }
         }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Center)
+                .offset(y = paddingDefault())
+                .padding(paddingDefault()),
+
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+
+        ) {
+
+
+            Text(
+                categoryName.ifEmpty { stringResource(R.string.no_category) },
+                fontWeight = FontWeight.SemiBold
+            )
+//            if (categoryIcon.isNotEmpty()) {
+//                Spacer(Modifier.padding(horizontal = paddingSmall()))
+//                AsyncImage(
+//                    model = "file:///android_asset/${categoryIcon}.svg",
+//                    contentDescription = "",
+//                    Modifier.size(20.dp),
+//                    //colorFilter = ColorFilter.tint(Color.Blue)
+//                )
+//
+//            }
+
+
+        }
+
     }
 }

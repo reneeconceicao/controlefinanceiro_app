@@ -31,4 +31,6 @@ class BudgetRepository(private val budgetDao: BudgetDao) {
      suspend fun deleteBudget(budget: Budget) = budgetDao.delete(budget)
 
      suspend fun updateBudget(budget: Budget) = budgetDao.update(budget)
+
+     suspend fun updateBudgetsIcons(categoryId : Int) = budgetDao.updateBudgetsIcons(categoryId)
 }

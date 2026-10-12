@@ -12,6 +12,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import androidx.compose.ui.platform.LocalLocale
 
 fun firstDayOfCurrentMonth(): Date {
     val calendar = Calendar.getInstance()
@@ -123,11 +124,11 @@ fun toDay(date: Date): String {
 
     val formatter = SimpleDateFormat(
         "d MMM",
-        Locale.getDefault()
+        LocalLocale.current.platformLocale
     )
 
     val result = formatter.format(date).replaceFirstChar {
-        it.titlecase(Locale.getDefault())
+        it.titlecase(LocalLocale.current.platformLocale)
     }
 
     return result
@@ -161,15 +162,39 @@ fun utcMillisToDate(millis: Long): Date {
 
     return localCal.time
 }
-
+@Composable
 fun dateToString(date: Date): String {
+
+    val calendar = Calendar.getInstance()
+    calendar.time = date
+
+    val today = Calendar.getInstance()
+
+    if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+        calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+    ) {
+        return stringResource(R.string.today)
+    }
+
+    today.add(Calendar.DAY_OF_YEAR, -1)
+    if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+        calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+    ) {
+        return stringResource(R.string.yesterday)
+    }
+
+    today.add(Calendar.DAY_OF_YEAR, 2)
+    if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+        calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+    ) {
+        return stringResource(R.string.tomorrow)
+    }
+
     val formatter = DateFormat.getDateInstance(DateFormat.SHORT)
 
-//    val weekdayFormatter = SimpleDateFormat(
-//        "EEEE",
-//        Locale.getDefault()
-//    )
+
     val dateText = formatter.format(date)
-//    val weekday = weekdayFormatter.format(date)
+
     return "$dateText"
 }
+

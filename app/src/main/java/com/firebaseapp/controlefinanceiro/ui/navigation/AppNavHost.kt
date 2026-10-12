@@ -45,7 +45,12 @@ fun AppNavHost(navController: NavHostController, startDestination: AppDestinatio
             RegisterScreen(
                 navigateBack = { navController.popBackStack() },
                 navigateCategories = {
-                    //navController.navigate("${AppDestination.CATEGORIES.route}/${it}")
+                    val route = if (it == 0) {
+                        AppDestination.EXPENSE_CATEGORIES.route
+                    } else {
+                        AppDestination.INCOME_CATEGORIES.route
+                    }
+                    navController.navigate(route)
                 }
             )
         }
@@ -58,7 +63,14 @@ fun AppNavHost(navController: NavHostController, startDestination: AppDestinatio
         ) {
             EditScreen(
                 navigateBack = { navController.popBackStack() },
-                navigateCategories = { navController.navigate("${AppDestination.EXPENSE_CATEGORIES.route}/${it}") }
+                navigateCategories = {
+                    val route = if (it == 0) {
+                        AppDestination.EXPENSE_CATEGORIES.route
+                    } else {
+                        AppDestination.INCOME_CATEGORIES.route
+                    }
+                    navController.navigate(route)
+                }
             )
         }
 

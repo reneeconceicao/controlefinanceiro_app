@@ -17,6 +17,7 @@ data class Word(
     val value: BigDecimal,
     val categoryId: Int,
     val categoryName: String,
+    val categoryIcon: String,
     val notes: String
 )
 

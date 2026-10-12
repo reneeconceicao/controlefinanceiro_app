@@ -16,5 +16,6 @@ data class Budget(
     val value: BigDecimal,
     val currentValue: BigDecimal = BigDecimal.ZERO,
     val categoryId: Int,
+    val categoryIcon: String,
     val position: Int,
 )

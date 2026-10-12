@@ -51,10 +51,15 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.material.icons.extended)
-
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    implementation("org.mariuszgromada.math:MathParser.org-mXparser:6.1.1")
+    implementation(libs.androidx.compose.runtime)
     ksp(libs.room.compiler)
+
+    dependencies {
+        implementation(project(":lucide_icons"))
+    }
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

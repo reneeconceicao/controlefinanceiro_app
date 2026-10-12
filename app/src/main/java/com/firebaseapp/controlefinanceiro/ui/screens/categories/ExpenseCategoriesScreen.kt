@@ -67,6 +67,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.firebaseapp.controlefinanceiro.R
+import com.firebaseapp.controlefinanceiro.data.entities.Category
 import com.firebaseapp.controlefinanceiro.data.entities.CategoryType
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
@@ -137,7 +138,10 @@ fun ExpenseCategoriesScreen(
                     .imePadding()
             ) {
 
-                CategoriesList(categoriesUiState = homeUiState.value, onEditNavigate = {} )
+                CategoriesList(categoriesUiState = homeUiState.value, onEditNavigate = {
+                    val category = it.copy(categoryName = "Ola", categoryIcon = "animals_panda")
+                    viewModel.updateCategory(category)
+                } )
             }
         }
     }
@@ -147,7 +151,7 @@ fun ExpenseCategoriesScreen(
 @Composable
 fun CategoriesList(
     categoriesUiState: CategoriesUiState,
-    onEditNavigate: (Int) -> Unit,
+    onEditNavigate: (Category) -> Unit,
 ) {
 
     val list = categoriesUiState.list
@@ -184,7 +188,8 @@ fun CategoriesList(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    onEditNavigate(category.id)
+
+                                    onEditNavigate(category)
                                 }
 
                         ) {

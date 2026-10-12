@@ -20,8 +20,9 @@ enum class MainDestination(
 
 
     HOME("home", R.string.home, Icons.Default.Home, R.string.home),
-    BUDGET("budgets", R.string.budgets, Icons.Default.TrackChanges, R.string.budgets),
     REPORT("report", R.string.reporting, Icons.Outlined.Info, R.string.reporting),
+
+    BUDGET("budgets", R.string.budgets, Icons.Default.TrackChanges, R.string.budgets),
 
     SETTINGS("settings", R.string.settings, Icons.Default.Settings, R.string.settings)
 }

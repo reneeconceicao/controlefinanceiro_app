@@ -27,5 +27,6 @@ interface BudgetDao {
     @Query("SELECT * from budgets ORDER BY position ASC")
     fun getAllBudgets() : Flow<List<Budget>>
 
-
+    @Query("UPDATE budgets SET categoryIcon = (SELECT categoryIcon FROM categories WHERE id = :categoryId)")
+    suspend fun updateBudgetsIcons(categoryId: Int)
 }

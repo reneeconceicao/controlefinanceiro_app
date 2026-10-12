@@ -14,6 +14,9 @@ import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterDetails
 import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterUiState
 import com.firebaseapp.controlefinanceiro.ui.screens.register.toDetails
 import com.firebaseapp.controlefinanceiro.ui.screens.register.toWord
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -35,25 +38,36 @@ class EditViewModel(
                 uiState = RegisterUiState(details = it.toDetails())
             }
 
-
-            val categories =
-                categoryRepository.getAllCategoryStream("%%")
-                    .stateIn(viewModelScope).value
-
-            categoriesExpense = categories.filter { it.categoryType == CategoryType.Expense }
-            categoriesIncome = categories.filter { it.categoryType == CategoryType.Income }
-
-            loading = false
+            //loading = false
         }
     }
 
     var uiState by mutableStateOf(RegisterUiState())
 
-    var categoriesExpense by mutableStateOf(listOf<Category>())
+    val categoriesExpense: StateFlow<List<Category>> = categoryRepository.getCategoriesByTypeStream(
+        CategoryType.Expense
+    ).stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000L),
+        emptyList()
+    )
 
-    var categoriesIncome by mutableStateOf(listOf<Category>())
+    var categoriesIncome: StateFlow<List<Category>> = categoryRepository.getCategoriesByTypeStream(
+        CategoryType.Income
+    ).stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000L),
+        emptyList()
+    )
 
-    var loading by mutableStateOf(true)
+    var isCategoriesLoaded: StateFlow<Boolean> =
+        combine(categoriesIncome, categoriesExpense) { categoriesExpense, categoryIncome ->
+            categoriesExpense.isNotEmpty() && categoryIncome.isNotEmpty()
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000L),
+            false
+        )
 
     fun updateUiState(details: RegisterDetails) {
         this.uiState = RegisterUiState(

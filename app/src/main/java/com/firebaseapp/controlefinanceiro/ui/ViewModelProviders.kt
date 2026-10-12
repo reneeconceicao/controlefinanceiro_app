@@ -30,7 +30,7 @@ object ViewModelProviders {
         }
 
         initializer {
-            ExpenseCategoriesViewModel(getApplication().categoryRepository)
+            ExpenseCategoriesViewModel(getApplication().categoryRepository, getApplication().budgetRepository)
         }
 
         initializer {

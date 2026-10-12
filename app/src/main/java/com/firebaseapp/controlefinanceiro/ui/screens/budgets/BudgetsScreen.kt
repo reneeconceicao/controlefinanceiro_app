@@ -9,6 +9,8 @@ import kotlin.collections.component2
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -68,6 +70,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.firebaseapp.compose_lucide_icons.helpers.IconsHelper
 import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
@@ -285,7 +288,7 @@ fun BudgetsList(
 
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.TrackChanges,
+                                    painter = IconsHelper.iconByName(budget.categoryIcon),
                                     "",
                                     Modifier
                                         .align(Alignment.Center)
@@ -295,6 +298,16 @@ fun BudgetsList(
 
                             Column(Modifier.padding(start = paddingDefault())) {
                                 Row {
+                                    Text(stringResource(R.string.category_two_dots))
+                                    Text(
+                                        budget.budgetName,
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Bold,
+                                    )
+                                }
+
+                                Row {
+
                                     Text("Goal: ")
                                     Text(
                                         currencyFormat(budget.value.toString()),
@@ -319,6 +332,8 @@ fun BudgetsList(
                             }
 
                         }
+
+
 
                         LinearProgressBar(
                             currentProgress = budget.currentValue.toFloat()/budget.value.toFloat(),

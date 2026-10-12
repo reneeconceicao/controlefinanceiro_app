@@ -10,5 +10,8 @@
     <color name="dark_green">#18a34b</color>
     <color name="dark_red">#bf2a28</color>
     <color name="light_red">#fb695b</color>
+
+    <color name="yellow">#FFA726</color>
+
 <!--    <color name="dark_red">#AD1414</color>-->
 </resources>
