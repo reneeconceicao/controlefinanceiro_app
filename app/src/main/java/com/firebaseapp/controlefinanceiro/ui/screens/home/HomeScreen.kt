@@ -1,5 +1,6 @@
 package com.firebaseapp.controlefinanceiro.ui.screens.home
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -46,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -66,14 +68,15 @@ import com.firebaseapp.controlefinanceiro.helpers.formatedPriceIndicator
 import com.firebaseapp.controlefinanceiro.helpers.toDay
 import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
 import com.firebaseapp.controlefinanceiro.ui.components.CardBordered
+import com.firebaseapp.controlefinanceiro.ui.components.hapticClick
 import java.math.BigDecimal
-import java.util.Calendar
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
     navigateToRegister: () -> Unit,
     navigateToEdit: (id: Int) -> Unit,
+    navigateToEditRecurring: (Int, Long?) -> Unit,
     viewModel: HomeViewModel = viewModel(factory = ViewModelProviders.Factory),
 ) {
 
@@ -83,9 +86,9 @@ fun HomeScreen(
         modifier = modifier
             .fillMaxSize(),
         floatingActionButton = {
-
+            val context = LocalContext.current
             FloatingActionButton(
-                onClick = {
+                onClick = hapticClick {
                     navigateToRegister()
                 },
             ) {
@@ -134,7 +137,11 @@ fun HomeScreen(
                     }
                 )
 
-                HomeList(homeUiState = homeUiState.value, onEditNavigate = navigateToEdit)
+                HomeList(
+                    homeUiState = homeUiState.value,
+                    onEditNavigate = navigateToEdit,
+                    onEditNavigateRecurring = navigateToEditRecurring
+                )
             }
         }
     }
@@ -145,16 +152,11 @@ fun HomeScreen(
 fun HomeList(
     homeUiState: HomeUiState,
     onEditNavigate: (Int) -> Unit,
+    onEditNavigateRecurring: (Int, Long?) -> Unit,
 ) {
 
     val grouped = homeUiState.list.groupBy {
-        Calendar.getInstance().apply {
-            time = it.date
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.time
+        it.first.date.toLocalDate().atStartOfDay()
     }
 
     AnimatedContent(
@@ -191,12 +193,17 @@ fun HomeList(
                                 .padding(top = paddingSmall())
                         )
                     }
-                    items(items = words) { word ->
+                    items(items = words) { (word, index) ->
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    onEditNavigate(word.id)
+                                    if (word.isRecurring) {
+                                        onEditNavigateRecurring(word.id, index)
+                                    } else {
+                                        Log.d("TAG", "HomeList: ")
+                                        onEditNavigate(word.id)
+                                    }
                                 }
                         ) {
 
@@ -209,8 +216,8 @@ fun HomeList(
                                 Box(
                                     Modifier
                                         .size(paddingExtraLarge())
-                                        //.clip(CircleShape)
-                                        //.background(MaterialTheme.colorScheme.outlineVariant)
+                                    //.clip(CircleShape)
+                                    //.background(MaterialTheme.colorScheme.outlineVariant)
 
                                 ) {
 
@@ -321,7 +328,11 @@ fun FilterChips(
                 onChangeToAllFilter()
             },
             label = {
-                Text(stringResource(R.string.all), Modifier.padding(paddingSmall()), fontSize = 16.sp)
+                Text(
+                    stringResource(R.string.all),
+                    Modifier.padding(paddingSmall()),
+                    fontSize = 16.sp
+                )
             },
             selected = selected == 0,
             leadingIcon = if (selected == 0) {
@@ -344,7 +355,11 @@ fun FilterChips(
                 onChangeToMonthFilter()
             },
             label = {
-                Text(stringResource(R.string.month), Modifier.padding(paddingSmall()), fontSize = 16.sp)
+                Text(
+                    stringResource(R.string.month),
+                    Modifier.padding(paddingSmall()),
+                    fontSize = 16.sp
+                )
             },
             selected = selected == 1,
             leadingIcon = if (selected == 1) {
@@ -367,7 +382,11 @@ fun FilterChips(
                 onChangeToYearFilter()
             },
             label = {
-                Text(stringResource(R.string.year), Modifier.padding(paddingSmall()), fontSize = 16.sp)
+                Text(
+                    stringResource(R.string.year),
+                    Modifier.padding(paddingSmall()),
+                    fontSize = 16.sp
+                )
             },
             selected = selected == 2,
             leadingIcon = if (selected == 2) {

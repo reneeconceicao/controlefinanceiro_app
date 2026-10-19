@@ -16,6 +16,7 @@ import com.firebaseapp.controlefinanceiro.data.entities.Budget
 import com.firebaseapp.controlefinanceiro.data.entities.Word
 import com.firebaseapp.controlefinanceiro.data.entities.Category
 import com.firebaseapp.controlefinanceiro.data.entities.CategoryType
+import com.firebaseapp.controlefinanceiro.data.entities.WordException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.stateIn
@@ -25,7 +26,7 @@ import java.math.BigDecimal
 /**
  * Database class with a singleton Instance object.
  */
-@Database(entities = [Word::class, Category::class, Budget::class], version = 14, exportSchema = false)
+@Database(entities = [Word::class, WordException::class, Category::class, Budget::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class MoneyManagerDatabase : RoomDatabase() {
 

@@ -18,4 +18,5 @@ class MoneyManagerApplication: Application() {
     val budgetRepository: BudgetRepository by lazy {
         BudgetRepository(MoneyManagerDatabase.getDatabase(this).budgetDao())
     }
+
 }

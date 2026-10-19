@@ -18,14 +18,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.firebaseapp.controlefinanceiro.ui.navigation.MainNavHost
+import com.firebaseapp.controlefinanceiro.ui.components.hapticClick
 import com.firebaseapp.controlefinanceiro.ui.navigation.MainDestination
+import com.firebaseapp.controlefinanceiro.ui.navigation.MainNavHost
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     navigateToRegister: () -> Unit,
     navigateToEdit: (Int) -> Unit,
+    navigateToEditRecurring: (Int, Long?) -> Unit,
     navigateExpenseCategories: () -> Unit,
     navigateIncomeCategories: () -> Unit,
 ) {
@@ -43,7 +46,7 @@ fun MainScreen(
                 MainDestination.entries.forEachIndexed { _, destination ->
                     NavigationBarItem(
                         selected = currentRoute == destination.route,
-                        onClick = {
+                        onClick = hapticClick {
                             navController.navigate(route = destination.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {
                                     inclusive = false
@@ -71,6 +74,7 @@ fun MainScreen(
             navigateToEdit = navigateToEdit,
             navigateExpenseCategories = navigateExpenseCategories,
             navigateIncomeCategories = navigateIncomeCategories,
+            navigateToEditRecurring = navigateToEditRecurring
         )
     }
 }

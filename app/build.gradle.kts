@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "com.firebaseapp.controlefinanceiro"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
@@ -53,8 +53,9 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-    implementation("org.mariuszgromada.math:MathParser.org-mXparser:6.1.1")
+    implementation(libs.mathparser.org.mxparser)
     implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.datastore.preferences)
     ksp(libs.room.compiler)
 
     dependencies {

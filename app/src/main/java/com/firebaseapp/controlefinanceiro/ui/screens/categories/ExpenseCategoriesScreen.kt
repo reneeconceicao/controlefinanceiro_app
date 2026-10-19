@@ -139,8 +139,9 @@ fun ExpenseCategoriesScreen(
             ) {
 
                 CategoriesList(categoriesUiState = homeUiState.value, onEditNavigate = {
-                    val category = it.copy(categoryName = "Ola", categoryIcon = "animals_panda")
-                    viewModel.updateCategory(category)
+                    viewModel.deleteCategory(it)
+//                    val category = it.copy(categoryName = "Ola", categoryIcon = "animals_panda")
+//                    viewModel.updateCategory(category)
                 } )
             }
         }

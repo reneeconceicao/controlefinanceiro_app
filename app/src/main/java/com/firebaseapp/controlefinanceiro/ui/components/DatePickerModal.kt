@@ -9,14 +9,17 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import com.firebaseapp.controlefinanceiro.helpers.dateToUtcMillis
 import com.firebaseapp.controlefinanceiro.helpers.utcMillisToDate
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.Date
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerModal(
-    date: Date,
-    onDateSelected: (Date?) -> Unit,
+    date: LocalDateTime,
+    onDateSelected: (LocalDateTime?) -> Unit,
     onDismiss: () -> Unit
 ) {
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = dateToUtcMillis(date))
@@ -25,7 +28,11 @@ fun DatePickerModal(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = {
-                datePickerState.selectedDateMillis?.let { onDateSelected(utcMillisToDate(it) ) }
+                datePickerState.selectedDateMillis?.let {
+                    onDateSelected(
+                        utcMillisToDate(it)
+                    )
+                }
                 onDismiss()
             }) {
                 Text("OK")

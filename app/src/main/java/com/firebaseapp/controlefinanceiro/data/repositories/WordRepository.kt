@@ -18,19 +18,39 @@ package com.firebaseapp.controlefinanceiro.data.repositories
 
 import com.firebaseapp.controlefinanceiro.data.dao.WordDao
 import com.firebaseapp.controlefinanceiro.data.entities.Word
+import com.firebaseapp.controlefinanceiro.data.entities.WordException
 import kotlinx.coroutines.flow.Flow
-import java.util.Date
+import java.time.LocalDateTime
 
 class WordRepository(private val itemDao: WordDao) {
      fun getAllWordsStream(): Flow<List<Word>> = itemDao.getAllWords()
 
-     fun getWordsByDateStream(from: Date, to: Date): Flow<List<Word>> = itemDao.getWordsByDate(from, to)
+     fun getAllWordsExceptionsStream(): Flow<List<WordException>> = itemDao.getAllWordsExceptions()
+
+     suspend fun getAllWordsAsync(): List<Word> = itemDao.getAllWordsAsync()
+
+     suspend fun getAllWordsExceptionsAsync(): List<WordException> = itemDao.getAllWordsExceptionsAsync()
+
+     suspend fun getWordExceptionsByWordAsync(id: Int): List<WordException> = itemDao.getWordExceptionsByWordAsync(id)
+
+     fun getWordsByDateStream(from: LocalDateTime, to: LocalDateTime): Flow<List<Word>> = itemDao.getWordsByDate(from, to)
 
      fun getWordStream(id: Int): Flow<Word?> = itemDao.getWord(id)
 
+     suspend fun getWordAsync(id: Int): Word? = itemDao.getWordAsync(id)
+
+     fun getWordExceptionStream(id: Int, occurrenceIndex: Long): Flow<WordException?> = itemDao.getException(id, occurrenceIndex)
+
      suspend fun insertWord(word: Word) = itemDao.insert(word)
+
+     suspend fun insertWordException(word: WordException) = itemDao.insertException(word)
 
      suspend fun deleteWord(word: Word) = itemDao.delete(word)
 
      suspend fun updateWord(word: Word) = itemDao.update(word)
+
+     suspend fun updateException(exception: WordException) = itemDao.updateException(exception)
+     fun wordsByCategory(id: Int) = itemDao.wordsByCategory(id)
+
+     fun exceptionsByCategory(id: Int) = itemDao.exceptionsByCategory(id)
 }

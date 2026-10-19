@@ -9,16 +9,20 @@ import com.firebaseapp.controlefinanceiro.data.entities.Category
 import com.firebaseapp.controlefinanceiro.data.entities.CategoryType
 import com.firebaseapp.controlefinanceiro.data.repositories.BudgetRepository
 import com.firebaseapp.controlefinanceiro.data.repositories.CategoryRepository
+import com.firebaseapp.controlefinanceiro.data.repositories.WordRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ExpenseCategoriesViewModel(
     private val categoryRepository: CategoryRepository,
     private val budgetRepository: BudgetRepository,
+    private val wordRepository: WordRepository,
 ) : ViewModel() {
 
     var loading by mutableStateOf(true)
@@ -39,6 +43,25 @@ class ExpenseCategoriesViewModel(
         viewModelScope.launch {
             categoryRepository.updateCategory(category)
             budgetRepository.updateBudgetsIcons(category.id)
+        }
+    }
+
+    fun deleteCategory(category: Category) {
+        viewModelScope.launch {
+            categoryRepository.deleteCategory(category)
+            //budgetRepository.updateBudgetsIcons(category.id)
+            withContext(Dispatchers.IO) {
+                val words = wordRepository.wordsByCategory(category.id)
+                words.forEach {
+                    val editWord = it.copy(categoryId = 0, categoryName = "")
+                    wordRepository.updateWord(editWord)
+                }
+                val exceptions = wordRepository.exceptionsByCategory(category.id)
+                exceptions.forEach {
+                    val editException = it.copy(categoryId = 0, categoryName = "")
+                    wordRepository.updateException(editException)
+                }
+            }
         }
     }
 

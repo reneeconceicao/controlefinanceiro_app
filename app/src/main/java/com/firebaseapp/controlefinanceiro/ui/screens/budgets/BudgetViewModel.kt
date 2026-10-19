@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import java.util.Calendar
 import java.util.Date
 
@@ -35,7 +36,7 @@ class BudgetViewModel(
     val fromDate = MutableStateFlow(firstDayOfCurrentMonth())
     val toDate = MutableStateFlow(lastDayOfCurrentMonth())
 
-    private val selectedMonth = MutableStateFlow(Date())
+    private val selectedMonth = MutableStateFlow(LocalDateTime.now())
 
     val loading = mutableStateOf(true)
 
@@ -76,23 +77,21 @@ class BudgetViewModel(
 
 
     fun changePeriod(value: Int) {
-        val calendar = Calendar.getInstance()
+        val month = selectedMonth.value
+            .plusMonths(value.toLong())
 
-        calendar.time = selectedMonth.value
-        calendar.add(Calendar.MONTH, value)
-        selectedMonth.value = calendar.time
+        selectedMonth.value = month
 
-        calendar.set(Calendar.DAY_OF_MONTH, 1)
-        setStartOfDay(calendar)
-        fromDate.value = calendar.time
+        fromDate.value = month
+            .withDayOfMonth(1)
+            .toLocalDate()
+            .atStartOfDay()
 
-
-        val lastDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
-        calendar.set(Calendar.DAY_OF_MONTH, lastDay)
-        setEndOfDay(calendar)
-        toDate.value = calendar.time
+        toDate.value = month
+            .toLocalDate()
+            .withDayOfMonth(month.toLocalDate().lengthOfMonth())
+            .atTime(23, 59, 59, 999_000_000)
     }
-
 
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L

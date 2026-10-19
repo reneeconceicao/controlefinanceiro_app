@@ -1,5 +1,6 @@
 package com.firebaseapp.controlefinanceiro.ui.navigation
 
+import android.util.Log
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInHorizontally
@@ -14,6 +15,7 @@ import com.firebaseapp.controlefinanceiro.ui.screens.categories.IncomeCategories
 import com.firebaseapp.controlefinanceiro.ui.screens.edit.EditScreen
 import com.firebaseapp.controlefinanceiro.ui.screens.main.MainScreen
 import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterScreen
+import java.util.Date
 
 
 @Composable
@@ -28,14 +30,18 @@ fun AppNavHost(navController: NavHostController, startDestination: AppDestinatio
             MainScreen(
                 navigateToRegister = { navController.navigate(AppDestination.REGISTER.route) },
                 navigateToEdit = {
+                    Log.d("TAG", "AppNavHost: ")
                     navController.navigate("${AppDestination.EDIT.route}/${it}")
+                },
+                navigateToEditRecurring = { id, index ->
+                    navController.navigate("${AppDestination.EDIT_RECURRING.route}/${id}/$index")
                 },
                 navigateExpenseCategories = {
                     navController.navigate(AppDestination.EXPENSE_CATEGORIES.route)
                 },
                 navigateIncomeCategories = {
                     navController.navigate(AppDestination.INCOME_CATEGORIES.route)
-                }
+                },
             )
         }
 
@@ -59,6 +65,27 @@ fun AppNavHost(navController: NavHostController, startDestination: AppDestinatio
             route = AppDestination.EDIT.routeWithArgs,
             arguments = listOf(navArgument("wordId") {
                 type = NavType.IntType
+            })
+        ) {
+            EditScreen(
+                navigateBack = { navController.popBackStack() },
+                navigateCategories = {
+                    val route = if (it == 0) {
+                        AppDestination.EXPENSE_CATEGORIES.route
+                    } else {
+                        AppDestination.INCOME_CATEGORIES.route
+                    }
+                    navController.navigate(route)
+                }
+            )
+        }
+
+        composable(
+            route = AppDestination.EDIT_RECURRING.routeWithArgs,
+            arguments = listOf(navArgument("wordId") {
+                type = NavType.IntType
+            }, navArgument("occurrenceIndex") {
+                type = NavType.LongType
             })
         ) {
             EditScreen(

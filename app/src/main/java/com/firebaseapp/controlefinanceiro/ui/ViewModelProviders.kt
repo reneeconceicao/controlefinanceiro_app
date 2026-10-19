@@ -6,6 +6,8 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.firebaseapp.controlefinanceiro.MoneyManagerApplication
+import com.firebaseapp.controlefinanceiro.data.datastore.DataStoreViewModel
+import com.firebaseapp.controlefinanceiro.data.datastore.PreferencesDataStore
 import com.firebaseapp.controlefinanceiro.ui.screens.budgets.BudgetViewModel
 import com.firebaseapp.controlefinanceiro.ui.screens.categories.ExpenseCategoriesViewModel
 import com.firebaseapp.controlefinanceiro.ui.screens.categories.IncomeCategoriesViewModel
@@ -26,11 +28,19 @@ object ViewModelProviders {
         }
 
         initializer {
-            EditViewModel(getApplication().wordRepository, getApplication().categoryRepository, createSavedStateHandle())
+            EditViewModel(
+                getApplication().wordRepository,
+                getApplication().categoryRepository,
+                createSavedStateHandle()
+            )
         }
 
         initializer {
-            ExpenseCategoriesViewModel(getApplication().categoryRepository, getApplication().budgetRepository)
+            ExpenseCategoriesViewModel(
+                getApplication().categoryRepository,
+                getApplication().budgetRepository,
+                getApplication().wordRepository
+            )
         }
 
         initializer {
@@ -40,6 +50,12 @@ object ViewModelProviders {
         initializer {
             BudgetViewModel(getApplication().budgetRepository, getApplication().wordRepository)
         }
+
+        initializer {
+            val repository = PreferencesDataStore(getApplication())
+            DataStoreViewModel(repository)
+        }
+
     }
 }
 

@@ -37,15 +37,11 @@ fun EditScreen(
     viewModel: EditViewModel = viewModel(factory = ViewModelProviders.Factory)
 ) {
 
-    val registerUiState = viewModel.uiState
+    val registerUiState by viewModel.uiState.collectAsState()
 
-    val categoriesExpense by viewModel.categoriesExpense.collectAsState()
 
-    val categoriesIncome by viewModel.categoriesIncome.collectAsState()
 
-    val isCategoriesLoaded by viewModel.isCategoriesLoaded.collectAsState()
-
-    AnimatedVisibility(isCategoriesLoaded, enter = slideInHorizontally { it }) {
+    AnimatedVisibility(viewModel.loading.value, enter = slideInHorizontally { it }) {
 
         Scaffold(
             modifier = modifier
@@ -79,11 +75,16 @@ fun EditScreen(
                     registerUiState = registerUiState,
                     onUpdate = viewModel::updateUiState,
                     onSave = {
-                        viewModel.updateWord()
-                        navigateBack()
+                        if (viewModel.isEditingRecurrency) {
+                            viewModel.updateRecurrencyWord(viewModel.recurrenceIndex ?: 0)
+                            navigateBack()
+                        } else {
+                            viewModel.updateOneTimeWord()
+                            navigateBack()
+                        }
                     },
-                    categoriesExpense = categoriesExpense,
-                    categoriesIncome = categoriesIncome,
+                    categoriesExpense = registerUiState.details.categoriesExpense,
+                    categoriesIncome = registerUiState.details.categoriesIncome,
                     navigateCategories = navigateCategories,
                 )
 

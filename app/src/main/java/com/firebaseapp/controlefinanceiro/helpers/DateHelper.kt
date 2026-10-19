@@ -1,200 +1,130 @@
 package com.firebaseapp.controlefinanceiro.helpers
 
-import android.content.Context
+
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.capitalize
-import com.firebaseapp.controlefinanceiro.R
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
 import androidx.compose.ui.platform.LocalLocale
+import androidx.compose.ui.res.stringResource
+import com.firebaseapp.controlefinanceiro.R
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.util.Locale
 
-fun firstDayOfCurrentMonth(): Date {
-    val calendar = Calendar.getInstance()
-    calendar.set(Calendar.DAY_OF_MONTH, 1)
-    calendar.set(Calendar.HOUR_OF_DAY, 0)
-    calendar.set(Calendar.MINUTE, 0)
-    calendar.set(Calendar.SECOND, 0)
-    calendar.set(Calendar.MILLISECOND, 0)
-    return calendar.time
-}
+fun firstDayOfCurrentMonth(): LocalDateTime =
+    LocalDate.now()
+        .withDayOfMonth(1)
+        .atStartOfDay()
 
-fun lastDayOfCurrentMonth(): Date {
-    val calendar = Calendar.getInstance()
-    calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH))
+fun lastDayOfCurrentMonth(): LocalDateTime =
+    YearMonth.now()
+        .atEndOfMonth()
+        .atTime(23, 59, 59, 999_000_000)
 
-    calendar.set(Calendar.HOUR_OF_DAY, 23)
-    calendar.set(Calendar.MINUTE, 59)
-    calendar.set(Calendar.SECOND, 59)
-    calendar.set(Calendar.MILLISECOND, 999)
+fun setStartOfDay(date: LocalDateTime): LocalDateTime =
+    date.toLocalDate().atStartOfDay()
 
-    return calendar.time
-}
+fun setEndOfDay(date: LocalDateTime): LocalDateTime =
+    date.toLocalDate().atTime(23, 59, 59, 999_000_000)
 
-fun setStartOfDay(calendar: Calendar) {
-    calendar.set(Calendar.HOUR_OF_DAY, 0)
-    calendar.set(Calendar.MINUTE, 0)
-    calendar.set(Calendar.SECOND, 0)
-    calendar.set(Calendar.MILLISECOND, 0)
-}
+fun toYear(date: LocalDateTime): String =
+    date.format(DateTimeFormatter.ofPattern("yyyy", Locale.getDefault()))
 
-fun setEndOfDay(calendar: Calendar) {
-    calendar.set(Calendar.HOUR_OF_DAY, 23)
-    calendar.set(Calendar.MINUTE, 59)
-    calendar.set(Calendar.SECOND, 59)
-    calendar.set(Calendar.MILLISECOND, 999)
-}
-
-fun toYear(date: Date): String {
-
-    val formatter = SimpleDateFormat(
-        "YYYY",
-        Locale.getDefault()
-    )
-
-    val year = formatter.format(date)
-    return year
-}
-
-fun toMonthYear(date: Date): String {
-
-    val yearFirst = setOf("ja", "zh", "ko")
-
-    val pattern = if (Locale.getDefault().language in yearFirst) {
+fun toMonthYear(date: LocalDateTime): String {
+    val locale = Locale.getDefault()
+    val pattern = if (locale.language in setOf("ja", "zh", "ko")) {
         "yyyy/MM"
     } else {
         "MM/yyyy"
     }
 
-    val formatter = SimpleDateFormat(
-        pattern,
-        Locale.getDefault()
-    )
-
-    val monthYear = formatter.format(date)
-    return monthYear
+    return date.format(DateTimeFormatter.ofPattern(pattern, locale))
 }
 
-fun toDateWithWeekDay(date: Date): String {
-    val formatterWeek = SimpleDateFormat(
-        "EEEE",
-        Locale.getDefault()
+fun toDateWithWeekDay(date: LocalDateTime): String {
+    val locale = Locale.getDefault()
+
+    val weekday = date.format(
+        DateTimeFormatter.ofPattern("EEEE", locale)
     )
 
-    val formatter = DateFormat.getDateInstance(
-        DateFormat.SHORT,
-        Locale.getDefault()
+    val formattedDate = date.format(
+        DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+            .withLocale(locale)
     )
 
-    return "${ formatterWeek.format(date) }, ${formatter.format(date)}"
+    return "$weekday, $formattedDate"
 }
 
 @Composable
-fun toDay(date: Date): String {
+fun toDay(date: LocalDateTime): String {
+    val today = LocalDate.now()
+    val dateOnly = date.toLocalDate()
 
-    val calendar = Calendar.getInstance()
-    calendar.time = date
-
-    val today = Calendar.getInstance()
-
-    if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-        calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
-    ) {
+    if (dateOnly == today) {
         return stringResource(R.string.today)
     }
 
-    today.add(Calendar.DAY_OF_YEAR, -1)
-    if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-        calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
-    ) {
+    if (dateOnly == today.minusDays(1)) {
         return stringResource(R.string.yesterday)
     }
 
-    today.add(Calendar.DAY_OF_YEAR, 2)
-    if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-        calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
-    ) {
+    if (dateOnly == today.plusDays(1)) {
         return stringResource(R.string.tomorrow)
     }
 
-    val formatter = SimpleDateFormat(
-        "d MMM",
-        LocalLocale.current.platformLocale
-    )
+    val locale = LocalLocale.current.platformLocale
 
-    val result = formatter.format(date).replaceFirstChar {
-        it.titlecase(LocalLocale.current.platformLocale)
-    }
-
-    return result
-}
-fun dateToUtcMillis(date: Date): Long {
-    val localCal = Calendar.getInstance()
-    localCal.time = date
-
-    val utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-    utcCal.clear()
-    utcCal.set(
-        localCal.get(Calendar.YEAR),
-        localCal.get(Calendar.MONTH),
-        localCal.get(Calendar.DAY_OF_MONTH)
-    )
-
-    return utcCal.timeInMillis
+    return date.format(
+        DateTimeFormatter.ofPattern("d MMM", locale)
+    ).replaceFirstChar { it.titlecase(locale) }
 }
 
-fun utcMillisToDate(millis: Long): Date {
-    val utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-    utcCal.timeInMillis = millis
+fun dateToUtcMillis(date: LocalDateTime): Long =
+    date.toLocalDate()
+        .atStartOfDay(java.time.ZoneOffset.UTC)
+        .toInstant()
+        .toEpochMilli()
 
-    val localCal = Calendar.getInstance()
-    localCal.clear()
-    localCal.set(
-        utcCal.get(Calendar.YEAR),
-        utcCal.get(Calendar.MONTH),
-        utcCal.get(Calendar.DAY_OF_MONTH)
-    )
+fun utcMillisToDate(millis: Long): LocalDateTime =
+    java.time.Instant.ofEpochMilli(millis)
+        .atZone(java.time.ZoneOffset.UTC)
+        .toLocalDateTime()
+        .toLocalDate()
+        .atStartOfDay()
 
-    return localCal.time
-}
 @Composable
-fun dateToString(date: Date): String {
+fun dateToString(date: LocalDateTime): String {
+    val dateOnly = date.toLocalDate()
+    val today = LocalDate.now()
 
-    val calendar = Calendar.getInstance()
-    calendar.time = date
-
-    val today = Calendar.getInstance()
-
-    if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-        calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
-    ) {
+    if (dateOnly == today) {
         return stringResource(R.string.today)
     }
 
-    today.add(Calendar.DAY_OF_YEAR, -1)
-    if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-        calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
-    ) {
+    if (dateOnly == today.minusDays(1)) {
         return stringResource(R.string.yesterday)
     }
 
-    today.add(Calendar.DAY_OF_YEAR, 2)
-    if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-        calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
-    ) {
+    if (dateOnly == today.plusDays(1)) {
         return stringResource(R.string.tomorrow)
     }
 
-    val formatter = DateFormat.getDateInstance(DateFormat.SHORT)
-
-
-    val dateText = formatter.format(date)
-
-    return "$dateText"
+    return date.format(
+        DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+            .withLocale(LocalLocale.current.platformLocale)
+    )
 }
 
+fun adjustMonth(
+    date: LocalDateTime,
+    month: LocalDateTime
+): LocalDateTime {
+    val targetMonth = YearMonth.from(month)
+    val day = minOf(date.dayOfMonth, targetMonth.lengthOfMonth())
+
+    return date.withYear(targetMonth.year)
+        .withMonth(targetMonth.monthValue)
+        .withDayOfMonth(day)
+}

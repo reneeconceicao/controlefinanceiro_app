@@ -1,8 +1,6 @@
 package com.firebaseapp.controlefinanceiro.ui.screens.register
 
-import android.media.MediaPlayer
-import android.view.SoundEffectConstants
-import androidx.compose.foundation.BorderStroke
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -30,13 +28,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,11 +55,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -82,6 +76,8 @@ import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
 import com.firebaseapp.controlefinanceiro.ui.calculator.FieldsCalculator
 import com.firebaseapp.controlefinanceiro.ui.components.CategoriesPickerModal
 import com.firebaseapp.controlefinanceiro.ui.components.DatePickerModal
+import com.firebaseapp.controlefinanceiro.ui.components.hapticClick
+import java.time.LocalDateTime
 import java.util.Date
 
 
@@ -94,13 +90,9 @@ fun RegisterScreen(
     viewModel: RegisterViewModel = viewModel(factory = ViewModelProviders.Factory)
 ) {
 
-    val registerUiState = viewModel.uiState
+    val registerUiState by viewModel.uiState.collectAsState()
 
-    val categoriesExpense by viewModel.categoriesExpense.collectAsState()
-
-    val categoriesIncome by viewModel.categoriesIncome.collectAsState()
-
-
+    //Log.d("TAG", "RegisterScreen: isEditRecurring: ${registerUiState.details.isEditRecurring}")
 
     Scaffold(
         modifier = modifier
@@ -137,8 +129,8 @@ fun RegisterScreen(
                     viewModel.insertWord(it)
                     navigateBack()
                 },
-                categoriesExpense = categoriesExpense,
-                categoriesIncome = categoriesIncome,
+                categoriesExpense = registerUiState.details.categoriesExpense,
+                categoriesIncome = registerUiState.details.categoriesIncome,
                 navigateCategories = navigateCategories
 
             )
@@ -156,40 +148,11 @@ fun RegisterScreenBody(
     categoriesExpense: List<Category> = listOf(),
     categoriesIncome: List<Category> = listOf(),
     navigateCategories: (Int) -> Unit,
-
-    ) {
+) {
 
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var showCategoriesList by rememberSaveable { mutableStateOf(false) }
     val haptic = LocalHapticFeedback.current
-
-    LaunchedEffect(registerUiState.details.selectedOption) {
-
-        if (registerUiState.details.selectedOption == 0) {
-            if (registerUiState.details.currentCategoryId !in categoriesExpense.map { it.id }) {
-                onUpdate(
-                    registerUiState.details.copy(
-                        currentCategoryId = 0,
-                        categoryName = "",
-                        categoryIcon = ""
-                    )
-                )
-            }
-        }
-
-        if (registerUiState.details.selectedOption == 1) {
-            if (registerUiState.details.currentCategoryId !in categoriesIncome.map { it.id }) {
-                onUpdate(
-                    registerUiState.details.copy(
-                        currentCategoryId = 0,
-                        categoryName = "",
-                        categoryIcon = ""
-                    )
-                )
-            }
-        }
-
-    }
 
     if (showDatePicker) {
         DatePickerModal(
@@ -249,9 +212,22 @@ fun RegisterScreenBody(
             ) {
 
 
-                ButtonsOptions(registerUiState.details.selectedOption, onOptionSelected = {
-                    onUpdate(registerUiState.details.copy(selectedOption = it))
-                })
+                ButtonsOptions(
+                    registerUiState.details.selectedOption,
+                    onOptionSelected = { option ->
+                        if (registerUiState.details.selectedOption != option) {
+                            onUpdate(
+                                registerUiState.details.copy(
+                                    selectedOption = option,
+                                    currentCategoryId = 0,
+                                    categoryName = "",
+                                    categoryIcon = ""
+                                )
+                            )
+                        } else {
+                            onUpdate(registerUiState.details.copy(selectedOption = option))
+                        }
+                    })
 
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 96.dp)
@@ -261,12 +237,10 @@ fun RegisterScreenBody(
                         Column(
                             modifier = Modifier
                                 .padding(paddingDefault())
-                                .clickable(
+                                .hapticClick(
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null
                                 ) {
-
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                                     onUpdate(
                                         registerUiState.details.copy(
@@ -280,9 +254,12 @@ fun RegisterScreenBody(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             if (registerUiState.details.currentCategoryId == category.id) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(
-                                    paddingTiny()
-                                )) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(
+                                        paddingTiny()
+                                    )
+                                ) {
                                     Box(
                                         Modifier
 
@@ -309,9 +286,12 @@ fun RegisterScreenBody(
                                     Text(category.categoryName)
                                 }
                             } else {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(
-                                    paddingTiny()
-                                )) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(
+                                        paddingTiny()
+                                    )
+                                ) {
                                     Box(
                                         Modifier
 
@@ -351,9 +331,12 @@ fun RegisterScreenBody(
                                 },
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(
-                                paddingTiny()
-                            )) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(
+                                    paddingTiny()
+                                )
+                            ) {
                                 Box(
                                     Modifier
 
@@ -381,7 +364,6 @@ fun RegisterScreenBody(
                             }
 
 
-
                         }
                     }
                 }
@@ -405,22 +387,35 @@ fun RegisterScreenBody(
                         bottomStart = 20.dp
                     ),
                     shadowElevation = 8.dp,
-                    color = MaterialTheme.colorScheme.surface
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Column(Modifier.padding(vertical = paddingDefault())) {
 
                         FieldsCalculator(
-                            initialValue = registerUiState.details.price,
-                            initialDate = registerUiState.details.date,
-                            notes = registerUiState.details.notes,
+                            details = registerUiState.details,
                             onEntryValue = {
-                                onSave(registerUiState.details.copy(price = it))
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onSave(it)
+                                haptic.performHapticFeedback(HapticFeedbackType.KeyboardTap)
                             },
-                            onUpdateNotes = { onUpdate(registerUiState.details.copy(notes = it)) },
-                            onUpdatePrice = { onUpdate(registerUiState.details.copy(price = it)) },
+                            onUpdateNotes = {
+                                onUpdate(registerUiState.details.copy(notes = it))
+                            },
+                            onUpdatePrice = {
+                                onUpdate(registerUiState.details.copy(price = it))
+                            },
                             showDateDialog = { showDatePicker = true })
 
+                        if (!registerUiState.details.isEditRecurring) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(
+                                    registerUiState.details.isRecurring,
+                                    onCheckedChange = {
+                                        onUpdate(registerUiState.details.copy(isRecurring = it))
+                                    },
+                                )
+                                Text("Recurring")
+                            }
+                        }
 
                     }
                 }
@@ -443,7 +438,7 @@ fun ButtonsOptions(selectedOption: Int, onOptionSelected: (Int) -> Unit) {
             Modifier
                 .padding(paddingSmall())
                 .weight(1f)
-                .clickable {
+                .hapticClick {
                     onOptionSelected(0)
                 },
             colors = CardDefaults.cardColors(
@@ -467,7 +462,7 @@ fun ButtonsOptions(selectedOption: Int, onOptionSelected: (Int) -> Unit) {
             Modifier
                 .padding(paddingSmall())
                 .weight(1f)
-                .clickable {
+                .hapticClick {
                     onOptionSelected(1)
                 },
             colors = CardDefaults.cardColors(
@@ -490,7 +485,7 @@ fun ButtonsOptions(selectedOption: Int, onOptionSelected: (Int) -> Unit) {
 }
 
 @Composable
-fun DatePickerField(date: Date, onClick: () -> Unit) {
+fun DatePickerField(date: LocalDateTime, onClick: () -> Unit) {
     Box(
         Modifier
             .fillMaxWidth()

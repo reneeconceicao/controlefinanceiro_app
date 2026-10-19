@@ -2,6 +2,7 @@ package com.firebaseapp.controlefinanceiro.ui.calculator
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -58,7 +59,7 @@ class CalculatorViewModal(initialValue: String = "0") : ViewModel() {
     )
 
     // Function to handle button click, including live evaluation
-    fun onClick(btn: String, onEntryValue: (String) -> Unit = {}, onUpdateValue: (String) -> Unit = {}) {
+    fun onClick(btn: String, onSave: (String) -> Unit = {}, onUpdateValue: (String) -> Unit = {}) {
 
         when (btn) {
 
@@ -83,8 +84,8 @@ class CalculatorViewModal(initialValue: String = "0") : ViewModel() {
                 _input.value = _output.value
 
                 if (buttonState.value == ButtonState.DONE) {
-
-                    onEntryValue(_input.value.replace(separator, "."))
+                    _input.value = _output.value.replace(separator, ".")
+                    onSave(_input.value)
                 }
             }
 
@@ -97,13 +98,21 @@ class CalculatorViewModal(initialValue: String = "0") : ViewModel() {
 
             else -> {
 
+                if (_input.value.contains(separator) && btn == separator) {
+                    return
+                }
+
                 if (_input.value == "0" && btn == separator) {
                     _input.value = "0$separator"
+                    evaluateExpression()
+                    onUpdateValue(_output.value)
                     return
                 }
 
                 if (_input.value == "0") {
                     _input.value = btn
+                    evaluateExpression()
+                    onUpdateValue(_output.value)
                     return
                 }
 
