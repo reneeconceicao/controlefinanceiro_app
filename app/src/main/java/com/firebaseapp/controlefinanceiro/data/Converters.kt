@@ -3,6 +3,8 @@ package com.firebaseapp.controlefinanceiro.data
 import androidx.room.TypeConverter
 import com.firebaseapp.controlefinanceiro.data.entities.CategoryType
 import com.firebaseapp.controlefinanceiro.data.entities.WordType
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -11,6 +13,7 @@ import java.util.Date
 
 class Converters {
 
+    private val gson = Gson()
     private val dateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
     @TypeConverter
@@ -77,5 +80,16 @@ class Converters {
         }
 
         return CategoryType.Income
+    }
+
+    @TypeConverter
+    fun fromStringList(value: List<String>): String {
+        return gson.toJson(value)
+    }
+
+    @TypeConverter
+    fun toStringList(value: String): List<String> {
+        val type = object : TypeToken<List<String>>() {}.type
+        return gson.fromJson(value, type) ?: emptyList()
     }
 }

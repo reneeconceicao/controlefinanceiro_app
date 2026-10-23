@@ -56,6 +56,13 @@ dependencies {
     implementation(libs.mathparser.org.mxparser)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.material3)
+    implementation("androidx.camera:camera-camera2:1.6.2")
+    implementation("androidx.camera:camera-lifecycle:1.6.2")
+    implementation("androidx.camera:camera-view:1.6.2")
+    implementation("androidx.camera:camera-extensions:1.6.2")
+    implementation("com.google.accompanist:accompanist-permissions:0.37.3")
+    implementation("com.google.code.gson:gson:2.13.2")
     ksp(libs.room.compiler)
 
     dependencies {

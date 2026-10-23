@@ -5,7 +5,6 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.util.Date
 
 /**
  * Entity data class represents a single row in the database.
@@ -32,6 +31,7 @@ data class WordException(
     val categoryName: String,
     val categoryIcon: String,
     val notes: String,
+    val images: List<String>,
     val isDeleted: Boolean,
     val recurringGroup: String,
 )

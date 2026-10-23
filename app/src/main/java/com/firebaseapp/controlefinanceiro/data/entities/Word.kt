@@ -4,9 +4,6 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.util.Calendar
-import java.util.Date
-import java.util.UUID
 
 /**
  * Entity data class represents a single row in the database.
@@ -22,6 +19,7 @@ data class Word(
     val categoryName: String,
     val categoryIcon: String,
     val notes: String,
+    val images: List<String>,
     val isRecurring: Boolean,// = false,
     val endDate: LocalDateTime?,// = date.plusMonths(6),
     val frequency: String = "M", //Day, Month, Year

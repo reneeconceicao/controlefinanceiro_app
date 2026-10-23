@@ -61,12 +61,13 @@ class EditViewModel(
                             val details = word.toDetails()
                             registerState.value = details.copy(isEditRecurring = true)
                             originalDate.value = word.date
+                            originalImages.value = word.images
                         },
                         onExceptionFound = { exception ->
                             val details = exception.toDetails()
                             registerState.value = details.copy(isEditRecurring = true)
                             originalDate.value = exception.date
-
+                            originalImages.value = exception.images
                         })
 
                 } else {
@@ -77,7 +78,7 @@ class EditViewModel(
                     val isReplaceWord =
                         !details.toWord().isRecurring && details.toWord().recurringGroup != ""
                     registerState.value = details.copy(isEditRecurring = isReplaceWord)
-
+                    originalImages.value = word.images
                 }
             }
 
@@ -94,6 +95,8 @@ class EditViewModel(
 
 
     var loading = mutableStateOf(false)
+
+    var originalImages = mutableStateOf(listOf<String>())
 
     var uiState: StateFlow<RegisterUiState> = combine(
         registerState,
@@ -144,11 +147,12 @@ class EditViewModel(
                 //transform one time word to recurrency
                 wordRepository.updateWord(
                     registerState.value.toWord()
-                        .copy(isRecurring = true, recurringGroup = UUID.randomUUID().toString())
+                        .copy(isRecurring = true, recurringGroup = UUID.randomUUID().toString()),
+                    originalImages.value
                 )
                 return@launch
             }
-            wordRepository.updateWord(registerState.value.toWord())
+            wordRepository.updateWord(registerState.value.toWord(), originalImages.value)
         }
     }
 

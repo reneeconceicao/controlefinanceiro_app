@@ -26,7 +26,7 @@ import java.math.BigDecimal
 /**
  * Database class with a singleton Instance object.
  */
-@Database(entities = [Word::class, WordException::class, Category::class, Budget::class], version = 2, exportSchema = false)
+@Database(entities = [Word::class, WordException::class, Category::class, Budget::class], version = 4, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class MoneyManagerDatabase : RoomDatabase() {
 

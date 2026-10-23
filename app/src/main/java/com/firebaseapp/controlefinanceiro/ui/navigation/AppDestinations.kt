@@ -7,6 +7,8 @@ enum class AppDestination(
     MAIN("main"),
     REGISTER("register"),
 
+    CAMERA("camera"),
+
     EDIT(route = "edit", routeWithArgs = "edit/{wordId}"),
 
     EDIT_RECURRING(route = "edit_recurring", routeWithArgs = "edit_recurring/{wordId}/{occurrenceIndex}"),

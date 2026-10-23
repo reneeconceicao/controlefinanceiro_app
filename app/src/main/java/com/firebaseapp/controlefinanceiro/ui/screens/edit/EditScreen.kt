@@ -34,6 +34,8 @@ fun EditScreen(
     modifier: Modifier = Modifier,
     navigateBack: () -> Unit,
     navigateCategories: (Int) -> Unit,
+    navigateCamera: () -> Unit,
+    resultForCamera: String?,
     viewModel: EditViewModel = viewModel(factory = ViewModelProviders.Factory)
 ) {
 
@@ -85,7 +87,10 @@ fun EditScreen(
                     },
                     categoriesExpense = registerUiState.details.categoriesExpense,
                     categoriesIncome = registerUiState.details.categoriesIncome,
+                    images = registerUiState.details.images,
                     navigateCategories = navigateCategories,
+                    navigateCamera = navigateCamera,
+                    resultForCamera = resultForCamera,
                 )
 
 

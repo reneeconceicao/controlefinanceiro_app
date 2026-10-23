@@ -1,5 +1,7 @@
 package com.firebaseapp.controlefinanceiro.ui.screens.register
 
+import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.firebaseapp.controlefinanceiro.data.entities.Category
@@ -22,11 +24,19 @@ import kotlin.Int
 
 class RegisterViewModel(
     private val wordRepository: WordRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     var registerState = MutableStateFlow(RegisterDetails())
 
+    val lastPhotoUri = savedStateHandle
+        .getStateFlow<String?>("photoUri", null)
+
+
+    init {
+        Log.d("TAG", "VIEW MODEL STATE: ${lastPhotoUri.value}")
+    }
     var uiState: StateFlow<RegisterUiState> = combine(
         registerState,
         categoryRepository.getCategoriesByTypeStream(CategoryType.Expense),
@@ -59,6 +69,7 @@ class RegisterViewModel(
 
     fun updateUiState(details: RegisterDetails) {
         this.registerState.value = details
+        Log.d("TAG", "updateUiState: ${details.images}")
     }
 
     fun insertWord(details: RegisterDetails) {
@@ -88,6 +99,7 @@ data class RegisterDetails(
     var categoryIcon: String = "",
     var categoriesExpense: List<Category> = emptyList(),
     var categoriesIncome: List<Category> = emptyList(),
+    var images: List<String> = emptyList(),
     var isRecurring: Boolean = false,
     var recurringGroupId: String = "",
     var endDate: LocalDateTime? = null,
@@ -104,6 +116,7 @@ fun RegisterDetails.toWord(): Word {
         categoryName = categoryName,
         categoryIcon = categoryIcon,
         notes = notes,
+        images = images,
         isRecurring = isRecurring,
         recurringGroup = recurringGroupId,
         endDate = endDate,
@@ -125,6 +138,7 @@ fun RegisterDetails.toWordException(
         categoryName = categoryName,
         categoryIcon = categoryIcon,
         notes = notes,
+        images = images,
         isDeleted = false,
         recurringGroup = recurringGroupId
     )
@@ -140,6 +154,7 @@ fun Word.toDetails(): RegisterDetails {
         currentCategoryId = categoryId,
         categoryIcon = categoryIcon,
         categoryName = categoryName,
+        images = images.toMutableList(),
         isRecurring = isRecurring,
         recurringGroupId = recurringGroup
     )
@@ -152,6 +167,7 @@ fun WordException.toDetails(): RegisterDetails {
         price = value.toString(),
         date = date,
         notes = notes,
+        images = images.toMutableList(),
         currentCategoryId = categoryId,
         categoryIcon = categoryIcon,
         categoryName = categoryName,
@@ -167,6 +183,7 @@ fun WordException.toWord(): Word {
         categoryName = categoryName,
         categoryIcon = categoryIcon,
         notes = notes,
+        images = images,
         isRecurring = false,
         recurringGroup = recurringGroup,
         endDate = null,

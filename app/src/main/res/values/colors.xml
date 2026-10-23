@@ -13,5 +13,7 @@
 
     <color name="yellow">#FFA726</color>
 
+    <color name="dark_gray">#ffe2c1</color>
+
 <!--    <color name="dark_red">#AD1414</color>-->
 </resources>

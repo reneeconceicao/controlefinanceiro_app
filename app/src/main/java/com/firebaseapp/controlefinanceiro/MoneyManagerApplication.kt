@@ -8,7 +8,7 @@ import com.firebaseapp.controlefinanceiro.data.repositories.BudgetRepository
 
 class MoneyManagerApplication: Application() {
     val wordRepository: WordRepository by lazy {
-        WordRepository(MoneyManagerDatabase.getDatabase(this).wordDao())
+        WordRepository(this@MoneyManagerApplication, MoneyManagerDatabase.getDatabase(this).wordDao())
     }
 
     val categoryRepository: CategoryRepository by lazy {

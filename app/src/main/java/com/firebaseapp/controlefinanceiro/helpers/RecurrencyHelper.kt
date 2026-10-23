@@ -77,6 +77,7 @@ fun calculateWordOccurrences(
                             categoryId = exception.categoryId,
                             categoryName = exception.categoryName,
                             categoryIcon = exception.categoryIcon,
+                            images = exception.images,
                             notes = exception.notes
                         ), index
                     )

@@ -1,6 +1,9 @@
 package com.firebaseapp.controlefinanceiro.ui.screens.register
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,6 +19,7 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -25,22 +29,31 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.outlined.RemoveCircleOutline
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
+import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -56,15 +69,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.firebaseapp.compose_lucide_icons.helpers.IconsHelper
 import com.firebaseapp.controlefinanceiro.R
+import com.firebaseapp.controlefinanceiro.data.datastore.DataStoreViewModel
 import com.firebaseapp.controlefinanceiro.data.entities.Category
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
@@ -73,12 +95,13 @@ import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
 import com.firebaseapp.controlefinanceiro.defaults.paddingTiny
 import com.firebaseapp.controlefinanceiro.helpers.dateToString
 import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
-import com.firebaseapp.controlefinanceiro.ui.calculator.FieldsCalculator
-import com.firebaseapp.controlefinanceiro.ui.components.CategoriesPickerModal
+import com.firebaseapp.controlefinanceiro.ui.calculator.Calculator
 import com.firebaseapp.controlefinanceiro.ui.components.DatePickerModal
+import com.firebaseapp.controlefinanceiro.ui.components.ImageOptionsDialog
+import com.firebaseapp.controlefinanceiro.ui.components.PhotosModal
 import com.firebaseapp.controlefinanceiro.ui.components.hapticClick
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import java.time.LocalDateTime
-import java.util.Date
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -87,12 +110,14 @@ fun RegisterScreen(
     modifier: Modifier = Modifier,
     navigateBack: () -> Unit,
     navigateCategories: (Int) -> Unit,
-    viewModel: RegisterViewModel = viewModel(factory = ViewModelProviders.Factory)
+    viewModel: RegisterViewModel = viewModel(factory = ViewModelProviders.Factory),
+    navigateCamera: () -> Unit,
+    resultForCamera: String?,
 ) {
 
     val registerUiState by viewModel.uiState.collectAsState()
 
-    //Log.d("TAG", "RegisterScreen: isEditRecurring: ${registerUiState.details.isEditRecurring}")
+    Log.d("TAG", "Back: $resultForCamera")
 
     Scaffold(
         modifier = modifier
@@ -131,8 +156,10 @@ fun RegisterScreen(
                 },
                 categoriesExpense = registerUiState.details.categoriesExpense,
                 categoriesIncome = registerUiState.details.categoriesIncome,
-                navigateCategories = navigateCategories
-
+                images = registerUiState.details.images,
+                navigateCategories = navigateCategories,
+                navigateCamera = navigateCamera,
+                resultForCamera = resultForCamera
             )
 
         }
@@ -140,6 +167,7 @@ fun RegisterScreen(
 
 }
 
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreenBody(
     registerUiState: RegisterUiState,
@@ -148,11 +176,41 @@ fun RegisterScreenBody(
     categoriesExpense: List<Category> = listOf(),
     categoriesIncome: List<Category> = listOf(),
     navigateCategories: (Int) -> Unit,
+    navigateCamera: () -> Unit,
+    resultForCamera: String?,
+    images: List<String> = mutableListOf(),
 ) {
 
+
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
-    var showCategoriesList by rememberSaveable { mutableStateOf(false) }
+    var showPhotoOptionsDialog by rememberSaveable { mutableStateOf(false) }
+    var showPhotosDialog by rememberSaveable { mutableStateOf(false) }
     val haptic = LocalHapticFeedback.current
+
+    // flag to control the resultForCamera consumption
+    var cameraResultFlag by remember { mutableStateOf(resultForCamera) }
+
+    cameraResultFlag?.let { result ->
+        // if flag is not null update the view model
+        val newImages = images + result
+        onUpdate(registerUiState.details.copy(images = newImages))
+        cameraResultFlag = null // turn this flag null to avoid recurrency results
+    }
+
+    if (showPhotosDialog) {
+        val context = LocalContext.current
+        PhotosModal(
+            context = context,
+            images = images,
+            onAddImage = {
+                showPhotoOptionsDialog = true
+            },
+            onItemDeleted = {
+                val newImages = images - it
+                onUpdate(registerUiState.details.copy(images = newImages))
+            },
+            onDismissRequest = { showPhotosDialog = false })
+    }
 
     if (showDatePicker) {
         DatePickerModal(
@@ -168,22 +226,13 @@ fun RegisterScreenBody(
         )
     }
 
-    if (showCategoriesList) {
-        CategoriesPickerModal(
-            categories = if (registerUiState.details.selectedOption == 0) categoriesExpense else categoriesIncome,
-            onItemSelected = {
-                onUpdate(
-                    registerUiState.details.copy(
-                        currentCategoryId = it.id,
-                        categoryName = it.categoryName,
-                        categoryIcon = it.categoryIcon
-                    )
-                )
+    if (showPhotoOptionsDialog) {
+        ImageOptionsDialog(
+            onCameraSelected = navigateCamera,
+            onGallerySelected = {
 
             },
-            currentOption = registerUiState.details.selectedOption,
-            //navigateCategories = navigateCategories,
-            onDismissRequest = { showCategoriesList = false })
+            onDismissRequest = { showPhotoOptionsDialog = false })
     }
 
     Box(
@@ -198,8 +247,6 @@ fun RegisterScreenBody(
         Box(
             Modifier
                 .fillMaxSize()
-            //.background(Color.Red)
-            //.padding(paddingSmall())
         ) {
 
             Column(
@@ -207,10 +254,7 @@ fun RegisterScreenBody(
                     .fillMaxWidth()
                     .align(Alignment.TopCenter)
                     .padding(bottom = 120.dp)
-
-                //.verticalScroll(rememberScrollState())
             ) {
-
 
                 ButtonsOptions(
                     registerUiState.details.selectedOption,
@@ -229,150 +273,29 @@ fun RegisterScreenBody(
                         }
                     })
 
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 96.dp)
-                ) {
-                    items(if (registerUiState.details.selectedOption == 0) categoriesExpense else categoriesIncome) { category ->
-
-                        Column(
-                            modifier = Modifier
-                                .padding(paddingDefault())
-                                .hapticClick(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-
-                                    onUpdate(
-                                        registerUiState.details.copy(
-                                            currentCategoryId = category.id,
-                                            categoryName = category.categoryName,
-                                            categoryIcon = category.categoryIcon
-                                        )
-                                    )
-
-                                },
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            if (registerUiState.details.currentCategoryId == category.id) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(
-                                        paddingTiny()
-                                    )
-                                ) {
-                                    Box(
-                                        Modifier
-
-                                            .background(
-                                                color = colorResource(R.color.yellow),
-                                                shape = CircleShape
-                                            )
-                                    ) {
-                                        Column(
-                                            Modifier
-                                                .padding(paddingDefault())
-                                                .size(24.dp)
-                                        ) {
-                                            Icon(
-                                                painter = IconsHelper.iconByName(category.categoryIcon),
-                                                contentDescription = "",
-
-                                                //colorFilter = ColorFilter.tint(Color.Blue)
-                                            )
-
-
-                                        }
-                                    }
-                                    Text(category.categoryName)
-                                }
-                            } else {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(
-                                        paddingTiny()
-                                    )
-                                ) {
-                                    Box(
-                                        Modifier
-
-                                            .background(
-                                                color = MaterialTheme.colorScheme.surfaceVariant,
-                                                shape = CircleShape
-                                            )
-                                    ) {
-                                        Column(
-                                            Modifier
-                                                .padding(paddingDefault())
-                                                .size(24.dp)
-                                        ) {
-                                            Icon(
-                                                painter = IconsHelper.iconByName(category.categoryIcon),
-                                                contentDescription = "",
-
-
-                                                //colorFilter = ColorFilter.tint(Color.Blue)
-                                            )
-
-
-                                        }
-                                    }
-                                    Text(category.categoryName)
-                                }
-                            }
-                        }
-                    }
-
-                    item {
-                        Column(
-                            modifier = Modifier
-                                .padding(paddingDefault())
-                                .clickable {
-                                    navigateCategories(registerUiState.details.selectedOption)
-                                },
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(
-                                    paddingTiny()
-                                )
-                            ) {
-                                Box(
-                                    Modifier
-
-                                        .background(
-                                            color = MaterialTheme.colorScheme.surfaceVariant,
-                                            shape = CircleShape
-                                        )
-                                ) {
-                                    Column(
-                                        Modifier
-                                            .padding(paddingDefault())
-                                            .size(24.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Add,
-                                            contentDescription = "",
-                                            Modifier.size(24.dp),
-                                            //colorFilter = ColorFilter.tint(Color.Blue)
-                                        )
-
-
-                                    }
-                                }
-                                Text(stringResource(R.string.settings))
-                            }
-
-
-                        }
-                    }
-                }
+                CategoryGrid(
+                    registerUiState = registerUiState,
+                    categoriesExpense = categoriesExpense,
+                    categoriesIncome = categoriesIncome,
+                    onUpdate = onUpdate,
+                    navigateCategories = navigateCategories
+                )
 
             }
 
 
-
-            if (registerUiState.details.currentCategoryId != 0) {
+            AnimatedVisibility(
+                visible = registerUiState.details.currentCategoryId != 0,
+                modifier = Modifier.align(
+                    Alignment.BottomCenter,
+                ),
+                enter = slideInVertically(
+                    initialOffsetY = { it }
+                ),
+                exit = slideOutVertically(
+                    targetOffsetY = { it }
+                )
+            ) {
                 Surface(
                     Modifier
                         .align(Alignment.BottomCenter)
@@ -387,9 +310,10 @@ fun RegisterScreenBody(
                         bottomStart = 20.dp
                     ),
                     shadowElevation = 8.dp,
-                    color = MaterialTheme.colorScheme.surfaceVariant
+                    color = colorResource(R.color.dark_gray)//MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Column(Modifier.padding(vertical = paddingDefault())) {
+
 
                         FieldsCalculator(
                             details = registerUiState.details,
@@ -403,19 +327,19 @@ fun RegisterScreenBody(
                             onUpdatePrice = {
                                 onUpdate(registerUiState.details.copy(price = it))
                             },
-                            showDateDialog = { showDatePicker = true })
-
-                        if (!registerUiState.details.isEditRecurring) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(
-                                    registerUiState.details.isRecurring,
-                                    onCheckedChange = {
-                                        onUpdate(registerUiState.details.copy(isRecurring = it))
-                                    },
-                                )
-                                Text("Recurring")
+                            onUpdateRecurrency = {
+                                onUpdate(registerUiState.details.copy(isRecurring = it))
+                            },
+                            showDateDialog = { showDatePicker = true },
+                            showTakePhotoDialog = {
+                                if (images.isEmpty()) {
+                                    showPhotoOptionsDialog = true
+                                } else {
+                                    showPhotosDialog = true
+                                }
                             }
-                        }
+                        )
+
 
                     }
                 }
@@ -484,6 +408,150 @@ fun ButtonsOptions(selectedOption: Int, onOptionSelected: (Int) -> Unit) {
     }
 }
 
+
+@Composable
+fun CategoryGrid(
+    registerUiState: RegisterUiState,
+    categoriesExpense: List<Category> = listOf(),
+    categoriesIncome: List<Category> = listOf(),
+    onUpdate: (RegisterDetails) -> Unit,
+    navigateCategories: (Int) -> Unit,
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 96.dp)
+    ) {
+        items(if (registerUiState.details.selectedOption == 0) categoriesExpense else categoriesIncome) { category ->
+
+            Column(
+                modifier = Modifier
+                    .padding(paddingDefault())
+                    .hapticClick(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+
+                        onUpdate(
+                            registerUiState.details.copy(
+                                currentCategoryId = category.id,
+                                categoryName = category.categoryName,
+                                categoryIcon = category.categoryIcon
+                            )
+                        )
+
+                    },
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (registerUiState.details.currentCategoryId == category.id) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(
+                            paddingTiny()
+                        )
+                    ) {
+                        Box(
+                            Modifier
+
+                                .background(
+                                    color = colorResource(R.color.yellow),
+                                    shape = CircleShape
+                                )
+                        ) {
+                            Column(
+                                Modifier
+                                    .padding(paddingDefault())
+                                    .size(24.dp)
+                            ) {
+                                Icon(
+                                    painter = IconsHelper.iconByName(category.categoryIcon),
+                                    contentDescription = "",
+                                )
+                            }
+                        }
+                        Text(category.categoryName)
+                    }
+                } else {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(
+                            paddingTiny()
+                        )
+                    ) {
+                        Box(
+                            Modifier
+
+                                .background(
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    shape = CircleShape
+                                )
+                        ) {
+                            Column(
+                                Modifier
+                                    .padding(paddingDefault())
+                                    .size(24.dp)
+                            ) {
+                                Icon(
+                                    painter = IconsHelper.iconByName(category.categoryIcon),
+                                    contentDescription = "",
+
+
+                                    //colorFilter = ColorFilter.tint(Color.Blue)
+                                )
+
+
+                            }
+                        }
+                        Text(category.categoryName)
+                    }
+                }
+            }
+        }
+
+        item {
+            Column(
+                modifier = Modifier
+                    .padding(paddingDefault())
+                    .clickable {
+                        navigateCategories(registerUiState.details.selectedOption)
+                    },
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(
+                        paddingTiny()
+                    )
+                ) {
+                    Box(
+                        Modifier
+
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                shape = CircleShape
+                            )
+                    ) {
+                        Column(
+                            Modifier
+                                .padding(paddingDefault())
+                                .size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "",
+                                Modifier.size(24.dp),
+                            )
+
+
+                        }
+                    }
+                    Text(stringResource(R.string.settings))
+                }
+
+
+            }
+        }
+    }
+}
+
 @Composable
 fun DatePickerField(date: LocalDateTime, onClick: () -> Unit) {
     Box(
@@ -526,90 +594,237 @@ fun DatePickerField(date: LocalDateTime, onClick: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun CategoryPickerField(
-    categoryId: Int = 0,
-    categoryName: String = "",
-    categoryIcon: String = "",
-    onClick: () -> Unit,
-    onRemoveCategory: () -> Unit
+fun FieldsCalculator(
+    details: RegisterDetails,
+    onUpdatePrice: (String) -> Unit,
+    onUpdateNotes: (String) -> Unit,
+    onUpdateRecurrency: (Boolean) -> Unit,
+    onEntryValue: (RegisterDetails) -> Unit,
+    showDateDialog: () -> Unit,
+    showTakePhotoDialog: () -> Unit,
+    viewModelDataStore: DataStoreViewModel = viewModel(factory = ViewModelProviders.Factory)
 ) {
 
-    Box(
+    val isCompleteCalculator by viewModelDataStore.isHapticEnabled.collectAsState()
+    val isKeyboardVisible = WindowInsets.isImeVisible
+    var visible by remember { mutableStateOf(true) }
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    var result by remember { mutableStateOf("0") }
+
+
+    LaunchedEffect(isKeyboardVisible) {
+        if (isKeyboardVisible) {
+            visible = false
+        } else {
+            visible = true
+            focusManager.clearFocus()
+        }
+    }
+
+
+    Text(
+        text = result,
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(paddingDefault()))
-            .padding(paddingSmall())
-            .padding(top = paddingDefault())
-            .border(
-                0.5.dp,
-                Color.Gray,
-                RoundedCornerShape(paddingSmall())
-            )
-            .clickable(
-                indication = null,
-                interactionSource = remember { MutableInteractionSource() })
-            {
-                onClick()
-            }
-
-    ) {
-        Spacer(
-            Modifier
-                .padding(vertical = paddingExtraLarge() + paddingDefault())
+            .padding(end = paddingDefault()),
+        overflow = TextOverflow.Ellipsis,
+        maxLines = 1,
+        style = TextStyle(
+            fontSize = 40.sp,
+            textAlign = TextAlign.End,
         )
+    )
 
-        Text(
-            stringResource(R.string.select_a_category),
-            Modifier
-                .align(Alignment.TopStart)
-                .padding(paddingSmall()),
-        )
+    Box(Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = details.notes,
+            onValueChange = {
+                onUpdateNotes(it)
+            },
 
-        if (categoryId != 0) {
-            Button(
-                onClick = onRemoveCategory,
-                Modifier.align(Alignment.TopEnd),
-                colors = ButtonDefaults.buttonColors(
-                    contentColor = Color.Red,
-                    containerColor = Color.Transparent
-                ),
-                shape = CircleShape
-            ) {
-                Icon(imageVector = Icons.Outlined.RemoveCircleOutline, "")
-            }
-        }
+            trailingIcon = {
 
-        Row(
+            },
+            singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.Center)
-                .offset(y = paddingDefault())
-                .padding(paddingDefault()),
-
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-
-        ) {
-
-
-            Text(
-                categoryName.ifEmpty { stringResource(R.string.no_category) },
-                fontWeight = FontWeight.SemiBold
+                .padding(horizontal = paddingDefault())
+                .padding(top = paddingSmall()),
+            //label = { Text(stringResource(R.string.notes)) },
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Done
+            ),
+            leadingIcon = {
+                Text(
+                    "${stringResource(R.string.notes)}:",
+                    modifier = Modifier.padding(start = paddingSmall())
+                )
+            },
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.background,
+                unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
             )
-//            if (categoryIcon.isNotEmpty()) {
-//                Spacer(Modifier.padding(horizontal = paddingSmall()))
-//                AsyncImage(
-//                    model = "file:///android_asset/${categoryIcon}.svg",
-//                    contentDescription = "",
-//                    Modifier.size(20.dp),
-//                    //colorFilter = ColorFilter.tint(Color.Blue)
-//                )
-//
-//            }
+        )
+        Log.d("TAG", "FieldsCalculator: ${details.images.size}")
+        IconButton(
+            onClick = {
 
+                showTakePhotoDialog()
+            }, Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = paddingDefault(), top = paddingSmall())
+        ) {
+            BadgedBox(badge = {
+                if (details.images.isNotEmpty()) {
+                    Badge(
+                        containerColor = colorResource(R.color.yellow),
+                        contentColor = Color.Black
+                    ) {
+                        Text("${details.images.size}")
+                    }
+                }
+            }, Modifier.padding(paddingTiny())) {
+                Icon(
+                    imageVector = Icons.Default.CameraAlt,
+                    "",
+                )
+            }
 
         }
 
     }
+
+
+    AnimatedVisibility(!visible) {
+        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End) {
+            Button(
+                onClick = {
+                    keyboardController?.hide()
+                    visible = true
+                }, Modifier
+                    .padding(paddingSmall())
+                    .padding(end = paddingSmall())
+            ) {
+                Icon(imageVector = Icons.Default.KeyboardDoubleArrowDown, "")
+            }
+        }
+
+    }
+
+    AnimatedVisibility(visible) {
+        Calculator(
+            details = details,
+            onEntryValue = onEntryValue,
+            onUpdatePrice = {
+                onUpdatePrice(it)
+            },
+            onUpdateInput = { result = it },
+            showDateDialog = showDateDialog,
+            isCompleteCalculator = isCompleteCalculator,
+        )
+    }
+
+    if (!details.isEditRecurring) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = paddingTiny())
+        ) {
+            Checkbox(
+                details.isRecurring,
+                onCheckedChange = {
+                    onUpdateRecurrency(it)
+                },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = colorResource(R.color.yellow),
+                )
+            )
+            Text(stringResource(R.string.repeat_every_month))
+        }
+    }
+
+
 }
+
+
+//@Composable
+//fun CategoryPickerField(
+//    categoryId: Int = 0,
+//    categoryName: String = "",
+//    categoryIcon: String = "",
+//    onClick: () -> Unit,
+//    onRemoveCategory: () -> Unit
+//) {
+//
+//    Box(
+//        Modifier
+//            .fillMaxWidth()
+//            .clip(RoundedCornerShape(paddingDefault()))
+//            .padding(paddingSmall())
+//            .padding(top = paddingDefault())
+//            .border(
+//                0.5.dp,
+//                Color.Gray,
+//                RoundedCornerShape(paddingSmall())
+//            )
+//            .clickable(
+//                indication = null,
+//                interactionSource = remember { MutableInteractionSource() })
+//            {
+//                onClick()
+//            }
+//
+//    ) {
+//        Spacer(
+//            Modifier
+//                .padding(vertical = paddingExtraLarge() + paddingDefault())
+//        )
+//
+//        Text(
+//            stringResource(R.string.select_a_category),
+//            Modifier
+//                .align(Alignment.TopStart)
+//                .padding(paddingSmall()),
+//        )
+//
+//        if (categoryId != 0) {
+//            Button(
+//                onClick = onRemoveCategory,
+//                Modifier.align(Alignment.TopEnd),
+//                colors = ButtonDefaults.buttonColors(
+//                    contentColor = Color.Red,
+//                    containerColor = Color.Transparent
+//                ),
+//                shape = CircleShape
+//            ) {
+//                Icon(imageVector = Icons.Outlined.RemoveCircleOutline, "")
+//            }
+//        }
+//
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .align(Alignment.Center)
+//                .offset(y = paddingDefault())
+//                .padding(paddingDefault()),
+//
+//            horizontalArrangement = Arrangement.Center,
+//            verticalAlignment = Alignment.CenterVertically
+//
+//        ) {
+//
+//
+//            Text(
+//                categoryName.ifEmpty { stringResource(R.string.no_category) },
+//                fontWeight = FontWeight.SemiBold
+//            )
+//
+//        }
+//
+//    }
+//}

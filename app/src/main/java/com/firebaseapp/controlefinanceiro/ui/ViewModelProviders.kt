@@ -24,7 +24,11 @@ object ViewModelProviders {
         }
 
         initializer {
-            RegisterViewModel(getApplication().wordRepository, getApplication().categoryRepository)
+            RegisterViewModel(
+                getApplication().wordRepository,
+                getApplication().categoryRepository,
+                createSavedStateHandle()
+            )
         }
 
         initializer {

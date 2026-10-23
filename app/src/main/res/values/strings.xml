@@ -29,5 +29,11 @@
     <string name="today">Today</string>
     <string name="yesterday">Yesterday</string>
     <string name="tomorrow">Tomorrow</string>
+    <string name="camera">Camera</string>
+    <string name="gallery">Gallery</string>
+    <string name="repeat_every_month">Repeat every month</string>
+    <string name="to_take_photos_grant_the_app_permission_to_access_the_camera">To take photos, grant the app permission to access the camera.</string>
+    <string name="later">Later</string>
+    <string name="continue_">Continue</string>
 
 </resources>
