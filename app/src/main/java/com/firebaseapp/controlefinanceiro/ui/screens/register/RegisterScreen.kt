@@ -1,6 +1,10 @@
 package com.firebaseapp.controlefinanceiro.ui.screens.register
 
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -35,10 +39,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
-import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -52,7 +54,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -93,6 +94,7 @@ import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
 import com.firebaseapp.controlefinanceiro.defaults.paddingTiny
+import com.firebaseapp.controlefinanceiro.helpers.PhotoFilesHandler
 import com.firebaseapp.controlefinanceiro.helpers.dateToString
 import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
 import com.firebaseapp.controlefinanceiro.ui.calculator.Calculator
@@ -181,11 +183,23 @@ fun RegisterScreenBody(
     images: List<String> = mutableListOf(),
 ) {
 
+    val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
 
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var showPhotoOptionsDialog by rememberSaveable { mutableStateOf(false) }
     var showPhotosDialog by rememberSaveable { mutableStateOf(false) }
-    val haptic = LocalHapticFeedback.current
+
+    val launcher = rememberLauncherForActivityResult(contract =
+        ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            val stream = context.contentResolver.openInputStream(uri)
+            val bitmap = BitmapFactory.decodeStream(stream)
+            val savedFileName = PhotoFilesHandler(context).saveBitmapToCache(bitmap)
+            val newImages = images + savedFileName
+            onUpdate(registerUiState.details.copy(images = newImages))
+        }
+    }
 
     // flag to control the resultForCamera consumption
     var cameraResultFlag by remember { mutableStateOf(resultForCamera) }
@@ -230,7 +244,7 @@ fun RegisterScreenBody(
         ImageOptionsDialog(
             onCameraSelected = navigateCamera,
             onGallerySelected = {
-
+                launcher.launch("image/*")
             },
             onDismissRequest = { showPhotoOptionsDialog = false })
     }

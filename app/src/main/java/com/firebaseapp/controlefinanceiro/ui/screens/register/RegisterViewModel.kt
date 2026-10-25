@@ -123,6 +123,22 @@ fun RegisterDetails.toWord(): Word {
     )
 }
 
+fun RegisterDetails.toNewWord(): Word {
+    return Word(
+        date = date,
+        type = if (selectedOption == 0) WordType.Expense else WordType.Income,
+        value = toBigDecimal(price),
+        categoryId = currentCategoryId,
+        categoryName = categoryName,
+        categoryIcon = categoryIcon,
+        notes = notes,
+        images = images,
+        isRecurring = isRecurring,
+        recurringGroup = recurringGroupId,
+        endDate = endDate,
+    )
+}
+
 fun RegisterDetails.toWordException(
     wordId: Int,
     occurrenceIndex: Long,

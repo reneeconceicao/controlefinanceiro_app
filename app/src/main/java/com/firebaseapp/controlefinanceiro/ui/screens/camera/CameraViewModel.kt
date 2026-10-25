@@ -29,17 +29,6 @@ class CameraViewModel(
         }
     }
 
-    fun saveBitmapToCache(context: Context, bitmap: Bitmap): String {
-        val fileName = "photo_${System.currentTimeMillis()}.jpg"
-        val file = File(context.cacheDir, fileName)
-
-        FileOutputStream(file).use { output ->
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, output)
-        }
-
-        return fileName//Uri.fromFile(file)
-    }
-
     private fun updateCapturedPhotoState(updatedPhoto: Bitmap?) {
         _state.value.capturedImage?.recycle()
         _state.value = _state.value.copy(capturedImage = updatedPhoto)

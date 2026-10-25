@@ -35,5 +35,8 @@
     <string name="to_take_photos_grant_the_app_permission_to_access_the_camera">To take photos, grant the app permission to access the camera.</string>
     <string name="later">Later</string>
     <string name="continue_">Continue</string>
+    <string name="do_you_want_to_edit_only_this_month_or_this_month_and_future_months">Do you want to edit only this month or this month and future months?</string>
+    <string name="only_this_month">Only this month</string>
+    <string name="this_and_future_months">This and future months</string>
 
 </resources>

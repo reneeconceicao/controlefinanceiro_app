@@ -29,6 +29,9 @@ interface WordDao {
     @Delete
     suspend fun delete(word: Word)
 
+    @Delete
+    suspend fun deleteException(exception: WordException)
+
     @Query("SELECT * from words WHERE id = :id")
     fun getWord(id: Int): Flow<Word?>
 
@@ -61,5 +64,11 @@ interface WordDao {
 
     @Query("SELECT * from word_exception WHERE categoryId = :id")
     fun exceptionsByCategory(id: Int): List<WordException>
+
+    @Query("SELECT * from words WHERE recurringGroup = :recurringGroup")
+    fun wordsByRecurringGroup(recurringGroup: String): List<Word>
+
+    @Query("SELECT * from word_exception WHERE recurringGroup = :recurringGroup")
+    fun exceptionsByRecurringGroup(recurringGroup: String): List<WordException>
 
 }

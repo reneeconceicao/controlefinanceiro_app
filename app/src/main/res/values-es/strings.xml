@@ -34,5 +34,9 @@
     <string name="to_take_photos_grant_the_app_permission_to_access_the_camera">Para tirar fotos, permite que la aplicación acceda a la cámara.</string>
     <string name="later">Después</string>
     <string name="continue_">Continuar</string>
+    <string name="do_you_want_to_edit_only_this_month_or_this_month_and_future_months">¿Deseas editar solo este mes o este mes y los siguientes?</string>
+    <string name="only_this_month">Solo este mes</string>
+    <string name="this_and_future_months">Este y los próximos meses</string>
+
 
 </resources>

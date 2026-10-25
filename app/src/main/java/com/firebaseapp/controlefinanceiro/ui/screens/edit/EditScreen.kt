@@ -22,9 +22,13 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
+import com.firebaseapp.controlefinanceiro.ui.components.SaveOptionsDialog
 import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterScreenBody
 
 
@@ -64,6 +68,26 @@ fun EditScreen(
                 )
             }
         ) { innerPadding ->
+
+            var showSaveOptionsDialog by remember { mutableStateOf(false) }
+
+
+            if (showSaveOptionsDialog) {
+                SaveOptionsDialog(
+                    thisMonthSelected = {
+                        viewModel.updateRecurrencyWord(viewModel.recurrenceIndex ?: 0)
+                        navigateBack()
+                    },
+                    thisMothAndNextSelected = {
+                        viewModel.updateThisWordAndNext(viewModel.recurrenceIndex ?: 0)
+                        navigateBack()
+                    },
+                    onDismissRequest = {
+                        showSaveOptionsDialog = false
+                    }
+                )
+            }
+
             Column(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -72,14 +96,21 @@ fun EditScreen(
             ) {
 
 
-
                 RegisterScreenBody(
                     registerUiState = registerUiState,
                     onUpdate = viewModel::updateUiState,
                     onSave = {
                         if (viewModel.isEditingRecurrency) {
-                            viewModel.updateRecurrencyWord(viewModel.recurrenceIndex ?: 0)
-                            navigateBack()
+                            if (viewModel.isDifferentMonths(
+                                    viewModel.originalDate.value,
+                                    registerUiState.details.date
+                                )
+                            ) {
+                                viewModel.updateRecurrencyWord(viewModel.recurrenceIndex ?: 0)
+                                navigateBack()
+                            } else {
+                                showSaveOptionsDialog = true
+                            }
                         } else {
                             viewModel.updateOneTimeWord()
                             navigateBack()

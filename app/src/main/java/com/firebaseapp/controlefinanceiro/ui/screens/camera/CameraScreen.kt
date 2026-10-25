@@ -35,13 +35,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.firebaseapp.controlefinanceiro.helpers.PhotoFilesHandler
 import java.util.concurrent.Executor
 
 
@@ -56,7 +57,7 @@ fun CameraScreen(
 
         onPhotoCaptured = {
             viewModel.storePhotoInGallery(it)
-            val fileName = viewModel.saveBitmapToCache(context, it)
+            val fileName = PhotoFilesHandler(context).saveBitmapToCache( it)
             navigateBack(fileName)
         },
         lastCapturedPhoto = cameraState.capturedImage
