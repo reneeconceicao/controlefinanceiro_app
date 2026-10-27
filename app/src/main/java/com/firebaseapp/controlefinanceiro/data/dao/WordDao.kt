@@ -15,7 +15,7 @@ import java.util.Date
 @Dao
 interface WordDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(word: Word)
+    suspend fun insert(word: Word): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertException(word: WordException)

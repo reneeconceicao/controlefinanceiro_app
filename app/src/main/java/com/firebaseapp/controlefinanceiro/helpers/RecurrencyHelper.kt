@@ -143,6 +143,26 @@ fun occurrenceIndex(
     return months / interval
 }
 
+fun occurrenceIndex(
+    start: LocalDateTime,
+    target: LocalDateTime,
+    interval: Int
+): Long? {
+    // calculate interval between dates
+    val months = ChronoUnit.MONTHS.between(
+        YearMonth.from(start),
+        YearMonth.from(target)
+    )
+
+    // return null if months < 0 or skip "empty months"
+    // ex: 01/2026 with interval 2 the next is 03/2026.
+    if (months < 0 || months % interval != 0L) {
+        return null
+    }
+
+    return months / interval
+}
+
 fun getOccurrenceDate(
     startDate: LocalDateTime,
     occurrenceIndex: Int

@@ -47,9 +47,9 @@ class WordRepository(private val context: Context, private val itemDao: WordDao)
     fun getWordExceptionStream(id: Int, occurrenceIndex: Long): Flow<WordException?> =
         itemDao.getException(id, occurrenceIndex)
 
-    suspend fun insertWord(word: Word) {
+    suspend fun insertWord(word: Word): Long {
         PhotoFilesHandler(context).saveFiles(word)
-        itemDao.insert(word)
+        return itemDao.insert(word)
     }
 
     suspend fun insertWordException(word: WordException) = itemDao.insertException(word)

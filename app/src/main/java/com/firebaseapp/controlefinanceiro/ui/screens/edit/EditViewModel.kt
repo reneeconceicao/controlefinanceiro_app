@@ -1,15 +1,20 @@
 package com.firebaseapp.controlefinanceiro.ui.screens.edit
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.toInt
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.firebaseapp.controlefinanceiro.data.entities.CategoryType
+import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import com.firebaseapp.controlefinanceiro.data.repositories.CategoryRepository
 import com.firebaseapp.controlefinanceiro.data.repositories.WordRepository
+import com.firebaseapp.controlefinanceiro.helpers.calculateWordOccurrences
 import com.firebaseapp.controlefinanceiro.helpers.findExceptions
+import com.firebaseapp.controlefinanceiro.helpers.occurrenceIndex
 import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterDetails
 import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterUiState
 import com.firebaseapp.controlefinanceiro.ui.screens.register.toDetails
@@ -23,9 +28,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.YearMonth
 import java.util.UUID
+import kotlin.Int
 
 class EditViewModel(
     private val wordRepository: WordRepository,
@@ -192,56 +199,45 @@ class EditViewModel(
 
                 val futureWords =
                     wordRepository.wordsByRecurringGroup(originalWord.recurringGroup)
-                        .filter { newWord.date <= it.date}
+                        .filter { newWord.date <= it.date }
 
                 futureWords.forEach {
-                    wordRepository.deleteWord(it)
+                    if (it.isRecurring) {
+                        wordRepository.deleteWord(it)
+                    }
                 }
+
+                val newWordId = wordRepository.insertWord(newWord).toInt()
 
                 val futureExceptions =
                     wordRepository.exceptionsByRecurringGroup(originalWord.recurringGroup)
-                        .filter { newWord.date <= it.date}
+                        .filter { newWord.date <= it.date }
 
                 futureExceptions.forEach {
-                    wordRepository.deleteException(it)
+                    if (!it.isDeleted) {
+                        wordRepository.deleteException(it)
+                    } else {
+                        val oldBaseDate = originalWord.date.plusMonths(it.occurrenceIndex)
+                        val index =
+                            occurrenceIndex(newWord.date, oldBaseDate, newWord.interval) ?: 0
+                        val exception =
+                            it.copy(wordId = newWordId, occurrenceIndex = index, isDeleted = true)
+                        wordRepository.deleteException(it)
+                        wordRepository.insertWordException(exception)
+                    }
                 }
-
-
-                wordRepository.insertWord(newWord)
-
 
                 val updateOriginalWord = originalWord.copy(
                     endDate = registerState.value.date
-                        .withDayOfMonth(1)
                         .minusSeconds(1)
                 )
 
                 wordRepository.updateWord(updateOriginalWord, originalImages.value)
 
-
-
             }
-            var exception =
-                registerState.value.toWordException(
-                    wordId = wordId,
-                    occurrenceIndex = occurrenceIndex,
-                    recurringGroupId = recurringGroupId.value.ifEmpty {
-                        UUID.randomUUID().toString()
-                    }
-                )
-
-            originalDate.value?.let { originalDate ->
-                if (isDifferentMonths(date1 = originalDate, date2 = exception.date)) {
-                    exception = exception.copy(isDeleted = true)
-                    val replaceWord = exception.toWord()
-                    wordRepository.insertWord(replaceWord.copy(recurringGroup = recurringGroupId.value))
-                }
-            }
-
-            wordRepository.insertWordException(exception)
-
         }
     }
+
 
     fun isDifferentMonths(date1: LocalDateTime?, date2: LocalDateTime?): Boolean {
         return YearMonth.from(date1) != YearMonth.from(
