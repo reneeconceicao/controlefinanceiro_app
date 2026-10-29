@@ -204,6 +204,7 @@ class EditViewModel(
                 futureWords.forEach {
                     if (it.isRecurring) {
                         wordRepository.deleteWord(it)
+                        Log.d("TAG", "deleted: $it")
                     }
                 }
 
@@ -229,6 +230,7 @@ class EditViewModel(
 
                 val updateOriginalWord = originalWord.copy(
                     endDate = registerState.value.date
+                        .withDayOfMonth(1)
                         .minusSeconds(1)
                 )
 

@@ -42,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -58,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.firebaseapp.compose_lucide_icons.helpers.IconsHelper
 import com.firebaseapp.controlefinanceiro.R
+import com.firebaseapp.controlefinanceiro.data.entities.Word
 import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
@@ -104,12 +106,50 @@ fun HomeScreen(
 
 
         }) { innerPadding ->
+
+        val context = LocalContext.current
+        var showWordOptions by rememberSaveable { mutableStateOf(false) }
+
+        //save id and index from current word selection
+        var currentWord: Pair<Int?, Long?> by rememberSaveable { mutableStateOf(null to 0) }
+
+        if (showWordOptions) {
+
+            currentWord.let { (wordId, index) ->
+
+                wordId?.let {
+                    DetailsDialog(
+                        context = context,
+                        wordId = wordId,
+                        onEdit = { word ->
+                            if (word.isRecurring) {
+                                navigateToEditRecurring(word.id, index)
+                            } else {
+                                navigateToEdit(word.id)
+                            }
+
+                            currentWord = Pair(null, 0)
+                        },
+                        onDelete = { (word, deleteNext, deleteAll) ->
+
+                            viewModel.deleteWord(word, index, deleteNext = deleteNext, deleteAll = deleteAll)
+
+                            currentWord = Pair(null, 0)
+                        },
+                        onDismissRequest = {
+                            showWordOptions = false
+                        }
+                    )
+                }
+            }
+        }
+
+
         AnimatedVisibility(visible = !viewModel.loading.value, enter = fadeIn()) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-
                 Text(
                     text = stringResource(R.string.app_name),
                     Modifier
@@ -139,6 +179,10 @@ fun HomeScreen(
 
                 HomeList(
                     homeUiState = homeUiState.value,
+                    showWordOptions = { word, index ->
+                        currentWord = Pair(word, index)
+                        showWordOptions = true
+                    },
                     onEditNavigate = navigateToEdit,
                     onEditNavigateRecurring = navigateToEditRecurring
                 )
@@ -151,6 +195,7 @@ fun HomeScreen(
 @Composable
 fun HomeList(
     homeUiState: HomeUiState,
+    showWordOptions: (Int?, Long?) -> Unit,
     onEditNavigate: (Int) -> Unit,
     onEditNavigateRecurring: (Int, Long?) -> Unit,
 ) {
@@ -198,6 +243,8 @@ fun HomeList(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
+                                    showWordOptions(word.id, index)// = true
+                                    return@clickable
                                     if (word.isRecurring) {
                                         onEditNavigateRecurring(word.id, index)
                                     } else {

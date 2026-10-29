@@ -9,12 +9,11 @@ import com.firebaseapp.controlefinanceiro.ui.screens.budgets.BudgetScreen
 import com.firebaseapp.controlefinanceiro.ui.screens.home.HomeScreen
 import com.firebaseapp.controlefinanceiro.ui.screens.reports.ReportScreen
 import com.firebaseapp.controlefinanceiro.ui.screens.settings.SettingsScreen
-import java.util.Date
 
 @Composable
-fun MainNavHost(
+fun MenuNavHost(
     navController: NavHostController,
-    startDestination: MainDestination,
+    startDestination: MenuDestination,
     modifier: Modifier = Modifier,
     navigateToRegister: () -> Unit,
     navigateToEdit: (Int) -> Unit,
@@ -26,19 +25,19 @@ fun MainNavHost(
         navController,
         startDestination = startDestination.route
     ) {
-        MainDestination.entries.forEach { destination ->
+        MenuDestination.entries.forEach { destination ->
             composable(destination.route) {
                 when (destination) {
-                    MainDestination.HOME -> HomeScreen(
+                    MenuDestination.HOME -> HomeScreen(
                         modifier = modifier,
                         navigateToRegister = navigateToRegister,
                         navigateToEdit = navigateToEdit,
                         navigateToEditRecurring = navigateToEditRecurring,
                     )
 
-                    MainDestination.BUDGET -> BudgetScreen(modifier = modifier, {}, {})
-                    MainDestination.REPORT -> ReportScreen(modifier = modifier)
-                    MainDestination.SETTINGS -> SettingsScreen(
+                    MenuDestination.BUDGET -> BudgetScreen(modifier = modifier, {}, {})
+                    MenuDestination.REPORT -> ReportScreen(modifier = modifier)
+                    MenuDestination.SETTINGS -> SettingsScreen(
                         modifier = modifier,
                         navigateExpenseCategories = navigateExpenseCategories,
                         navigateIncomeCategories = navigateIncomeCategories

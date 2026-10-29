@@ -19,9 +19,8 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.firebaseapp.controlefinanceiro.ui.components.hapticClick
-import com.firebaseapp.controlefinanceiro.ui.navigation.MainDestination
-import com.firebaseapp.controlefinanceiro.ui.navigation.MainNavHost
-import java.util.Date
+import com.firebaseapp.controlefinanceiro.ui.navigation.MenuDestination
+import com.firebaseapp.controlefinanceiro.ui.navigation.MenuNavHost
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,7 +32,7 @@ fun MainScreen(
     navigateIncomeCategories: () -> Unit,
 ) {
     val navController = rememberNavController()
-    val startDestination = MainDestination.HOME
+    val startDestination = MenuDestination.HOME
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -43,7 +42,7 @@ fun MainScreen(
         contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
             NavigationBar(windowInsets = NavigationBarDefaults.windowInsets) {
-                MainDestination.entries.forEachIndexed { _, destination ->
+                MenuDestination.entries.forEachIndexed { _, destination ->
                     NavigationBarItem(
                         selected = currentRoute == destination.route,
                         onClick = hapticClick {
@@ -66,7 +65,7 @@ fun MainScreen(
             }
         }
     ) { innerPadding ->
-        MainNavHost(
+        MenuNavHost(
             navController,
             startDestination,
             modifier = Modifier.padding(innerPadding),
@@ -74,7 +73,7 @@ fun MainScreen(
             navigateToEdit = navigateToEdit,
             navigateExpenseCategories = navigateExpenseCategories,
             navigateIncomeCategories = navigateIncomeCategories,
-            navigateToEditRecurring = navigateToEditRecurring
+            navigateToEditRecurring = navigateToEditRecurring,
         )
     }
 }

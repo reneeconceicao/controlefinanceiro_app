@@ -37,5 +37,13 @@
     <string name="do_you_want_to_edit_only_this_month_or_this_month_and_future_months">Deseja alterar apenas este mês ou este mês e os próximos?</string>
     <string name="only_this_month">Apenas este mês</string>
     <string name="this_and_future_months">Este mês e os próximos</string>
+    <string name="delete">Apagar</string>
+    <string name="edit">Editar</string>
+    <string name="this_record_repeats_every_month_what_would_you_like_to_delete">Este é um registro que se repete todos os meses. O que deseja apagar?</string>
+    <string name="delete_all_records">Apagar todos os registros</string>
+    <string name="cancel">Cancelar</string>
+    <string name="are_you_sure_you_want_to_delete">Tem certeza que deseja apagar?</string>
+    <string name="delete_this_and_next_ones">Apagar este e os próximos</string>
+    <string name="delete_only_this">Apagar apenas este</string>
 
 </resources>

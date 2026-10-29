@@ -7,14 +7,19 @@ import com.firebaseapp.controlefinanceiro.data.entities.Word
 import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import com.firebaseapp.controlefinanceiro.data.repositories.WordRepository
 import com.firebaseapp.controlefinanceiro.helpers.calculateWordOccurrences
+import com.firebaseapp.controlefinanceiro.helpers.findExceptions
 import com.firebaseapp.controlefinanceiro.helpers.toMonthYear
 import com.firebaseapp.controlefinanceiro.helpers.toYear
 import com.firebaseapp.controlefinanceiro.ui.screens.home.HomeViewModel.Companion.ALL_TIME_FLAG
+import com.firebaseapp.controlefinanceiro.ui.screens.register.toWord
+import com.firebaseapp.controlefinanceiro.ui.screens.register.toWordException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -67,7 +72,8 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
                 words = words,
                 exceptions = exceptions,
                 startDate = fromDate,
-                endDate = toDate)
+                endDate = toDate
+            )
 
             val periodLabel = when (currentFilter.value) {
                 DateFilter.ALL -> ALL_TIME_FLAG
@@ -99,8 +105,6 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
                 started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
                 initialValue = HomeUiState()
             )
-
-
 
 
     fun changePeriod(value: Int) {
@@ -179,6 +183,103 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
             }
 
 
+        }
+
+    }
+
+    fun deleteWord(word: Word, recurrenceIndex: Long?, deleteNext: Boolean, deleteAll: Boolean = false) {
+
+        viewModelScope.launch(Dispatchers.IO) {
+
+            if (deleteAll) {
+                deleteAllOccurrences(word)
+                wordRepository.deleteWord(word)
+                return@launch
+            }
+
+            if (word.isRecurring) {
+                val exceptions = wordRepository.getWordExceptionsByWordAsync(word.id)
+
+                word.findExceptions(
+                    recurrenceIndex ?: 0,
+                    exceptions = exceptions,
+                    onOccurrenceFound = { foundWord ->
+                        viewModelScope.launch(Dispatchers.IO) {
+                            if (deleteNext) {
+                                val newWord = word.copy(endDate = foundWord.date.minusSeconds(1))
+                                wordRepository.updateWord(newWord)
+                                deleteFutureOccurrences(foundWord)
+                            } else {
+                                val exception = foundWord.toWordException(
+                                    occurrenceIndex = recurrenceIndex ?: 0,
+                                    isDeleted = true
+                                )
+                                wordRepository.insertWordException(exception)
+                            }
+                        }
+                    },
+                    onExceptionFound = { exception ->
+                        viewModelScope.launch(Dispatchers.IO) {
+                            if (deleteNext) {
+                                val newWord = word.copy(endDate = exception.date.minusSeconds(1))
+                                wordRepository.updateWord(newWord)
+                                deleteFutureOccurrences(exception.toWord())
+                            } else {
+                                wordRepository.deleteException(exception)
+                            }
+                        }
+                    })
+
+            } else {
+                wordRepository.deleteWord(word)
+            }
+        }
+    }
+
+    private fun deleteFutureOccurrences(word: Word) {
+
+        viewModelScope.launch(Dispatchers.IO) {
+
+            val futureWords =
+                wordRepository.wordsByRecurringGroup(word.recurringGroup)
+                    .filter { word.date <= it.date }
+
+            futureWords.forEach {
+                if (it.isRecurring) {
+                    wordRepository.deleteWord(it)
+                }
+            }
+
+            val futureExceptions =
+                wordRepository.exceptionsByRecurringGroup(word.recurringGroup)
+                    .filter { word.date <= it.date }
+
+            futureExceptions.forEach {
+                wordRepository.deleteException(it)
+            }
+
+        }
+    }
+
+    private fun deleteAllOccurrences(word: Word) {
+
+        viewModelScope.launch(Dispatchers.IO) {
+
+            val allWords =
+                wordRepository.wordsByRecurringGroup(word.recurringGroup)
+
+            allWords.forEach {
+                if (it.isRecurring) {
+                    wordRepository.deleteWord(it)
+                }
+            }
+
+            val allExceptions =
+                wordRepository.exceptionsByRecurringGroup(word.recurringGroup)
+
+            allExceptions.forEach {
+                wordRepository.deleteException(it)
+            }
         }
     }
 

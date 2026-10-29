@@ -116,7 +116,7 @@ fun Word.findExceptions(
         return
     }
 
-    //if found a occurence, adjust date
+    //if found an occurrence, adjust date
     val date = getOccurrenceDate(this.date, recurrenceIndex.toInt())
     val recurringWord = this.copy(id = id, date = date)
     onOccurrenceFound(recurringWord)

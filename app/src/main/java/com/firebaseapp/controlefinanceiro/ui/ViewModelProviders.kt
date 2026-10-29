@@ -11,8 +11,9 @@ import com.firebaseapp.controlefinanceiro.data.datastore.PreferencesDataStore
 import com.firebaseapp.controlefinanceiro.ui.screens.budgets.BudgetViewModel
 import com.firebaseapp.controlefinanceiro.ui.screens.categories.ExpenseCategoriesViewModel
 import com.firebaseapp.controlefinanceiro.ui.screens.categories.IncomeCategoriesViewModel
-import com.firebaseapp.controlefinanceiro.ui.screens.home.HomeViewModel
 import com.firebaseapp.controlefinanceiro.ui.screens.edit.EditViewModel
+import com.firebaseapp.controlefinanceiro.ui.screens.home.DetailsViewModel
+import com.firebaseapp.controlefinanceiro.ui.screens.home.HomeViewModel
 import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterViewModel
 
 
@@ -58,6 +59,10 @@ object ViewModelProviders {
         initializer {
             val repository = PreferencesDataStore(getApplication())
             DataStoreViewModel(repository)
+        }
+
+        initializer {
+            DetailsViewModel(getApplication().wordRepository)
         }
 
     }

@@ -1,17 +1,14 @@
 package com.firebaseapp.controlefinanceiro.ui.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.TrackChanges
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.firebaseapp.controlefinanceiro.R
 
-enum class MainDestination(
+enum class MenuDestination(
     val route: String,
     val label: Int,
     val icon: ImageVector,

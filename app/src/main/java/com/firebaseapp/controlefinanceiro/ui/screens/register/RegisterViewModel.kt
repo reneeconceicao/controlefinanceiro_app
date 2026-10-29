@@ -176,6 +176,23 @@ fun Word.toDetails(): RegisterDetails {
     )
 }
 
+fun Word.toWordException(occurrenceIndex: Long, isDeleted: Boolean): WordException {
+    return WordException(
+        wordId = id,
+        date = date,
+        type = type,
+        value = value,
+        categoryId = categoryId,
+        categoryName = categoryName,
+        categoryIcon = categoryIcon,
+        notes = notes,
+        images = images,
+        occurrenceIndex = occurrenceIndex,
+        recurringGroup = recurringGroup,
+        isDeleted = isDeleted
+    )
+}
+
 fun WordException.toDetails(): RegisterDetails {
     return RegisterDetails(
         id = id,

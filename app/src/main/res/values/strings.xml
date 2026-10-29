@@ -38,5 +38,13 @@
     <string name="do_you_want_to_edit_only_this_month_or_this_month_and_future_months">Do you want to edit only this month or this month and future months?</string>
     <string name="only_this_month">Only this month</string>
     <string name="this_and_future_months">This and future months</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="this_record_repeats_every_month_what_would_you_like_to_delete">This record repeats every month. What would you like to delete?</string>
+    <string name="delete_all_records">Delete all records</string>
+    <string name="cancel">Cancel</string>
+    <string name="are_you_sure_you_want_to_delete">Are you sure you want to delete?</string>
+    <string name="delete_this_and_next_ones">Delete this and next ones</string>
+    <string name="delete_only_this">Delete only this</string>
 
 </resources>
