@@ -14,8 +14,8 @@
     <string name="select_the_date">Select the date</string>
     <string name="category_two_dots">"Category: "</string>
     <string name="no_category">No Category</string>
-    <string name="select_a_expense_category">Select a expense category</string>
-    <string name="select_a_income_category">Select a income category</string>
+    <string name="select_a_expense_category">Select an expense category</string>
+    <string name="select_a_income_category">Select an income category</string>
     <string name="select_a_category">Select a category</string>
     <string name="all_time">All time</string>
     <string name="add_register">Register</string>
@@ -23,7 +23,7 @@
     <string name="all">All</string>
     <string name="month">Month</string>
     <string name="year">Year</string>
-    <string name="total_balance">Total balance</string>
+    <string name="period_balance">Period balance</string>
     <string name="monthly_balance">Monthly balance</string>
     <string name="yearly_balance">Yearly balance</string>
     <string name="today">Today</string>
@@ -46,5 +46,6 @@
     <string name="are_you_sure_you_want_to_delete">Are you sure you want to delete?</string>
     <string name="delete_this_and_next_ones">Delete this and next ones</string>
     <string name="delete_only_this">Delete only this</string>
+    <string name="period">Period</string>
 
 </resources>

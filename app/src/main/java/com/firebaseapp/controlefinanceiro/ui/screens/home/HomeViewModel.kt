@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.firebaseapp.controlefinanceiro.data.entities.Word
 import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import com.firebaseapp.controlefinanceiro.data.repositories.WordRepository
-import com.firebaseapp.controlefinanceiro.helpers.calculateWordOccurrences
-import com.firebaseapp.controlefinanceiro.helpers.findExceptions
+import com.firebaseapp.controlefinanceiro.recurrency.calculateWordOccurrences
+import com.firebaseapp.controlefinanceiro.recurrency.findExceptions
 import com.firebaseapp.controlefinanceiro.helpers.toMonthYear
 import com.firebaseapp.controlefinanceiro.helpers.toYear
 import com.firebaseapp.controlefinanceiro.ui.screens.home.HomeViewModel.Companion.ALL_TIME_FLAG

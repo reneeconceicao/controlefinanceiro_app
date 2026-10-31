@@ -15,6 +15,7 @@ import com.firebaseapp.controlefinanceiro.ui.screens.edit.EditViewModel
 import com.firebaseapp.controlefinanceiro.ui.screens.home.DetailsViewModel
 import com.firebaseapp.controlefinanceiro.ui.screens.home.HomeViewModel
 import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterViewModel
+import com.firebaseapp.controlefinanceiro.ui.screens.reports.ReportViewModel
 
 
 object ViewModelProviders {
@@ -22,6 +23,10 @@ object ViewModelProviders {
 
         initializer {
             HomeViewModel(getApplication().wordRepository)
+        }
+
+        initializer {
+            ReportViewModel(getApplication().wordRepository)
         }
 
         initializer {

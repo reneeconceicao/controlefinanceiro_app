@@ -117,6 +117,38 @@ fun dateToString(date: LocalDateTime): String {
     )
 }
 
+@Composable
+fun dateToDateWeekString(date: LocalDateTime): String {
+    val dateOnly = date.toLocalDate()
+    val today = LocalDate.now()
+
+    if (dateOnly == today) {
+        return stringResource(R.string.today)
+    }
+
+    if (dateOnly == today.minusDays(1)) {
+        return stringResource(R.string.yesterday)
+    }
+
+    if (dateOnly == today.plusDays(1)) {
+        return stringResource(R.string.tomorrow)
+    }
+
+    val locale = LocalLocale.current.platformLocale
+
+    val formattedDate = date.format(
+        DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+            .withLocale(locale)
+    )
+
+    val weekDay = date.format(
+        DateTimeFormatter.ofPattern("EEEE", locale)
+    )
+
+    return "$formattedDate - $weekDay"
+
+}
+
 fun adjustMonth(
     date: LocalDateTime,
     month: LocalDateTime

@@ -22,7 +22,7 @@
     <string name="all">Tudo</string>
     <string name="month">Mês</string>
     <string name="year">Ano</string>
-    <string name="total_balance">Saldo total</string>
+    <string name="period_balance">Saldo do período</string>
     <string name="monthly_balance">Saldo do mês</string>
     <string name="yearly_balance">Saldo do ano</string>
     <string name="today">Hoje</string>
@@ -45,5 +45,6 @@
     <string name="are_you_sure_you_want_to_delete">Tem certeza que deseja apagar?</string>
     <string name="delete_this_and_next_ones">Apagar este e os próximos</string>
     <string name="delete_only_this">Apagar apenas este</string>
+    <string name="period">Período</string>
 
 </resources>

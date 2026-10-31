@@ -4,17 +4,14 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.toInt
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.firebaseapp.controlefinanceiro.data.entities.CategoryType
-import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import com.firebaseapp.controlefinanceiro.data.repositories.CategoryRepository
 import com.firebaseapp.controlefinanceiro.data.repositories.WordRepository
-import com.firebaseapp.controlefinanceiro.helpers.calculateWordOccurrences
-import com.firebaseapp.controlefinanceiro.helpers.findExceptions
-import com.firebaseapp.controlefinanceiro.helpers.occurrenceIndex
+import com.firebaseapp.controlefinanceiro.recurrency.findExceptions
+import com.firebaseapp.controlefinanceiro.recurrency.occurrenceIndex
 import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterDetails
 import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterUiState
 import com.firebaseapp.controlefinanceiro.ui.screens.register.toDetails
@@ -28,7 +25,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.YearMonth
 import java.util.UUID

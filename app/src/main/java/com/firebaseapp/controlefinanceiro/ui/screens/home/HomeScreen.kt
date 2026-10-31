@@ -59,7 +59,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.firebaseapp.compose_lucide_icons.helpers.IconsHelper
 import com.firebaseapp.controlefinanceiro.R
-import com.firebaseapp.controlefinanceiro.data.entities.Word
 import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
@@ -462,7 +461,7 @@ fun BalancePanel(homeUiState: HomeUiState) {
     ) {
         Column {
             val balanceLabel = when (homeUiState.currentFilter) {
-                DateFilter.ALL -> stringResource(R.string.total_balance)
+                DateFilter.ALL -> stringResource(R.string.period_balance)
                 DateFilter.MONTH -> stringResource(R.string.monthly_balance)
                 DateFilter.YEAR -> stringResource(R.string.yearly_balance)
             }

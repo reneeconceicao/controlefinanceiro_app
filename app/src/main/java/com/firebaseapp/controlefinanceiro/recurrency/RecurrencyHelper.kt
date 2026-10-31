@@ -1,10 +1,14 @@
-package com.firebaseapp.controlefinanceiro.helpers
+package com.firebaseapp.controlefinanceiro.recurrency
 
+import android.util.Log
 import com.firebaseapp.controlefinanceiro.data.entities.Word
 import com.firebaseapp.controlefinanceiro.data.entities.WordException
+import com.firebaseapp.controlefinanceiro.ui.screens.reports.atStartOfDay
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.temporal.ChronoUnit
+import kotlin.collections.count
 
 
 fun calculateWordOccurrences(
@@ -97,6 +101,89 @@ fun calculateWordOccurrences(
     return result.sortedBy { it.first.date }
 }
 
+fun calculateWordOccurrencesReport(
+    words: List<Word>,
+    exceptions: List<WordException>,
+    startDate: LocalDateTime,
+    endDate: LocalDateTime
+): List<Pair<Word, Long?>> {
+
+    // insert a pair with Word and an index
+    // it is: (month interval amount between word to filter month)
+    // example (word.date = 10/2026 --- filterDate 12/2026 --- index = 2)
+
+    val result = mutableListOf<Pair<Word, Long?>>()
+
+    // filter one time words by not isRecurrency and date filter interval
+    val wordsList: List<Pair<Word, Long>> =
+        words.filter { !it.isRecurring && (it.date in startDate..endDate) }.map { Pair(it, 0) }
+
+
+    Log.d("TAG", "start: $startDate")
+    // filter recurring words
+    val wordsRecurrency: List<Pair<Word, Long?>> = words
+        .filter { it.isRecurring }
+        .flatMap { word ->
+
+            val listOfIndexes = occurrenceIndexReport(
+                word.date.toLocalDate(),
+                endDate.toLocalDate(),
+                word.interval
+            )
+
+            listOfIndexes.mapNotNull { index ->
+
+                if (index == null) return@mapNotNull null
+
+                val occurrenceDate = getOccurrenceDate(word.date, index.toInt())
+
+                // if word.endDate equals null, no end date to show
+                if (word.endDate == null) {
+                    // only past registers don't show
+                    if (occurrenceDate < startDate) {
+                        return@mapNotNull null
+                    }
+                } else {
+                    // only range data show until word.endDate
+                    if (occurrenceDate < startDate || occurrenceDate > word.endDate) {
+                        return@mapNotNull null
+                    }
+                }
+
+                val exception = exceptions.find {
+                    it.wordId == word.id && it.occurrenceIndex == index
+                }
+
+                when {
+                    exception?.isDeleted == true -> null
+
+                    exception != null -> Pair(
+                        word.copy(
+                            date = exception.date,
+                            type = exception.type,
+                            value = exception.value,
+                            categoryId = exception.categoryId,
+                            categoryName = exception.categoryName,
+                            categoryIcon = exception.categoryIcon,
+                            images = exception.images,
+                            notes = exception.notes
+                        ),
+                        index
+                    )
+
+                    else -> Pair(word.copy(date = occurrenceDate), index)
+                }
+            }
+        }
+
+
+    result.addAll(wordsList)
+
+    result.addAll(wordsRecurrency)
+
+    return result.sortedBy { it.first.date }
+}
+
 fun Word.findExceptions(
     recurrenceIndex: Long = 0,
     exceptions: List<WordException> = listOf(),
@@ -122,6 +209,44 @@ fun Word.findExceptions(
     onOccurrenceFound(recurringWord)
 
 }
+
+fun occurrenceIndexReport(
+    start: LocalDate,
+    target: LocalDate,
+    interval: Int
+): List<Long?> {
+    // calculate interval between dates
+    val months = ChronoUnit.MONTHS.between(
+        YearMonth.from(start),
+        YearMonth.from(target)
+    )
+
+    val occurrences = (0..months).count { index ->
+
+        val month = YearMonth.from(start).plusMonths(index)
+
+        val occurrenceDate = month.atDay(
+            minOf(start.dayOfMonth, month.lengthOfMonth())
+        )
+
+        occurrenceDate <= target
+    }
+
+    if (occurrences == 0) {
+        return listOf(null)
+    }
+
+    var list = mutableListOf<Long>()
+    var index = 0L
+
+    repeat(occurrences) {
+        list.add(index)
+        index++
+    }
+
+    return list
+}
+
 
 fun occurrenceIndex(
     start: LocalDateTime,

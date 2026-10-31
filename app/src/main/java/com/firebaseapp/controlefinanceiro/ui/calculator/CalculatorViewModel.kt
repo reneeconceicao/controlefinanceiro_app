@@ -161,7 +161,7 @@ class CalculatorViewModal(initialValue: String = "0") : ViewModel() {
     private fun formatResult(value: Double): String {
         val hasDecimals = value % 1.0 == 0.0
         if (hasDecimals) {
-            return value.toInt().toString()
+            return value.toLong().toString()
         }
         return String.format(
             Locale.getDefault(),
