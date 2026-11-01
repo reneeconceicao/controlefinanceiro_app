@@ -1,6 +1,9 @@
 package com.firebaseapp.controlefinanceiro.ui.calculator
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
+import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
 import com.firebaseapp.controlefinanceiro.defaults.paddingTiny
 import com.firebaseapp.controlefinanceiro.helpers.dateToString
 import com.firebaseapp.controlefinanceiro.ui.components.hapticClick
@@ -48,7 +53,7 @@ import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterUiState
 import java.text.DecimalFormatSymbols
 
 @Composable
-fun Calculator(
+fun CalculatorBox(
     details: RegisterDetails,
     showResultEmbedded: Boolean = false,
     viewModel: CalculatorViewModal = viewModel {
@@ -79,8 +84,8 @@ fun Calculator(
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
             .padding(paddingDefault()),
-        horizontalAlignment = Alignment.CenterHorizontally
-
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(paddingTiny())
     ) {
         // Output display
         if (showResultEmbedded) {
@@ -102,17 +107,16 @@ fun Calculator(
         val firstRow = listOf("7", "8", "9") // and Date
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(paddingTiny())) {
             firstRow.forEach {
-                Button(
-                    onClick = hapticClick { viewModel.onClick(it, {}, onUpdateValue = onUpdatePrice) },
-                    modifier = Modifier.weight(0.5f),
-                    shape = RoundedCornerShape(paddingTiny()),
-                    colors = ButtonColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        contentColor = MaterialTheme.colorScheme.onBackground,
-                        disabledContentColor = Color.White,
-                        disabledContainerColor = Color.Gray,
-                    ),
-                ) {
+                Box(
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .hapticClick(interactionSource = null, indication = null) {
+                            viewModel.onClick(it, {}, onUpdateValue = onUpdatePrice)
+                        }
+                        .clip(RoundedCornerShape(paddingTiny()))
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(vertical = paddingSmall()),
+                    contentAlignment = Alignment.Center) {
                     Text(
                         text = it,
                         fontWeight = FontWeight.Normal,
@@ -122,28 +126,28 @@ fun Calculator(
                 }
             }
 
-            Button(
-                onClick = hapticClick {
-                    showDateDialog()
-                },
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(horizontal = 0.dp, vertical = ButtonDefaults.ContentPadding.calculateTopPadding()),
-
-                shape = RoundedCornerShape(paddingTiny()),
-
-                colors = ButtonColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    contentColor = colorResource(R.color.yellow),
-                    disabledContentColor = Color.White,
-                    disabledContainerColor = Color.Gray,
-                ),
-            ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .hapticClick(interactionSource = null, indication = null) {
+                        showDateDialog()
+                    }
+                    .clip(RoundedCornerShape(paddingTiny()))
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(vertical = paddingSmall()),
+                contentAlignment = Alignment.Center) {
                 Row(
-                    Modifier.padding(vertical = 2.dp).fillMaxWidth(),
+                    Modifier
+                        .padding(vertical = 2.dp)
+                        .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Icon(imageVector = Icons.Default.CalendarMonth, "", tint = colorResource(R.color.yellow))
+                    Icon(
+                        imageVector = Icons.Default.CalendarMonth,
+                        "",
+                        tint = colorResource(R.color.yellow)
+                    )
                     val date = dateToString(details.date)
                     Spacer(Modifier.padding(horizontal = 1.dp))
                     Text(
@@ -163,17 +167,16 @@ fun Calculator(
         val secondRow = listOf("4", "5", "6") // and Minus and Multiplication
         Row(horizontalArrangement = Arrangement.spacedBy(paddingTiny())) {
             secondRow.forEach {
-                Button(
-                    onClick = hapticClick { viewModel.onClick(it, {}, onUpdateValue = onUpdatePrice) },
-                    modifier = Modifier.weight(0.5f),
-                    shape = RoundedCornerShape(paddingTiny()),
-                    colors = ButtonColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        contentColor = MaterialTheme.colorScheme.onBackground,
-                        disabledContentColor = Color.White,
-                        disabledContainerColor = Color.Gray,
-                    ),
-                ) {
+                Box(
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .hapticClick(interactionSource = null, indication = null) {
+                            viewModel.onClick(it, {}, onUpdateValue = onUpdatePrice)
+                        }
+                        .clip(RoundedCornerShape(paddingTiny()))
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(vertical = paddingSmall()),
+                    contentAlignment = Alignment.Center) {
                     Text(
                         text = it,
                         fontWeight = FontWeight.Normal,
@@ -187,17 +190,21 @@ fun Calculator(
                 modifier = Modifier.weight(1f),
                 horizontalArrangement = Arrangement.spacedBy(paddingTiny())
             ) {
-                Button(
-                    onClick = hapticClick { viewModel.onClick("-", {}, onUpdateValue = onUpdatePrice) },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(paddingTiny()),
-                    colors = ButtonColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        contentColor = MaterialTheme.colorScheme.onBackground,
-                        disabledContentColor = Color.White,
-                        disabledContainerColor = Color.Gray,
-                    ),
-                ) {
+                Box(
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .hapticClick(interactionSource = null, indication = null) {
+                            viewModel.onClick(
+                                "-",
+                                {},
+                                onUpdateValue = onUpdatePrice
+                            )
+                        }
+                        .clip(RoundedCornerShape(paddingTiny()))
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(vertical = paddingSmall()),
+                    contentAlignment = Alignment.Center)
+                {
                     Row() {
                         Text(
                             text = "–",
@@ -209,23 +216,21 @@ fun Calculator(
 
                 }
                 if (isCompleteCalculator) {
-                    Button(
-                        onClick = hapticClick {
-                            viewModel.onClick(
-                                "x",
-                                {},
-                                onUpdateValue = onUpdatePrice
-                            )
-                        },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(paddingTiny()),
-                        colors = ButtonColors(
-                            containerColor = MaterialTheme.colorScheme.background,
-                            contentColor = MaterialTheme.colorScheme.onBackground,
-                            disabledContentColor = Color.White,
-                            disabledContainerColor = Color.Gray,
-                        ),
-                    ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(0.5f)
+                            .hapticClick(interactionSource = null, indication = null) {
+                                viewModel.onClick(
+                                    "x",
+                                    {},
+                                    onUpdateValue = onUpdatePrice
+                                )
+                            }
+                            .clip(RoundedCornerShape(paddingTiny()))
+                            .background(MaterialTheme.colorScheme.background)
+                            .padding(vertical = paddingSmall()),
+                        contentAlignment = Alignment.Center)
+                    {
                         Row() {
                             Text(
                                 text = "x",
@@ -243,17 +248,21 @@ fun Calculator(
         val thirtyRow = listOf("1", "2", "3") // and Multiplication and Divide
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(paddingTiny())) {
             thirtyRow.forEach {
-                Button(
-                    onClick = hapticClick { viewModel.onClick(it, {}, onUpdateValue = onUpdatePrice) },
-                    modifier = Modifier.weight(0.5f),
-                    shape = RoundedCornerShape(paddingTiny()),
-                    colors = ButtonColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        contentColor = MaterialTheme.colorScheme.onBackground,
-                        disabledContentColor = Color.White,
-                        disabledContainerColor = Color.Gray,
-                    ),
-                ) {
+                Box(
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .hapticClick(interactionSource = null, indication = null) {
+                            viewModel.onClick(
+                                it,
+                                {},
+                                onUpdateValue = onUpdatePrice
+                            )
+                        }
+                        .clip(RoundedCornerShape(paddingTiny()))
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(vertical = paddingSmall()),
+                    contentAlignment = Alignment.Center)
+                {
                     Text(
                         text = it,
                         fontWeight = FontWeight.Normal,
@@ -267,17 +276,21 @@ fun Calculator(
                 modifier = Modifier.weight(1f),
                 horizontalArrangement = Arrangement.spacedBy(paddingTiny())
             ) {
-                Button(
-                    onClick = hapticClick { viewModel.onClick("+", {}, onUpdateValue = onUpdatePrice) },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(paddingTiny()),
-                    colors = ButtonColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        contentColor = MaterialTheme.colorScheme.onBackground,
-                        disabledContentColor = Color.White,
-                        disabledContainerColor = Color.Gray,
-                    ),
-                ) {
+                Box(
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .hapticClick(interactionSource = null, indication = null) {
+                            viewModel.onClick(
+                                "+",
+                                {},
+                                onUpdateValue = onUpdatePrice
+                            )
+                        }
+                        .clip(RoundedCornerShape(paddingTiny()))
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(vertical = paddingSmall()),
+                    contentAlignment = Alignment.Center)
+                {
                     Row() {
                         Text(
                             text = "+",
@@ -289,23 +302,23 @@ fun Calculator(
 
                 }
                 if (isCompleteCalculator) {
-                    Button(
-                        onClick = hapticClick {
-                            viewModel.onClick(
-                                "÷",
-                                {},
-                                onUpdateValue = onUpdatePrice
-                            )
-                        },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(paddingTiny()),
-                        colors = ButtonColors(
-                            containerColor = MaterialTheme.colorScheme.background,
-                            contentColor = MaterialTheme.colorScheme.onBackground,
-                            disabledContentColor = Color.White,
-                            disabledContainerColor = Color.Gray,
-                        ),
-                    ) {
+
+                    Box(
+                        modifier = Modifier
+                            .weight(0.5f)
+                            .hapticClick(interactionSource = null, indication = null) {
+                                viewModel.onClick(
+                                    "÷",
+                                    {},
+                                    onUpdateValue = onUpdatePrice
+                                )
+                            }
+                            .clip(RoundedCornerShape(paddingTiny()))
+                            .background(MaterialTheme.colorScheme.background)
+                            .padding(vertical = paddingSmall()),
+                        contentAlignment = Alignment.Center)
+
+                    {
                         Row() {
                             Text(
                                 text = "÷",
@@ -324,17 +337,21 @@ fun Calculator(
         val lastRow = listOf("0", separator) // more delete and Equal/Done
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(paddingTiny())) {
             lastRow.forEach {
-                Button(
-                    onClick = hapticClick { viewModel.onClick(it, {}, onUpdateValue = onUpdatePrice) },
-                    modifier = Modifier.weight(0.5f),
-                    shape = RoundedCornerShape(paddingTiny()),
-                    colors = ButtonColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        contentColor = MaterialTheme.colorScheme.onBackground,
-                        disabledContentColor = Color.White,
-                        disabledContainerColor = Color.Gray,
-                    ),
-                ) {
+                Box(
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .hapticClick(interactionSource = null, indication = null) {
+                            viewModel.onClick(
+                                it,
+                                {},
+                                onUpdateValue = onUpdatePrice
+                            )
+                        }
+                        .clip(RoundedCornerShape(paddingTiny()))
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(vertical = paddingSmall()),
+                    contentAlignment = Alignment.Center)
+                {
                     Text(
                         text = it,
                         fontWeight = FontWeight.Normal,
@@ -344,17 +361,26 @@ fun Calculator(
                 }
             }
 
-            Button(
-                onClick = hapticClick { viewModel.onClick("⌫", {}, onUpdateValue = onUpdatePrice) },
-                modifier = Modifier.weight(0.5f),
-                shape = RoundedCornerShape(paddingTiny()),
-                colors = ButtonColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.onBackground,
-                    disabledContentColor = Color.White,
-                    disabledContainerColor = Color.Gray,
-                ),
-            ) {
+            Box(
+                modifier = Modifier
+                    .weight(0.5f)
+                    .combinedClickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = hapticClick {
+                            viewModel.onClick("⌫", {}, onUpdateValue = onUpdatePrice)
+                        },
+                        onLongClick = {
+                            viewModel.clearInput()
+                        }
+                    )
+
+                    .clip(RoundedCornerShape(paddingTiny()))
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(vertical = paddingSmall()),
+                contentAlignment = Alignment.Center)
+
+            {
                 Text(
                     text = "⌫",
                     fontWeight = FontWeight.Normal,
@@ -363,23 +389,25 @@ fun Calculator(
                 )
             }
 
-            val context = LocalContext.current
-            Button(
-                onClick = if (buttonState == CalculatorViewModal.ButtonState.DONE) hapticClick {
-                    viewModel.onClick("=", onSave = {onEntryValue(details.copy(price = it))})
-                } else hapticClick {
-                    viewModel.onClick("=")
-                },
-                enabled = buttonState != CalculatorViewModal.ButtonState.DISABLED,
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(paddingTiny()),
-                colors = ButtonColors(
-                    containerColor = colorResource(R.color.yellow),
-                    contentColor = MaterialTheme.colorScheme.onBackground,
-                    disabledContentColor = MaterialTheme.colorScheme.onBackground,
-                    disabledContainerColor = Color(0xFFBDBDBD),
-                ),
-            ) {
+            val enabled = buttonState != CalculatorViewModal.ButtonState.DISABLED
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .hapticClick(enabled = enabled, interactionSource = null, indication = null) {
+                        if (buttonState == CalculatorViewModal.ButtonState.DONE) {
+                            viewModel.onClick(
+                                "=",
+                                onSave = { onEntryValue(details.copy(price = it)) })
+                        } else {
+                            viewModel.onClick("=")
+                        }
+                    }
+                    .clip(RoundedCornerShape(paddingTiny()))
+                    .background(color = if (enabled) colorResource(R.color.yellow) else Color.Gray)
+                    .padding(vertical = paddingSmall()),
+                contentAlignment = Alignment.Center)
+            {
                 Text(
                     text = if (buttonState == CalculatorViewModal.ButtonState.EQUAL) {
                         "="

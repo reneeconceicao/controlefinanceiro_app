@@ -10,9 +10,12 @@ import com.firebaseapp.controlefinanceiro.recurrency.calculateWordOccurrences
 import com.firebaseapp.controlefinanceiro.recurrency.findExceptions
 import com.firebaseapp.controlefinanceiro.helpers.toMonthYear
 import com.firebaseapp.controlefinanceiro.helpers.toYear
+import com.firebaseapp.controlefinanceiro.recurrency.calculateWordOccurrencesReport
 import com.firebaseapp.controlefinanceiro.ui.screens.home.HomeViewModel.Companion.ALL_TIME_FLAG
 import com.firebaseapp.controlefinanceiro.ui.screens.register.toWord
 import com.firebaseapp.controlefinanceiro.ui.screens.register.toWordException
+import com.firebaseapp.controlefinanceiro.ui.screens.reports.atEndOfDay
+import com.firebaseapp.controlefinanceiro.ui.screens.reports.atStartOfDay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -37,6 +40,9 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
     )
 
     val currentFilter = MutableStateFlow(DateFilter.MONTH)
+
+    val selectedDate =
+        MutableStateFlow(LocalDateTime.now())
 
     private val selectedMonth = MutableStateFlow(LocalDateTime.now())
 
@@ -68,7 +74,7 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
         ) { fromDate, toDate, filter, words, exceptions ->
 
             // view calculateWordOccurrences explanation
-            val occurrences = calculateWordOccurrences(
+            val occurrences = calculateWordOccurrencesReport(
                 words = words,
                 exceptions = exceptions,
                 startDate = fromDate,
@@ -76,7 +82,7 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
             )
 
             val periodLabel = when (currentFilter.value) {
-                DateFilter.ALL -> ALL_TIME_FLAG
+                DateFilter.DAY -> ALL_TIME_FLAG
                 DateFilter.MONTH -> toMonthYear(fromDate)
                 DateFilter.YEAR -> toYear(fromDate)
             }
@@ -96,7 +102,8 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
                 currentMonthYear = YearMonth.from(fromDate),
                 total = total,
                 periodLabel = periodLabel,
-                currentFilter = filter
+                currentFilter = filter,
+                selectedDay = fromDate
             )
 
         }
@@ -109,9 +116,8 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
 
     fun changePeriod(value: Int) {
         when (currentFilter.value) {
-            DateFilter.ALL -> {
-                fromDate.value = LocalDateTime.MIN
-                toDate.value = LocalDateTime.MAX
+            DateFilter.DAY -> {
+                fromDate.value = selectedDate.value
             }
 
             DateFilter.MONTH -> {
@@ -155,9 +161,8 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
 
         when (currentFilter.value) {
 
-            DateFilter.ALL -> {
-                fromDate.value = LocalDateTime.MIN
-                toDate.value = LocalDateTime.MAX
+            DateFilter.DAY -> {
+                fromDate.value = selectedDate.value
             }
 
             DateFilter.MONTH -> {
@@ -185,6 +190,12 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
 
         }
 
+    }
+
+    fun changeDay(date: LocalDateTime) {
+        selectedDate.value = date
+        fromDate.value = selectedDate.value.atStartOfDay()
+        toDate.value = selectedDate.value.atEndOfDay()
     }
 
     fun deleteWord(word: Word, recurrenceIndex: Long?, deleteNext: Boolean, deleteAll: Boolean = false) {
@@ -295,12 +306,13 @@ data class HomeUiState(
     val list: List<Pair<Word, Long?>> = listOf(),
     val currentMonthYear: YearMonth = YearMonth.from(LocalDateTime.now()),
     val total: BigDecimal = BigDecimal.ZERO,
-    val currentFilter: DateFilter = DateFilter.ALL,
-    val periodLabel: String = ALL_TIME_FLAG
+    val currentFilter: DateFilter = DateFilter.DAY,
+    val periodLabel: String = ALL_TIME_FLAG,
+    val selectedDay: LocalDateTime = LocalDateTime.now(),
 )
 
 enum class DateFilter {
-    ALL,
+    DAY,
     MONTH,
     YEAR
 }

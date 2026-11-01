@@ -4,6 +4,7 @@
     <string name="home">Home</string>
     <string name="budgets">Budgets</string>
     <string name="reporting">Reporting</string>
+    <string name="report">Report</string>
     <string name="settings">Settings</string>
     <string name="back">Back</string>
     <string name="register">Register</string>
@@ -20,10 +21,11 @@
     <string name="all_time">All time</string>
     <string name="add_register">Register</string>
     <string name="no_register_found">No register found</string>
-    <string name="all">All</string>
+    <string name="day">Day</string>
     <string name="month">Month</string>
     <string name="year">Year</string>
     <string name="period_balance">Period balance</string>
+    <string name="daily_balance">Daily balance</string>
     <string name="monthly_balance">Monthly balance</string>
     <string name="yearly_balance">Yearly balance</string>
     <string name="today">Today</string>
@@ -47,5 +49,12 @@
     <string name="delete_this_and_next_ones">Delete this and next ones</string>
     <string name="delete_only_this">Delete only this</string>
     <string name="period">Period</string>
+    <string name="share">Share</string>
+    <string name="incomes_by_category">Incomes by category</string>
+    <string name="no_incomes_found">No incomes found</string>
+    <string name="expenses_by_category">Expenses by category</string>
+    <string name="no_expenses_found">No expenses found</string>
+    <string name="total_expenses">Total expenses</string>
+    <string name="total_incomes">Total incomes</string>
 
 </resources>

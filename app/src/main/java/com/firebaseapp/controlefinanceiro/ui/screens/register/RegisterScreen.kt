@@ -98,6 +98,7 @@ import com.firebaseapp.controlefinanceiro.helpers.PhotoFilesHandler
 import com.firebaseapp.controlefinanceiro.helpers.dateToString
 import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
 import com.firebaseapp.controlefinanceiro.ui.calculator.Calculator
+import com.firebaseapp.controlefinanceiro.ui.calculator.CalculatorBox
 import com.firebaseapp.controlefinanceiro.ui.components.DatePickerModal
 import com.firebaseapp.controlefinanceiro.ui.components.ImageOptionsDialog
 import com.firebaseapp.controlefinanceiro.ui.components.PhotosModal
@@ -732,7 +733,7 @@ fun FieldsCalculator(
     }
 
     AnimatedVisibility(visible) {
-        Calculator(
+        CalculatorBox(
             details = details,
             onEntryValue = onEntryValue,
             onUpdatePrice = {

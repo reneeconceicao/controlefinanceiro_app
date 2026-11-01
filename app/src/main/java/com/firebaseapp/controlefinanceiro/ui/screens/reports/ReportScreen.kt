@@ -1,38 +1,27 @@
 package com.firebaseapp.controlefinanceiro.ui.screens.reports
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -49,25 +38,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.firebaseapp.compose_lucide_icons.helpers.IconsHelper
 import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
+import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLargest
 import com.firebaseapp.controlefinanceiro.defaults.paddingLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
+import com.firebaseapp.controlefinanceiro.helpers.ShareHelper
 import com.firebaseapp.controlefinanceiro.helpers.currencyFormat
 import com.firebaseapp.controlefinanceiro.helpers.dateToDateWeekString
-import com.firebaseapp.controlefinanceiro.helpers.dateToString
-import com.firebaseapp.controlefinanceiro.helpers.formatedPriceIndicator
-import com.firebaseapp.controlefinanceiro.helpers.toDay
 import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
 import com.firebaseapp.controlefinanceiro.ui.components.CardBordered
 import com.firebaseapp.controlefinanceiro.ui.components.DatePickerModal
@@ -87,34 +73,18 @@ fun ReportScreen(
     Scaffold(
         modifier = modifier
             .fillMaxSize(),
-        floatingActionButton = {
-            val context = LocalContext.current
-            FloatingActionButton(
-                onClick = hapticClick {
+        ) { innerPadding ->
 
-                },
-            ) {
-                Row(
-                    Modifier.padding(horizontal = paddingDefault(), vertical = paddingSmall()),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "")
-                    Text("Share")
-                }
-            }
-
-
-        }) { innerPadding ->
+        val context = LocalContext.current
 
         val reportUiState by viewModel.reportUiState.collectAsState()
 
-//        AnimatedVisibility(visible = !viewModel.loading.value, enter = fadeIn()) {
+
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = stringResource(R.string.app_name),
+                text = stringResource(R.string.reporting),
                 Modifier
                     .padding(paddingDefault()),
                 fontSize = 24.sp,
@@ -148,12 +118,9 @@ fun ReportScreen(
 
             ReportBody(
                 reportUiState = reportUiState,
-                showWordOptions = { word, index ->
-//                        currentWord = Pair(word, index)
-//                        showWordOptions = true
-                },
-                onEditNavigate = {},//navigateToEdit,
-                onEditNavigateRecurring = { _, _ -> },//navigateToEditRecurring
+                onShareReport = { reportUiState ->
+                    ShareHelper(context).shareReportScreenToText("", reportUiState)
+                }
             )
         }
 
@@ -165,126 +132,133 @@ fun ReportScreen(
 @Composable
 fun ReportBody(
     reportUiState: ReportUiState,
-    showWordOptions: (Int?, Long?) -> Unit,
-    onEditNavigate: (Int) -> Unit,
-    onEditNavigateRecurring: (Int, Long?) -> Unit,
+    onShareReport: (ReportUiState) -> Unit
 ) {
 
-    val grouped = reportUiState.list.groupBy {
-        it.first.date.toLocalDate().atStartOfDay()
-    }
-
-    AnimatedContent(
-        targetState = grouped,
-        transitionSpec = {
-            fadeIn() togetherWith fadeOut()
+    val groupedIncome = reportUiState.list
+        .filter { it.first.type == WordType.Income }
+        .groupBy {
+            it.first.categoryName
         }
-    ) { target ->
-        if (target.values.isEmpty()) {
+
+    val groupedExpense = reportUiState.list
+        .filter { it.first.type == WordType.Expense }
+        .groupBy {
+            it.first.categoryName
+        }
+
+
+    Column(Modifier
+        .fillMaxWidth()
+        .verticalScroll(rememberScrollState())) {
+        Text(
+            stringResource(R.string.incomes_by_category),
+            Modifier
+                .fillMaxWidth()
+                .padding(paddingSmall()),
+            textAlign = TextAlign.Start
+        )
+
+        if (groupedIncome.values.isEmpty()) {
             Column(
                 Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
+                    .fillMaxWidth()
             ) {
                 Text(
-                    stringResource(R.string.no_register_found),
+                    stringResource(R.string.no_incomes_found),
                     Modifier
-                        .padding(paddingLarge())
-                        .padding(top = paddingLarge())
+                        .padding(paddingDefault())
                         .fillMaxWidth(),
-                    fontSize = 24.sp,
                     textAlign = TextAlign.Center
                 )
             }
-
         } else {
-            LazyColumn(contentPadding = PaddingValues(bottom = 120.dp)) {
-                target.forEach { (date, words) ->
-                    item {
-                        Text(
-                            toDay(date),
-                            modifier = Modifier
-                                .padding(start = paddingDefault())
-                                .padding(top = paddingSmall())
-                        )
-                    }
-                    items(items = words) { (word, index) ->
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    showWordOptions(word.id, index)// = true
-
-                                }
-                        ) {
-
-                            Row(
-                                Modifier.padding(start = paddingDefault()),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-
-
-                                Box(
-                                    Modifier
-                                        .size(paddingExtraLarge())
-                                    //.clip(CircleShape)
-                                    //.background(MaterialTheme.colorScheme.outlineVariant)
-
-                                ) {
-
-                                    val icon = word.categoryIcon
-
-                                    if (icon.isNotEmpty()) {
-
-                                        Icon(
-                                            painter = IconsHelper.iconByName(icon),
-                                            "",
-                                            Modifier
-                                                .align(Alignment.Center)
-                                                .size(24.dp)
-                                        )
-                                    } else {
-                                        Icon(
-                                            painter = if (word.type == WordType.Income) painterResource(
-                                                R.drawable.__banknote_arrow_up
-                                            ) else painterResource(R.drawable.__banknote_arrow_down),
-                                            "",
-                                            Modifier
-                                                .align(Alignment.Center)
-                                                .size(24.dp)
-                                        )
-                                    }
-                                }
-
-
-                                Text(
-                                    formatedPriceIndicator(word),
-                                    Modifier
-                                        .padding(paddingDefault())
-
-                                        .padding(vertical = paddingSmall()),
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (word.type == WordType.Income)
-                                        colorResource(R.color.dark_green)
-                                    else
-                                        MaterialTheme.colorScheme.onBackground
-                                )
-                            }
-
-                        }
-                    }
-                    item {
-                        HorizontalDivider(
-                            Modifier,
-                            DividerDefaults.Thickness,
-                            DividerDefaults.color
-                        )
-                    }
+            groupedIncome.forEach { (category, pairs) ->
+                Row(Modifier
+                    .fillMaxWidth()
+                    .padding(start = paddingDefault(), end = paddingSmall())) {
+                    Text(category)
+                    Spacer(Modifier.weight(1f))
+                    val total = pairs.sumOf { it.first.value }
+                    Text(currencyFormat(total.toString()))
                 }
             }
+
+            Row(Modifier
+                .fillMaxWidth()
+                .padding(start = paddingDefault(), end = paddingSmall())) {
+                Text(stringResource(R.string.total_incomes))
+                Spacer(Modifier.weight(1f))
+                val total = groupedIncome.values.sumOf { it -> it.sumOf { it.first.value } }
+                Text(currencyFormat(total.toString()))
+            }
+
+
         }
+
+        Text(
+            stringResource(R.string.expenses_by_category),
+            Modifier
+                .fillMaxWidth()
+                .padding(paddingSmall())
+                .padding(top = paddingDefault()),
+            textAlign = TextAlign.Start
+        )
+
+        if (groupedExpense.values.isEmpty()) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    stringResource(R.string.no_expenses_found),
+                    Modifier
+                        .padding(paddingDefault())
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
+        } else {
+            groupedExpense.forEach { (category, pairs) ->
+                Row(Modifier
+                    .fillMaxWidth()
+                    .padding(start = paddingDefault(), end = paddingSmall())) {
+                    Text(category)
+                    Spacer(Modifier.weight(1f))
+                    val total = pairs.sumOf { it.first.value }
+                    Text(currencyFormat(total.toString()))
+                }
+            }
+
+            Row(Modifier
+                .fillMaxWidth()
+                .padding(start = paddingDefault(), end = paddingSmall())) {
+                Text(stringResource(R.string.total_expenses))
+                Spacer(Modifier.weight(1f))
+                val total = groupedExpense.values.sumOf { it -> it.sumOf { it.first.value } }
+                Text(currencyFormat(total.toString()))
+            }
+        }
+
+        Spacer(Modifier.height(paddingExtraLarge()))
+
+        Button(
+            onClick = hapticClick {
+                onShareReport(reportUiState)
+            },
+            Modifier.align(Alignment.CenterHorizontally)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(stringResource(R.string.share))
+            }
+        }
+
+        Spacer(Modifier.height(paddingExtraLargest()))
     }
+
 }
 
 
@@ -311,7 +285,7 @@ fun ReportHeader(
             onChangeToPeriodFilter = onChangeToPeriodFilter
         )
 
-        ReportBalancePanel(reportUiState = reportUiState)
+        Spacer(Modifier.padding(paddingSmall()))
 
         ReportPeriodSelector(
             reportUiState = reportUiState,
@@ -433,7 +407,7 @@ fun ReportBalancePanel(reportUiState: ReportUiState) {
             val balanceLabel = when (reportUiState.currentFilter) {
                 ReportDateFilter.PERIOD -> stringResource(R.string.period_balance)
                 ReportDateFilter.MONTH -> stringResource(R.string.monthly_balance)
-                ReportDateFilter.YEAR -> stringResource(R.string.yearly_balance)
+                ReportDateFilter.YEAR -> stringResource(R.string.daily_balance)
             }
             Text(
                 balanceLabel,

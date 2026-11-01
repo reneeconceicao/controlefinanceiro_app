@@ -43,6 +43,7 @@ fun Modifier.hapticClick(
 
 @Composable
 fun Modifier.hapticClick(
+    enabled: Boolean = true,
     interactionSource: MutableInteractionSource?,
     indication: Indication?,
     viewModel: DataStoreViewModel = viewModel(factory = ViewModelProviders.Factory),
@@ -50,7 +51,7 @@ fun Modifier.hapticClick(
 ): Modifier {
     val haptic = LocalHapticFeedback.current
     val enabledHaptic by viewModel.isHapticEnabled.collectAsState()
-    return this.clickable(interactionSource = interactionSource, indication = indication) {
+    return this.clickable(enabled = enabled, interactionSource = interactionSource, indication = indication) {
         if (enabledHaptic) {
             haptic.performHapticFeedback(HapticFeedbackType.KeyboardTap)
         }

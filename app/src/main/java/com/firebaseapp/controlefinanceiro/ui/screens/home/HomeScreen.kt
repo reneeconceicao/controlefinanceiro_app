@@ -65,12 +65,15 @@ import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
 import com.firebaseapp.controlefinanceiro.helpers.currencyFormat
+import com.firebaseapp.controlefinanceiro.helpers.dateToDateWeekString
 import com.firebaseapp.controlefinanceiro.helpers.formatedPriceIndicator
 import com.firebaseapp.controlefinanceiro.helpers.toDay
 import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
 import com.firebaseapp.controlefinanceiro.ui.components.CardBordered
+import com.firebaseapp.controlefinanceiro.ui.components.DatePickerModal
 import com.firebaseapp.controlefinanceiro.ui.components.hapticClick
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 @Composable
 fun HomeScreen(
@@ -131,7 +134,12 @@ fun HomeScreen(
                         },
                         onDelete = { (word, deleteNext, deleteAll) ->
 
-                            viewModel.deleteWord(word, index, deleteNext = deleteNext, deleteAll = deleteAll)
+                            viewModel.deleteWord(
+                                word,
+                                index,
+                                deleteNext = deleteNext,
+                                deleteAll = deleteAll
+                            )
 
                             currentWord = Pair(null, 0)
                         },
@@ -148,6 +156,7 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(innerPadding)
             ) {
                 Text(
                     text = stringResource(R.string.app_name),
@@ -165,14 +174,17 @@ fun HomeScreen(
                     onPreviousMonthClick = {
                         viewModel.changePeriod(-1)
                     },
-                    onChangeToAllFilter = {
-                        viewModel.changeFilter(DateFilter.ALL)
+                    onChangeToDayFilter = {
+                        viewModel.changeFilter(DateFilter.DAY)
                     },
                     onChangeToMonthFilter = {
                         viewModel.changeFilter(DateFilter.MONTH)
                     },
                     onChangeToYearFilter = {
                         viewModel.changeFilter(DateFilter.YEAR)
+                    },
+                    onDaySelected = { daySelected ->
+                        viewModel.changeDay(daySelected)
                     }
                 )
 
@@ -242,14 +254,7 @@ fun HomeList(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    showWordOptions(word.id, index)// = true
-                                    return@clickable
-                                    if (word.isRecurring) {
-                                        onEditNavigateRecurring(word.id, index)
-                                    } else {
-                                        Log.d("TAG", "HomeList: ")
-                                        onEditNavigate(word.id)
-                                    }
+                                    showWordOptions(word.id, index)
                                 }
                         ) {
 
@@ -327,9 +332,10 @@ fun HomeHeader(
     homeUiState: HomeUiState,
     onNextMonthClick: () -> Unit,
     onPreviousMonthClick: () -> Unit,
-    onChangeToAllFilter: () -> Unit,
+    onChangeToDayFilter: () -> Unit,
     onChangeToMonthFilter: () -> Unit,
     onChangeToYearFilter: () -> Unit,
+    onDaySelected: (LocalDateTime) -> Unit,
 ) {
     Column(
         Modifier
@@ -338,7 +344,7 @@ fun HomeHeader(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         FilterChips(
-            onChangeToAllFilter = onChangeToAllFilter,
+            onChangeToDayFilter = onChangeToDayFilter,
             onChangeToMonthFilter = onChangeToMonthFilter,
             onChangeToYearFilter = onChangeToYearFilter
         )
@@ -348,7 +354,8 @@ fun HomeHeader(
         PeriodSelector(
             homeUiState = homeUiState,
             onPreviousMonthClick = onPreviousMonthClick,
-            onNextMonthClick = onNextMonthClick
+            onNextMonthClick = onNextMonthClick,
+            onDaySelected = onDaySelected
         )
     }
 
@@ -357,7 +364,7 @@ fun HomeHeader(
 
 @Composable
 fun FilterChips(
-    onChangeToAllFilter: () -> Unit,
+    onChangeToDayFilter: () -> Unit,
     onChangeToMonthFilter: () -> Unit,
     onChangeToYearFilter: () -> Unit,
 ) {
@@ -371,11 +378,11 @@ fun FilterChips(
         FilterChip(
             onClick = {
                 selected = 0
-                onChangeToAllFilter()
+                onChangeToMonthFilter()
             },
             label = {
                 Text(
-                    stringResource(R.string.all),
+                    stringResource(R.string.month),
                     Modifier.padding(paddingSmall()),
                     fontSize = 16.sp
                 )
@@ -398,11 +405,11 @@ fun FilterChips(
         FilterChip(
             onClick = {
                 selected = 1
-                onChangeToMonthFilter()
+                onChangeToDayFilter()
             },
             label = {
                 Text(
-                    stringResource(R.string.month),
+                    stringResource(R.string.day),
                     Modifier.padding(paddingSmall()),
                     fontSize = 16.sp
                 )
@@ -422,32 +429,37 @@ fun FilterChips(
             shape = RoundedCornerShape(paddingExtraLarge())
         )
 
-        FilterChip(
-            onClick = {
-                selected = 2
-                onChangeToYearFilter()
-            },
-            label = {
-                Text(
-                    stringResource(R.string.year),
-                    Modifier.padding(paddingSmall()),
-                    fontSize = 16.sp
-                )
-            },
-            selected = selected == 2,
-            leadingIcon = if (selected == 2) {
-                {
-                    Icon(
-                        imageVector = Icons.Filled.Done,
-                        contentDescription = "",
-                        modifier = Modifier.size(FilterChipDefaults.IconSize)
+        val enableYear = false
+
+        if (enableYear) {
+
+            FilterChip(
+                onClick = {
+                    selected = 2
+                    onChangeToYearFilter()
+                },
+                label = {
+                    Text(
+                        stringResource(R.string.year),
+                        Modifier.padding(paddingSmall()),
+                        fontSize = 16.sp
                     )
-                }
-            } else {
-                null
-            },
-            shape = RoundedCornerShape(paddingExtraLarge())
-        )
+                },
+                selected = selected == 2,
+                leadingIcon = if (selected == 2) {
+                    {
+                        Icon(
+                            imageVector = Icons.Filled.Done,
+                            contentDescription = "",
+                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                        )
+                    }
+                } else {
+                    null
+                },
+                shape = RoundedCornerShape(paddingExtraLarge())
+            )
+        }
     }
 }
 
@@ -461,7 +473,7 @@ fun BalancePanel(homeUiState: HomeUiState) {
     ) {
         Column {
             val balanceLabel = when (homeUiState.currentFilter) {
-                DateFilter.ALL -> stringResource(R.string.period_balance)
+                DateFilter.DAY -> stringResource(R.string.daily_balance)
                 DateFilter.MONTH -> stringResource(R.string.monthly_balance)
                 DateFilter.YEAR -> stringResource(R.string.yearly_balance)
             }
@@ -504,14 +516,32 @@ fun PeriodSelector(
     homeUiState: HomeUiState,
     onNextMonthClick: () -> Unit,
     onPreviousMonthClick: () -> Unit,
+    onDaySelected: (LocalDateTime) -> Unit,
 ) {
+
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
+
+    if (showDatePicker) {
+        DatePickerModal(
+            date = homeUiState.selectedDay,
+            onDateSelected = { selectedDate ->
+                if (selectedDate != null) {
+                    onDaySelected(selectedDate)
+                }
+            },
+            onDismiss = {
+                showDatePicker = false
+            }
+        )
+    }
+
     Row(
         Modifier
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (homeUiState.currentFilter != DateFilter.ALL) {
+        if (homeUiState.currentFilter != DateFilter.DAY) {
             Button(
                 onClick = onPreviousMonthClick,
                 modifier = Modifier.padding(horizontal = paddingDefault()),
@@ -527,17 +557,15 @@ fun PeriodSelector(
 
                 )
             }
-        }
 
-        Text(
-            if (homeUiState.periodLabel == HomeViewModel.ALL_TIME_FLAG)
-                stringResource(R.string.all_time) else homeUiState.periodLabel,
-            Modifier.padding(paddingDefault()),
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold
-        )
 
-        if (homeUiState.currentFilter != DateFilter.ALL) {
+            Text(
+                homeUiState.periodLabel,
+                Modifier.padding(paddingDefault()),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+
             Button(
                 onClick = onNextMonthClick,
                 modifier = Modifier.padding(horizontal = paddingDefault()),
@@ -553,8 +581,20 @@ fun PeriodSelector(
 
                 )
             }
+        } else {
+            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    dateToDateWeekString(homeUiState.selectedDay),
+                    Modifier
+                        .padding(paddingDefault())
+                        .clickable {
+                            showDatePicker = true
+                        },
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
-
     }
 }
 

@@ -73,7 +73,6 @@ import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
-import com.firebaseapp.controlefinanceiro.defaults.paddingTiny
 import com.firebaseapp.controlefinanceiro.helpers.currencyFormat
 import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
 import com.firebaseapp.controlefinanceiro.ui.components.CardBordered
@@ -369,7 +368,7 @@ fun BalancePanel(homeUiState: HomeUiState) {
     ) {
         Column {
             val balanceLabel = when (homeUiState.currentFilter) {
-                DateFilter.ALL -> "Total balance"
+                DateFilter.DAY -> "Total balance"
                 DateFilter.MONTH -> "Monthly balance"
                 DateFilter.YEAR -> "Yearly balance"
             }
@@ -420,7 +419,7 @@ fun PeriodSelector(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (homeUiState.currentFilter != DateFilter.ALL) {
+        if (homeUiState.currentFilter != DateFilter.DAY) {
             Button(
                 onClick = onPreviousMonthClick,
                 modifier = Modifier.padding(horizontal = paddingDefault()),
@@ -445,7 +444,7 @@ fun PeriodSelector(
             fontWeight = FontWeight.Bold
         )
 
-        if (homeUiState.currentFilter != DateFilter.ALL) {
+        if (homeUiState.currentFilter != DateFilter.DAY) {
             Button(
                 onClick = onNextMonthClick,
                 modifier = Modifier.padding(horizontal = paddingDefault()),

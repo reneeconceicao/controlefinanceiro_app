@@ -193,6 +193,10 @@ class CalculatorViewModal(initialValue: String = "0") : ViewModel() {
         return c == '+' || c == '-' || c == 'x' || c == '÷' || c == 's' || c == '^'
     }
 
+    fun clearInput() {
+        _input.value = "0"
+    }
+
     enum class ButtonState {
         DISABLED,
         EQUAL,

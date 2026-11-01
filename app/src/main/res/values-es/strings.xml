@@ -3,6 +3,7 @@
     <string name="home">Inicio</string>
     <string name="budgets">Presupuestos</string>
     <string name="reporting">Informes</string>
+    <string name="report">Informe</string>
     <string name="settings">Configuración</string>
     <string name="back">Atrás</string>
     <string name="register">Registrar</string>
@@ -19,10 +20,11 @@
     <string name="all_time">Todo el tiempo</string>
     <string name="add_register">Registrar</string>
     <string name="no_register_found">No se encontraron registros</string>
-    <string name="all">Todo</string>
+    <string name="day">Día</string>
     <string name="month">Mes</string>
     <string name="year">Año</string>
     <string name="period_balance">Saldo del período</string>
+    <string name="daily_balance">Saldo del día</string>
     <string name="monthly_balance">Saldo mensual</string>
     <string name="yearly_balance">Saldo anual</string>
     <string name="today">Hoy</string>
@@ -46,6 +48,12 @@
     <string name="delete_this_and_next_ones">Eliminar este y los siguientes</string>
     <string name="delete_only_this">Eliminar solo este</string>
     <string name="period">Período</string>
-
+    <string name="share">Compartir</string>
+    <string name="incomes_by_category">Ingresos por categoría</string>
+    <string name="no_incomes_found">No se encontraron ingresos</string>
+    <string name="expenses_by_category">Gastos por categoría</string>
+    <string name="no_expenses_found">No se encontraron gastos</string>
+    <string name="total_expenses">Total de gastos</string>
+    <string name="total_incomes">Total de ingresos</string>
 
 </resources>

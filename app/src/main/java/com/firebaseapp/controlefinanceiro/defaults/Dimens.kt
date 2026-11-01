@@ -12,5 +12,7 @@ fun paddingExtraLarge() = 32.dp
 
 fun paddingLargest() = 64.dp
 
+fun paddingExtraLargest() = 128.dp
+
 
 
