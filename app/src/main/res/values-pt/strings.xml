@@ -53,12 +53,15 @@
     <string name="share">Compartilhar</string>
     <string name="incomes_by_category">Entradas por categoria</string>
     <string name="no_incomes_found">Nenhuma entrada encontrada</string>
+    <string name="no_incomes_found_in_this_period">Nenhuma entrada encontrada neste período</string>
     <string name="expenses_by_category">Despesas por categoria</string>
     <string name="no_expenses_found">Nenhuma despesa encontrada</string>
+    <string name="no_expenses_found_in_this_period">Nenhuma despesa encontrada neste período</string>
     <string name="total_expenses">Total de despesas</string>
     <string name="total_incomes">Total de entradas</string>
     <string name="date">Data</string>
     <string name="value">Valor</string>
     <string name="photos">Fotos</string>
+    <string name="totals">Totais</string>
 
 </resources>

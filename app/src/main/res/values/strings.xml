@@ -54,12 +54,15 @@
     <string name="share">Share</string>
     <string name="incomes_by_category">Incomes by category</string>
     <string name="no_incomes_found">No incomes found</string>
+    <string name="no_incomes_found_in_this_period">No incomes found in this period</string>
     <string name="expenses_by_category">Expenses by category</string>
     <string name="no_expenses_found">No expenses found</string>
+    <string name="no_expenses_found_in_this_period">No expenses found in this period</string>
     <string name="total_expenses">Total expenses</string>
     <string name="total_incomes">Total incomes</string>
     <string name="date">Date</string>
     <string name="value">Value</string>
     <string name="photos">Photos</string>
+    <string name="totals">Totals</string>
 
 </resources>

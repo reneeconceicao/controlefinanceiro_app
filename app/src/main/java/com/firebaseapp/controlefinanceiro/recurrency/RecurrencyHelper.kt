@@ -165,6 +165,7 @@ fun calculateWordOccurrencesReport(
                             categoryId = exception.categoryId,
                             categoryName = exception.categoryName,
                             categoryIcon = exception.categoryIcon,
+                            categoryColor = exception.categoryColor,
                             images = exception.images,
                             notes = exception.notes
                         ),

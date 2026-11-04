@@ -30,6 +30,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DividerDefaults
@@ -64,9 +65,7 @@ import com.firebaseapp.compose_lucide_icons.helpers.IconsHelper
 import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.data.entities.CategoryType
 import com.firebaseapp.controlefinanceiro.data.entities.WordType
-import com.firebaseapp.controlefinanceiro.defaults.padding12
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
-import com.firebaseapp.controlefinanceiro.defaults.padding20
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
@@ -103,6 +102,8 @@ fun HomeScreen(
                 onClick = hapticClick {
                     navigateToRegister()
                 },
+                containerColor = colorResource(R.color.purple_300),
+                contentColor = Color.White
             ) {
                 Row(
                     Modifier.padding(horizontal = paddingDefault(), vertical = paddingSmall()),
@@ -131,6 +132,7 @@ fun HomeScreen(
                     DetailsDialog(
                         context = context,
                         wordId = wordId,
+                        index = index,
                         onEdit = { word ->
                             if (word.isRecurring) {
                                 navigateToEditRecurring(word.id, index)
@@ -276,9 +278,15 @@ fun HomeList(
                                     word.categoryColor
                                 )
 
-                                val type = if (word.type == WordType.Income) CategoryType.Income else CategoryType.Expense
+                                val type =
+                                    if (word.type == WordType.Income) CategoryType.Income else CategoryType.Expense
 
-                                CategoryContainer(categoryIcon = icon, color = color, type = type, word.images.isNotEmpty())
+                                CategoryContainer(
+                                    categoryIcon = icon,
+                                    color = color,
+                                    type = type,
+                                    word.images.isNotEmpty()
+                                )
 
                                 Text(
                                     formatedPriceIndicator(word),
@@ -312,7 +320,12 @@ fun HomeList(
 }
 
 @Composable
-fun CategoryContainer(categoryIcon: String, color: Color, type: CategoryType = CategoryType.Income, hasPhotos: Boolean = false) {
+fun CategoryContainer(
+    categoryIcon: String,
+    color: Color,
+    type: CategoryType = CategoryType.Income,
+    hasPhotos: Boolean = false
+) {
     Box(
         Modifier
             .size(48.dp)
@@ -320,9 +333,13 @@ fun CategoryContainer(categoryIcon: String, color: Color, type: CategoryType = C
         if (categoryIcon.isNotEmpty()) {
 
             Box(Modifier.size(48.dp)) {
-                Box(Modifier.background(
-                    color = color, shape = CircleShape
-                ).size(48.dp))
+                Box(
+                    Modifier
+                        .background(
+                            color = color, shape = CircleShape
+                        )
+                        .size(48.dp)
+                )
                 Icon(
                     painter = IconsHelper.iconByName(categoryIcon),
                     "",
@@ -334,11 +351,18 @@ fun CategoryContainer(categoryIcon: String, color: Color, type: CategoryType = C
                 if (hasPhotos) {
 
 
-                    Box(Modifier.size(paddingLarge()).align(Alignment.BottomStart).offset(-paddingSmall(), paddingTiny())) {
+                    Box(
+                        Modifier
+                            .size(paddingLarge())
+                            .align(Alignment.BottomStart)
+                            .offset(-paddingSmall(), paddingTiny())
+                    ) {
                         Box(
-                            Modifier.background(
-                                color = colorResource(R.color.yellow), shape = CircleShape
-                            ).size(paddingLarge())
+                            Modifier
+                                .background(
+                                    color = colorResource(R.color.yellow), shape = CircleShape
+                                )
+                                .size(paddingLarge())
                         ) {
                             Icon(
                                 Icons.Default.CameraAlt,
@@ -623,16 +647,27 @@ fun PeriodSelector(
             }
         } else {
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    dateToDateWeekString(homeUiState.selectedDay),
-                    Modifier
-                        .padding(paddingDefault())
-                        .clickable {
-                            showDatePicker = true
-                        },
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Row(Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        showDatePicker = true
+                    },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+
+                ) {
+                    Text(
+                        dateToDateWeekString(homeUiState.selectedDay),
+                        Modifier
+                            .padding(paddingDefault()),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Icon(Icons.Default.EditCalendar, null)
+                }
+
+
             }
         }
     }

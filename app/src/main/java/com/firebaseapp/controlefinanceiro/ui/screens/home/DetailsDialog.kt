@@ -36,7 +36,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -79,17 +78,14 @@ import java.io.File
 fun DetailsDialog(
     context: Context,
     wordId: Int,
+    index: Long?,
     onEdit: (Word) -> Unit,
     onDelete: (DeleteDetails) -> Unit, // word, index, deleteNext, deleteAll
     onDismissRequest: () -> Unit,
-    viewModel: DetailsViewModel = viewModel(factory = ViewModelProviders.Factory)
+    viewModel: DetailsViewModel = viewModel(factory = ViewModelProviders.Factory),
 ) {
 
-    val context = LocalContext.current
-
     val word by viewModel.currentWordStateFlow.collectAsState()
-
-    //var images by rememberSaveable { mutableStateOf<List<String>>(listOf()) }
 
     var imageIndex: Int by rememberSaveable { mutableIntStateOf(0) }
 
@@ -97,13 +93,7 @@ fun DetailsDialog(
 
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
 
-    viewModel.updateId(wordId)
-
-//    LaunchedEffect(word) {
-//        word?.let {
-//            images = it.images
-//        }
-//    }
+    viewModel.updateWordIdIndex(wordId, index)
 
     if (showFullScreenPhoto) {
         PhotoViewDialog(
@@ -220,6 +210,10 @@ fun DetailsDialog(
 
                     Row() {
                         Text("${stringResource(R.string.value)}: ${currencyFormat(it.value.toString())}")
+                    }
+
+                    if (it.notes.isNotEmpty()) {
+                        Text(it.notes)
                     }
 
                     Spacer(Modifier.height(paddingDefault()))

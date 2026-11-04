@@ -1,6 +1,5 @@
 package com.firebaseapp.controlefinanceiro.ui.screens.reports
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilterChip
@@ -49,16 +49,13 @@ import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLargest
-import com.firebaseapp.controlefinanceiro.defaults.paddingLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
 import com.firebaseapp.controlefinanceiro.helpers.ShareHelper
 import com.firebaseapp.controlefinanceiro.helpers.currencyFormat
 import com.firebaseapp.controlefinanceiro.helpers.dateToDateWeekString
 import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
-import com.firebaseapp.controlefinanceiro.ui.components.CardBordered
 import com.firebaseapp.controlefinanceiro.ui.components.DatePickerModal
 import com.firebaseapp.controlefinanceiro.ui.components.hapticClick
-import com.firebaseapp.controlefinanceiro.ui.screens.home.DateFilter
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import kotlin.collections.component1
@@ -74,7 +71,7 @@ fun ReportScreen(
     Scaffold(
         modifier = modifier
             .fillMaxSize(),
-        ) { innerPadding ->
+    ) { innerPadding ->
 
         val context = LocalContext.current
 
@@ -149,15 +146,18 @@ fun ReportBody(
         }
 
 
-    Column(Modifier
-        .fillMaxWidth()
-        .verticalScroll(rememberScrollState())) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+    ) {
         Text(
             stringResource(R.string.incomes_by_category),
             Modifier
                 .fillMaxWidth()
                 .padding(paddingSmall()),
-            textAlign = TextAlign.Start
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.SemiBold
         )
 
         if (groupedIncome.values.isEmpty()) {
@@ -166,18 +166,21 @@ fun ReportBody(
                     .fillMaxWidth()
             ) {
                 Text(
-                    stringResource(R.string.no_incomes_found),
+                    stringResource(R.string.no_incomes_found_in_this_period),
                     Modifier
                         .padding(paddingDefault())
                         .fillMaxWidth(),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    fontSize = 14.sp
                 )
             }
         } else {
             groupedIncome.forEach { (category, pairs) ->
-                Row(Modifier
-                    .fillMaxWidth()
-                    .padding(start = paddingDefault(), end = paddingSmall())) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(start = paddingDefault(), end = paddingSmall())
+                ) {
                     Text(category)
                     Spacer(Modifier.weight(1f))
                     val total = pairs.sumOf { it.first.value }
@@ -185,14 +188,14 @@ fun ReportBody(
                 }
             }
 
-            Row(Modifier
-                .fillMaxWidth()
-                .padding(start = paddingDefault(), end = paddingSmall())) {
-                Text(stringResource(R.string.total_incomes))
-                Spacer(Modifier.weight(1f))
-                val total = groupedIncome.values.sumOf { it -> it.sumOf { it.first.value } }
-                Text(currencyFormat(total.toString()))
-            }
+//            Row(Modifier
+//                .fillMaxWidth()
+//                .padding(start = paddingDefault(), end = paddingSmall())) {
+//                Text(stringResource(R.string.total_incomes))
+//                Spacer(Modifier.weight(1f))
+//                val total = groupedIncome.values.sumOf { it -> it.sumOf { it.first.value } }
+//                Text(currencyFormat(total.toString()))
+//            }
 
 
         }
@@ -203,7 +206,8 @@ fun ReportBody(
                 .fillMaxWidth()
                 .padding(paddingSmall())
                 .padding(top = paddingDefault()),
-            textAlign = TextAlign.Start
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.SemiBold
         )
 
         if (groupedExpense.values.isEmpty()) {
@@ -212,18 +216,21 @@ fun ReportBody(
                     .fillMaxWidth()
             ) {
                 Text(
-                    stringResource(R.string.no_expenses_found),
+                    stringResource(R.string.no_expenses_found_in_this_period),
                     Modifier
                         .padding(paddingDefault())
                         .fillMaxWidth(),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    fontSize = 14.sp
                 )
             }
         } else {
             groupedExpense.forEach { (category, pairs) ->
-                Row(Modifier
-                    .fillMaxWidth()
-                    .padding(start = paddingDefault(), end = paddingSmall())) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(start = paddingDefault(), end = paddingSmall())
+                ) {
                     Text(category)
                     Spacer(Modifier.weight(1f))
                     val total = pairs.sumOf { it.first.value }
@@ -231,33 +238,88 @@ fun ReportBody(
                 }
             }
 
-            Row(Modifier
+//            Row(Modifier
+//                .fillMaxWidth()
+//                .padding(start = paddingDefault(), end = paddingSmall())) {
+//                Text(stringResource(R.string.total_expenses))
+//                Spacer(Modifier.weight(1f))
+//                val total = groupedExpense.values.sumOf { it -> it.sumOf { it.first.value } }
+//                Text(currencyFormat(total.toString()))
+//            }
+        }
+
+        //Spacer(Modifier.height(paddingDefault()))
+
+        Text(
+            stringResource(R.string.totals),
+            Modifier
                 .fillMaxWidth()
-                .padding(start = paddingDefault(), end = paddingSmall())) {
-                Text(stringResource(R.string.total_expenses))
-                Spacer(Modifier.weight(1f))
-                val total = groupedExpense.values.sumOf { it -> it.sumOf { it.first.value } }
-                Text(currencyFormat(total.toString()))
+                .padding(paddingSmall())
+                .padding(top = paddingDefault()),
+            textAlign = TextAlign.Start,
+            fontWeight = FontWeight.SemiBold
+        )
+
+        Column(Modifier.padding(start = paddingSmall())) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = paddingSmall()),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+
+                val totalIncome = groupedIncome.values.sumOf { it -> it.sumOf { it.first.value } }
+
+                Text(
+                    stringResource(R.string.total_incomes),
+                )
+
+                Text(currencyFormat(totalIncome.toString()))
+            }
+
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = paddingSmall()),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+
+                val totalExpense = groupedExpense.values.sumOf { it -> it.sumOf { it.first.value } }
+
+                Text(
+                    stringResource(R.string.total_expenses),
+                )
+
+                Text(currencyFormat(totalExpense.toString()))
+            }
+
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = paddingSmall()),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                val balanceLabel = when (reportUiState.currentFilter) {
+                    ReportDateFilter.PERIOD -> stringResource(R.string.period_balance)
+                    ReportDateFilter.MONTH -> stringResource(R.string.monthly_balance)
+                    ReportDateFilter.YEAR -> stringResource(R.string.yearly_balance)
+                }
+                val totalIncome = groupedIncome.values.sumOf { it -> it.sumOf { it.first.value } }
+                val totalExpense = groupedExpense.values.sumOf { it -> it.sumOf { it.first.value } }
+                val totalBalance = totalIncome - totalExpense
+                Text(
+                    balanceLabel,
+                )
+
+                Text(
+                    currencyFormat(totalBalance.toString()),
+                    color = if (totalBalance < BigDecimal.ZERO)
+                        colorResource(R.color.dark_red) else MaterialTheme.colorScheme.onBackground
+                )
             }
         }
 
-        Spacer(Modifier.height(paddingDefault()))
 
-        Row(Modifier.fillMaxWidth().padding(paddingSmall()), horizontalArrangement = Arrangement.SpaceBetween) {
-            val balanceLabel = when (reportUiState.currentFilter) {
-                ReportDateFilter.PERIOD -> stringResource(R.string.period_balance)
-                ReportDateFilter.MONTH -> stringResource(R.string.monthly_balance)
-                ReportDateFilter.YEAR -> stringResource(R.string.yearly_balance)
-            }
-            val totalIncome = groupedIncome.values.sumOf { it -> it.sumOf { it.first.value } }
-            val totalExpense = groupedExpense.values.sumOf { it -> it.sumOf { it.first.value } }
-            val totalBalance = totalIncome - totalExpense
-            Text(
-                balanceLabel,
-            )
-
-            Text(currencyFormat(totalBalance.toString()))
-        }
 
 
         Spacer(Modifier.height(paddingExtraLarge()))
@@ -415,53 +477,6 @@ fun ReportFilterChips(
     }
 }
 
-@Composable
-fun ReportBalancePanel(reportUiState: ReportUiState) {
-    CardBordered(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = paddingLarge(), bottom = paddingDefault())
-
-    ) {
-        Column {
-            val balanceLabel = when (reportUiState.currentFilter) {
-                ReportDateFilter.PERIOD -> stringResource(R.string.period_balance)
-                ReportDateFilter.MONTH -> stringResource(R.string.monthly_balance)
-                ReportDateFilter.YEAR -> stringResource(R.string.daily_balance)
-            }
-            Text(
-                balanceLabel,
-                Modifier
-                    .padding(paddingSmall())
-                    .fillMaxWidth(),
-                fontSize = 14.sp,
-                textAlign = TextAlign.Center
-            )
-
-            val colorText = if (reportUiState.total >= BigDecimal.ZERO)
-                colorResource(R.color.dark_green)
-            else colorResource(R.color.dark_red)
-
-
-            Text(
-                currencyFormat(reportUiState.total.toString()),
-
-                Modifier
-                    .padding(bottom = paddingDefault())
-                    .fillMaxWidth()
-                    .animateContentSize(),
-                textAlign = TextAlign.Center,
-                fontSize = 24.sp,
-                color = colorText,
-                fontWeight = FontWeight.Bold
-            )
-
-
-        }
-
-
-    }
-}
 
 @Composable
 fun ReportPeriodSelector(
@@ -553,27 +568,68 @@ fun ReportPeriodSelector(
             }
         } else {
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    dateToDateWeekString(reportUiState.fromDatePeriod),
+                Row(
                     Modifier
-                        .padding(paddingDefault())
+                        .fillMaxWidth()
                         .clickable {
                             showFromDatePicker = true
                         },
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
 
-                Text(
-                    dateToDateWeekString(reportUiState.toDatePeriod),
+                ) {
+                    Text(
+                        dateToDateWeekString(reportUiState.fromDatePeriod),
+                        Modifier
+                            .padding(paddingDefault()),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Icon(Icons.Default.EditCalendar, null)
+                }
+
+                Row(
                     Modifier
-                        .padding(paddingDefault())
+                        .fillMaxWidth()
                         .clickable {
                             showToDatePicker = true
                         },
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+
+                ) {
+                    Text(
+                        dateToDateWeekString(reportUiState.toDatePeriod),
+                        Modifier
+                            .padding(paddingDefault()),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Icon(Icons.Default.EditCalendar, null)
+                }
+//                Text(
+//                    dateToDateWeekString(reportUiState.fromDatePeriod),
+//                    Modifier
+//                        .padding(paddingDefault())
+//                        .clickable {
+//                            showFromDatePicker = true
+//                        },
+//                    fontSize = 18.sp,
+//                    fontWeight = FontWeight.Bold
+//                )
+//
+//                Text(
+//                    dateToDateWeekString(reportUiState.toDatePeriod),
+//                    Modifier
+//                        .padding(paddingDefault())
+//                        .clickable {
+//                            showToDatePicker = true
+//                        },
+//                    fontSize = 18.sp,
+//                    fontWeight = FontWeight.Bold
+//                )
             }
         }
 

@@ -230,3 +230,25 @@ fun WordException.toWord(): Word {
         endDate = null,
     )
 }
+
+/**
+* This function keep the same id from Word
+*/
+
+fun WordException.toOriginalWord(isRecurring: Boolean, endDate: LocalDateTime?): Word {
+    return Word(
+        id = wordId,
+        date = date,
+        type = type,
+        value = value,
+        categoryId = categoryId,
+        categoryName = categoryName,
+        categoryIcon = categoryIcon,
+        categoryColor = categoryColor,
+        notes = notes,
+        images = images,
+        isRecurring = isRecurring,
+        recurringGroup = recurringGroup,
+        endDate = endDate,
+    )
+}

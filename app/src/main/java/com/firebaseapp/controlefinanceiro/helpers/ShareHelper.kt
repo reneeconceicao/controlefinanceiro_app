@@ -62,8 +62,6 @@ class ShareHelper(private val context: Context) {
                 body += "$category: ${currencyFormat(total.toString())}"
                 body += "\n"
             }
-            val total = groupedIncome.values.sumOf { it -> it.sumOf { it.first.value } }
-            body += "${context.getString(R.string.total_incomes)}: ${currencyFormat(total.toString())}"
             body += "\n\n"
         }
 
@@ -78,10 +76,15 @@ class ShareHelper(private val context: Context) {
                 body += "$category: ${currencyFormat(total.toString())}"
                 body += "\n"
             }
-            val total = groupedExpense.values.sumOf { it -> it.sumOf { it.first.value } }
-            body += "${context.getString(R.string.total_expenses)}: ${currencyFormat(total.toString())}"
             body += "\n\n"
         }
+
+        body += "${context.getString(R.string.total_incomes)}: ${currencyFormat(totalIncome.toString())}"
+        body += "\n"
+
+
+        body += "${context.getString(R.string.total_expenses)}: ${currencyFormat(totalExpense.toString())}"
+        body += "\n"
 
         body += "${balanceLabel}: ${currencyFormat(totalBalance.toString())}"
         body += "\n\n"
