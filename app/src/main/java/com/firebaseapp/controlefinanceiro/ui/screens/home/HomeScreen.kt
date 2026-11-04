@@ -1,12 +1,12 @@
 package com.firebaseapp.controlefinanceiro.ui.screens.home
 
-import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,17 +15,20 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -59,11 +62,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.firebaseapp.compose_lucide_icons.helpers.IconsHelper
 import com.firebaseapp.controlefinanceiro.R
+import com.firebaseapp.controlefinanceiro.data.entities.CategoryType
 import com.firebaseapp.controlefinanceiro.data.entities.WordType
+import com.firebaseapp.controlefinanceiro.defaults.padding12
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
+import com.firebaseapp.controlefinanceiro.defaults.padding20
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
+import com.firebaseapp.controlefinanceiro.defaults.paddingTiny
+import com.firebaseapp.controlefinanceiro.helpers.ColorsHelper
 import com.firebaseapp.controlefinanceiro.helpers.currencyFormat
 import com.firebaseapp.controlefinanceiro.helpers.dateToDateWeekString
 import com.firebaseapp.controlefinanceiro.helpers.formatedPriceIndicator
@@ -156,13 +164,14 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(innerPadding)
             ) {
                 Text(
                     text = stringResource(R.string.app_name),
                     Modifier
                         .padding(paddingDefault()),
                     fontSize = 24.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colorResource(R.color.purple_300)
                 )
 
                 HomeHeader(
@@ -193,9 +202,7 @@ fun HomeScreen(
                     showWordOptions = { word, index ->
                         currentWord = Pair(word, index)
                         showWordOptions = true
-                    },
-                    onEditNavigate = navigateToEdit,
-                    onEditNavigateRecurring = navigateToEditRecurring
+                    }
                 )
             }
         }
@@ -207,9 +214,9 @@ fun HomeScreen(
 fun HomeList(
     homeUiState: HomeUiState,
     showWordOptions: (Int?, Long?) -> Unit,
-    onEditNavigate: (Int) -> Unit,
-    onEditNavigateRecurring: (Int, Long?) -> Unit,
 ) {
+
+    val context = LocalContext.current
 
     val grouped = homeUiState.list.groupBy {
         it.first.date.toLocalDate().atStartOfDay()
@@ -263,39 +270,15 @@ fun HomeList(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
 
+                                val icon = word.categoryIcon
 
-                                Box(
-                                    Modifier
-                                        .size(paddingExtraLarge())
-                                    //.clip(CircleShape)
-                                    //.background(MaterialTheme.colorScheme.outlineVariant)
+                                val color = ColorsHelper(context).colorByName(
+                                    word.categoryColor
+                                )
 
-                                ) {
+                                val type = if (word.type == WordType.Income) CategoryType.Income else CategoryType.Expense
 
-                                    val icon = word.categoryIcon
-
-                                    if (icon.isNotEmpty()) {
-
-                                        Icon(
-                                            painter = IconsHelper.iconByName(icon),
-                                            "",
-                                            Modifier
-                                                .align(Alignment.Center)
-                                                .size(24.dp)
-                                        )
-                                    } else {
-                                        Icon(
-                                            painter = if (word.type == WordType.Income) painterResource(
-                                                R.drawable.__banknote_arrow_up
-                                            ) else painterResource(R.drawable.__banknote_arrow_down),
-                                            "",
-                                            Modifier
-                                                .align(Alignment.Center)
-                                                .size(24.dp)
-                                        )
-                                    }
-                                }
-
+                                CategoryContainer(categoryIcon = icon, color = color, type = type, word.images.isNotEmpty())
 
                                 Text(
                                     formatedPriceIndicator(word),
@@ -310,6 +293,7 @@ fun HomeList(
                                     else
                                         MaterialTheme.colorScheme.onBackground
                                 )
+
                             }
 
                         }
@@ -323,6 +307,62 @@ fun HomeList(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun CategoryContainer(categoryIcon: String, color: Color, type: CategoryType = CategoryType.Income, hasPhotos: Boolean = false) {
+    Box(
+        Modifier
+            .size(48.dp)
+    ) {
+        if (categoryIcon.isNotEmpty()) {
+
+            Box(Modifier.size(48.dp)) {
+                Box(Modifier.background(
+                    color = color, shape = CircleShape
+                ).size(48.dp))
+                Icon(
+                    painter = IconsHelper.iconByName(categoryIcon),
+                    "",
+                    Modifier
+                        .align(Alignment.Center)
+                        .size(24.dp),
+                    tint = colorResource(R.color.dark_light_gray)
+                )
+                if (hasPhotos) {
+
+
+                    Box(Modifier.size(paddingLarge()).align(Alignment.BottomStart).offset(-paddingSmall(), paddingTiny())) {
+                        Box(
+                            Modifier.background(
+                                color = colorResource(R.color.yellow), shape = CircleShape
+                            ).size(paddingLarge())
+                        ) {
+                            Icon(
+                                Icons.Default.CameraAlt,
+                                "",
+                                Modifier
+                                    .align(Alignment.Center)
+                                    .size(paddingDefault()),
+                                tint = Color.Black
+                            )
+                        }
+                    }
+                }
+            }
+
+        } else {
+            Icon(
+                painter = if (type == CategoryType.Income) painterResource(
+                    R.drawable.__banknote_arrow_up
+                ) else painterResource(R.drawable.__banknote_arrow_down),
+                "",
+                Modifier
+                    .align(Alignment.Center)
+                    .size(24.dp)
+            )
         }
     }
 }

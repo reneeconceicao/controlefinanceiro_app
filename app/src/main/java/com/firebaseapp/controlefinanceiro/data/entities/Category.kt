@@ -30,6 +30,7 @@ data class Category(
     val categoryName: String,
     val categoryIcon: String,
     val categoryType: CategoryType,
+    val categoryColor: String,
     val position: Int,
 )
 

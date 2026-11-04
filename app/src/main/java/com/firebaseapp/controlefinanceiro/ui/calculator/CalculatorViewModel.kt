@@ -43,7 +43,7 @@ class CalculatorViewModal(initialValue: String = "0") : ViewModel() {
             return@combine ButtonState.DISABLED
         }
 
-        if (!expression.checkSyntax() || value == "0") {
+        if (!expression.checkSyntax() || value in listOf("0", "0.0", "0.00", "0,0", "0,00") ) {
             return@combine ButtonState.DISABLED
         }
 

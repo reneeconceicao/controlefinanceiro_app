@@ -20,6 +20,10 @@ class DetailsViewModel(private val wordRepository: WordRepository) : ViewModel()
         }
     }
 
+    fun clearWordValue() {
+        currentId.value = null
+    }
+
     val currentWordStateFlow = combine(currentId) { (id) ->
         id?.let {
             return@combine wordRepository.getWordAsync(it.toInt())

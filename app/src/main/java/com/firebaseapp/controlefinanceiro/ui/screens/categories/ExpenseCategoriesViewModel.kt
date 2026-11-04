@@ -34,10 +34,10 @@ class ExpenseCategoriesViewModel(
                 loading = false
                 CategoriesUiState(list = list)
             }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-            initialValue = CategoriesUiState()
-        )
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+                initialValue = CategoriesUiState()
+            )
 
     fun updateCategory(category: Category) {
         viewModelScope.launch {
@@ -53,12 +53,12 @@ class ExpenseCategoriesViewModel(
             withContext(Dispatchers.IO) {
                 val words = wordRepository.wordsByCategory(category.id)
                 words.forEach {
-                    val editWord = it.copy(categoryId = 0, categoryName = "")
+                    val editWord = it.copy(categoryId = 0)
                     wordRepository.updateWord(editWord)
                 }
                 val exceptions = wordRepository.exceptionsByCategory(category.id)
                 exceptions.forEach {
-                    val editException = it.copy(categoryId = 0, categoryName = "")
+                    val editException = it.copy(categoryId = 0)
                     wordRepository.updateException(editException)
                 }
             }

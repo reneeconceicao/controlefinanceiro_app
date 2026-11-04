@@ -63,6 +63,8 @@ dependencies {
     implementation("androidx.camera:camera-extensions:1.6.2")
     implementation("com.google.accompanist:accompanist-permissions:0.37.3")
     implementation("com.google.code.gson:gson:2.13.2")
+    implementation("net.engawapg.lib:zoomable:2.11.1")
+    implementation("io.coil-kt.coil3:coil-compose:3.3.0")
     ksp(libs.room.compiler)
 
     dependencies {

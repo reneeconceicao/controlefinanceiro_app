@@ -6,6 +6,10 @@ fun paddingTiny() = 4.dp
 fun paddingSmall() = 8.dp
 fun paddingDefault() = 16.dp
 
+fun padding12() = 10.dp
+fun padding20() = 20.dp
+
+
 fun paddingLarge() = 24.dp
 
 fun paddingExtraLarge() = 32.dp

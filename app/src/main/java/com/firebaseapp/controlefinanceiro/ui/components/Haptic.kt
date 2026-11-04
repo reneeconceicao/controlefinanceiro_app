@@ -71,7 +71,24 @@ fun hapticClick(
         if (enabledHaptic) {
             haptic.performHapticFeedback(HapticFeedbackType.KeyboardTap)
         }
-        viewModel.addCounter()
         onClick()
+    }
+}
+
+@Composable
+fun hapticOnCheckedChange(
+    checked: Boolean,
+    viewModel: DataStoreViewModel = viewModel(factory = ViewModelProviders.Factory),
+    onCheckedChange: ((Boolean) -> Unit)?,
+): (Boolean) -> Unit {
+    val haptic = LocalHapticFeedback.current
+    val enabledHaptic by viewModel.isHapticEnabled.collectAsState()
+
+    return {
+        if (enabledHaptic) {
+            haptic.performHapticFeedback(HapticFeedbackType.KeyboardTap)
+        }
+
+        onCheckedChange?.invoke(!checked)
     }
 }

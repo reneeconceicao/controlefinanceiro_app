@@ -18,10 +18,14 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,9 +41,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.firebaseapp.compose_lucide_icons.helpers.IconsHelper
 import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.data.entities.Category
@@ -99,30 +105,57 @@ fun PhotosModal(
                 val currentFolder = if (File(context.filesDir, image).exists())
                     context.filesDir else context.cacheDir
 
-                val options = BitmapFactory.Options().apply {
-                    inSampleSize = 4
-                }
+                val imageFile = File(currentFolder, image).absolutePath
 
-                val bitmap = remember(image) {
-                    BitmapFactory.decodeFile(
-                        File(currentFolder, image).absolutePath,
-                        options
-                    )?.asImageBitmap()
-                }
+                Box {
 
-                bitmap?.let {
-                    Image(
-                        bitmap = it,
+                    AsyncImage(
+                        model = imageFile,
                         contentDescription = null,
-                        Modifier
+                        modifier = Modifier
                             .fillParentMaxWidth(0.32f)
-                            .aspectRatio(1f)
-                            .clickable {
-                                onItemDeleted(image)
-                            },
+                            .aspectRatio(1f),
                         contentScale = ContentScale.Crop,
                     )
+                    Box(Modifier.align(Alignment.TopEnd).padding(paddingTiny()).background(color = colorResource(R.color.dark_red), shape = CircleShape), ) {
+                        Icon(
+                            imageVector = Icons.Default.Remove,
+                            contentDescription = "",
+                            modifier = Modifier
+                                .clickable {
+                                    onItemDeleted(image)
+                                },
+                            tint = Color.White
+                        )
+                    }
+
                 }
+
+
+//                val options = BitmapFactory.Options().apply {
+//                    inSampleSize = 4
+//                }
+//
+//                val bitmap = remember(image) {
+//                    BitmapFactory.decodeFile(
+//                        File(currentFolder, image).absolutePath,
+//                        options
+//                    )?.asImageBitmap()
+//                }
+//
+//                bitmap?.let {
+//                    Image(
+//                        bitmap = it,
+//                        contentDescription = null,
+//                        Modifier
+//                            .fillParentMaxWidth(0.32f)
+//                            .aspectRatio(1f)
+//                            .clickable {
+//                                onItemDeleted(image)
+//                            },
+//                        contentScale = ContentScale.Crop,
+//                    )
+//                }
             }
 
             if (images.size < 3) {

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="dark_green">#18a34b</color>
+    <color name="dark_red">#bf2a28</color>
+    <color name="light_red">#fb695b</color>
+
+    <color name="yellow">#FFA726</color>
+
+    <color name="dark_gray">#ffe2c1</color>
+
+    <color name="dark_light_gray">#000000</color>
+
+    <!--    <color name="dark_red">#AD1414</color>-->
+
+    <!--    <color name="chart_blue">#FF1565C0</color>-->
+    <!--    <color name="chart_red">#FFE53935</color>-->
+    <!--    <color name="chart_green">#FF2E7D32</color>-->
+    <!--    <color name="chart_orange">#FFEF6C00</color>-->
+    <!--    <color name="chart_purple">#FF7B1FA2</color>-->
+    <!--    <color name="chart_teal">#FF00897B</color>-->
+    <!--    <color name="chart_pink">#FFD81B60</color>-->
+    <!--    <color name="chart_brown">#FF795548</color>-->
+
+    <!--    <color name="chart_cyan">#FF0097A7</color>-->
+    <!--    <color name="chart_indigo">#FF3949AB</color>-->
+    <!--    <color name="chart_lime">#FF7CB342</color>-->
+    <!--    <color name="chart_amber">#FFFFB300</color>-->
+    <!--    <color name="chart_deep_orange">#FFD84315</color>-->
+    <!--    <color name="chart_deep_purple">#FF512DA8</color>-->
+    <!--    <color name="chart_light_blue">#FF0288D1</color>-->
+    <!--    <color name="chart_light_green">#FF558B2F</color>-->
+
+    <!--    <color name="chart_magenta">#FFC2185B</color>-->
+    <!--    <color name="chart_navy">#FF283593</color>-->
+    <!--    <color name="chart_olive">#FF827717</color>-->
+    <!--    <color name="chart_coral">#FFFF5252</color>-->
+    <!--    <color name="chart_violet">#FF8E24AA</color>-->
+    <!--    <color name="chart_slate">#FF546E7A</color>-->
+    <!--    <color name="chart_gold">#FFFF8F00</color>-->
+    <!--    <color name="chart_mint">#FF008F6B</color>-->
+
+
+
+    <color name="chart_blue">#FFBBDEFB</color>
+    <color name="chart_red">#FFFFCDD2</color>
+    <color name="chart_green">#FFC8E6C9</color>
+    <color name="chart_orange">#FFFFE0B2</color>
+    <color name="chart_purple">#FFE1BEE7</color>
+    <color name="chart_teal">#FFB2DFDB</color>
+    <color name="chart_pink">#FFF8BBD0</color>
+    <color name="chart_yellow">#FFFFF9C4</color>
+
+    <color name="chart_cyan">#FFB2EBF2</color>
+    <color name="chart_indigo">#FFC5CAE9</color>
+    <color name="chart_lime">#FFE6EE9C</color>
+    <color name="chart_coral">#FFFFDAD4</color>
+    <color name="chart_amber">#FFFFECB3</color>
+    <color name="chart_violet">#FFD1C4E9</color>
+    <color name="chart_light_blue">#FFB3E5FC</color>
+    <color name="chart_light_green">#FFDCEDC8</color>
+
+    <color name="chart_magenta">#FFF8BBD0</color>
+    <color name="chart_turquoise">#FFB2F2E8</color>
+    <color name="chart_salmon">#FFFFCCBC</color>
+    <color name="chart_lavender">#FFE6CEFA</color>
+    <color name="chart_sky">#FFB3E5FC</color>
+    <color name="chart_mint">#FFB9F6CA</color>
+    <color name="chart_fuchsia">#FFECCAFF</color>
+    <color name="chart_peach">#FFFFDCCB</color>
+
+
+</resources>

@@ -97,6 +97,7 @@ data class RegisterDetails(
     var currentCategoryId: Int = 0,
     var categoryName: String = "",
     var categoryIcon: String = "",
+    var categoryColor: String = "",
     var categoriesExpense: List<Category> = emptyList(),
     var categoriesIncome: List<Category> = emptyList(),
     var images: List<String> = emptyList(),
@@ -115,6 +116,7 @@ fun RegisterDetails.toWord(): Word {
         categoryId = currentCategoryId,
         categoryName = categoryName,
         categoryIcon = categoryIcon,
+        categoryColor = categoryColor,
         notes = notes,
         images = images,
         isRecurring = isRecurring,
@@ -131,6 +133,7 @@ fun RegisterDetails.toNewWord(): Word {
         categoryId = currentCategoryId,
         categoryName = categoryName,
         categoryIcon = categoryIcon,
+        categoryColor = categoryColor,
         notes = notes,
         images = images,
         isRecurring = isRecurring,
@@ -153,6 +156,7 @@ fun RegisterDetails.toWordException(
         categoryId = currentCategoryId,
         categoryName = categoryName,
         categoryIcon = categoryIcon,
+        categoryColor = categoryColor,
         notes = notes,
         images = images,
         isDeleted = false,
@@ -170,6 +174,7 @@ fun Word.toDetails(): RegisterDetails {
         currentCategoryId = categoryId,
         categoryIcon = categoryIcon,
         categoryName = categoryName,
+        categoryColor = categoryColor,
         images = images.toMutableList(),
         isRecurring = isRecurring,
         recurringGroupId = recurringGroup
@@ -185,6 +190,7 @@ fun Word.toWordException(occurrenceIndex: Long, isDeleted: Boolean): WordExcepti
         categoryId = categoryId,
         categoryName = categoryName,
         categoryIcon = categoryIcon,
+        categoryColor = categoryColor,
         notes = notes,
         images = images,
         occurrenceIndex = occurrenceIndex,
@@ -204,6 +210,7 @@ fun WordException.toDetails(): RegisterDetails {
         currentCategoryId = categoryId,
         categoryIcon = categoryIcon,
         categoryName = categoryName,
+        categoryColor = categoryColor
     )
 }
 
@@ -215,6 +222,7 @@ fun WordException.toWord(): Word {
         categoryId = categoryId,
         categoryName = categoryName,
         categoryIcon = categoryIcon,
+        categoryColor = categoryColor,
         notes = notes,
         images = images,
         isRecurring = false,

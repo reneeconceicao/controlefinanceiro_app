@@ -117,7 +117,8 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
     fun changePeriod(value: Int) {
         when (currentFilter.value) {
             DateFilter.DAY -> {
-                fromDate.value = selectedDate.value
+                fromDate.value = selectedDate.value.atStartOfDay()
+                toDate.value = selectedDate.value.atEndOfDay()
             }
 
             DateFilter.MONTH -> {
@@ -162,7 +163,8 @@ class HomeViewModel(private val wordRepository: WordRepository) : ViewModel() {
         when (currentFilter.value) {
 
             DateFilter.DAY -> {
-                fromDate.value = selectedDate.value
+                fromDate.value = selectedDate.value.atStartOfDay()
+                toDate.value = selectedDate.value.atEndOfDay()
             }
 
             DateFilter.MONTH -> {

@@ -18,6 +18,7 @@ data class Word(
     val categoryId: Int,
     val categoryName: String,
     val categoryIcon: String,
+    val categoryColor: String,
     val notes: String,
     val images: List<String>,
     val isRecurring: Boolean,// = false,

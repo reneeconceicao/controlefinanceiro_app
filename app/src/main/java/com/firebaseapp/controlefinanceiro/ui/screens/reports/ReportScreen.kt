@@ -58,6 +58,7 @@ import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
 import com.firebaseapp.controlefinanceiro.ui.components.CardBordered
 import com.firebaseapp.controlefinanceiro.ui.components.DatePickerModal
 import com.firebaseapp.controlefinanceiro.ui.components.hapticClick
+import com.firebaseapp.controlefinanceiro.ui.screens.home.DateFilter
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import kotlin.collections.component1
@@ -239,6 +240,25 @@ fun ReportBody(
                 Text(currencyFormat(total.toString()))
             }
         }
+
+        Spacer(Modifier.height(paddingDefault()))
+
+        Row(Modifier.fillMaxWidth().padding(paddingSmall()), horizontalArrangement = Arrangement.SpaceBetween) {
+            val balanceLabel = when (reportUiState.currentFilter) {
+                ReportDateFilter.PERIOD -> stringResource(R.string.period_balance)
+                ReportDateFilter.MONTH -> stringResource(R.string.monthly_balance)
+                ReportDateFilter.YEAR -> stringResource(R.string.yearly_balance)
+            }
+            val totalIncome = groupedIncome.values.sumOf { it -> it.sumOf { it.first.value } }
+            val totalExpense = groupedExpense.values.sumOf { it -> it.sumOf { it.first.value } }
+            val totalBalance = totalIncome - totalExpense
+            Text(
+                balanceLabel,
+            )
+
+            Text(currencyFormat(totalBalance.toString()))
+        }
+
 
         Spacer(Modifier.height(paddingExtraLarge()))
 

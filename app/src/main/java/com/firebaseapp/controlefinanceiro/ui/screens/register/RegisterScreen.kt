@@ -98,11 +98,11 @@ import com.firebaseapp.controlefinanceiro.helpers.PhotoFilesHandler
 import com.firebaseapp.controlefinanceiro.helpers.dateToString
 import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
 import com.firebaseapp.controlefinanceiro.ui.calculator.Calculator
-import com.firebaseapp.controlefinanceiro.ui.calculator.CalculatorBox
 import com.firebaseapp.controlefinanceiro.ui.components.DatePickerModal
 import com.firebaseapp.controlefinanceiro.ui.components.ImageOptionsDialog
 import com.firebaseapp.controlefinanceiro.ui.components.PhotosModal
 import com.firebaseapp.controlefinanceiro.ui.components.hapticClick
+import com.firebaseapp.controlefinanceiro.ui.components.hapticOnCheckedChange
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import java.time.LocalDateTime
 
@@ -280,7 +280,8 @@ fun RegisterScreenBody(
                                     selectedOption = option,
                                     currentCategoryId = 0,
                                     categoryName = "",
-                                    categoryIcon = ""
+                                    categoryIcon = "",
+                                    categoryColor = ""
                                 )
                             )
                         } else {
@@ -449,7 +450,8 @@ fun CategoryGrid(
                             registerUiState.details.copy(
                                 currentCategoryId = category.id,
                                 categoryName = category.categoryName,
-                                categoryIcon = category.categoryIcon
+                                categoryIcon = category.categoryIcon,
+                                categoryColor = category.categoryColor
                             )
                         )
 
@@ -733,7 +735,7 @@ fun FieldsCalculator(
     }
 
     AnimatedVisibility(visible) {
-        CalculatorBox(
+        Calculator(
             details = details,
             onEntryValue = onEntryValue,
             onUpdatePrice = {
@@ -751,15 +753,18 @@ fun FieldsCalculator(
             modifier = Modifier.padding(start = paddingTiny())
         ) {
             Checkbox(
+
                 details.isRecurring,
-                onCheckedChange = {
+                onCheckedChange = hapticOnCheckedChange(details.isRecurring) {
                     onUpdateRecurrency(it)
                 },
                 colors = CheckboxDefaults.colors(
                     checkedColor = colorResource(R.color.yellow),
-                )
+                ),
             )
-            Text(stringResource(R.string.repeat_every_month))
+            Text(stringResource(R.string.repeat_every_month), Modifier.hapticClick(interactionSource = null, indication = null) {
+                onUpdateRecurrency(!details.isRecurring)
+            })
         }
     }
 

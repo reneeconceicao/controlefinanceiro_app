@@ -17,6 +17,7 @@ import com.firebaseapp.controlefinanceiro.data.entities.Word
 import com.firebaseapp.controlefinanceiro.data.entities.Category
 import com.firebaseapp.controlefinanceiro.data.entities.CategoryType
 import com.firebaseapp.controlefinanceiro.data.entities.WordException
+import com.firebaseapp.controlefinanceiro.helpers.ColorsHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.stateIn
@@ -26,7 +27,7 @@ import java.math.BigDecimal
 /**
  * Database class with a singleton Instance object.
  */
-@Database(entities = [Word::class, WordException::class, Category::class, Budget::class], version = 4, exportSchema = false)
+@Database(entities = [Word::class, WordException::class, Category::class, Budget::class], version = 5, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class MoneyManagerDatabase : RoomDatabase() {
 
@@ -62,12 +63,14 @@ abstract class MoneyManagerDatabase : RoomDatabase() {
 
                 val food = context.getString(R.string.home)
 
-                val category1 = Category(categoryName = food, categoryIcon = "animals_dog", categoryType = CategoryType.Expense, position = 0)
-                val category2 = Category(categoryName = "Car", categoryIcon = "animals_egg", categoryType = CategoryType.Expense, position = 1)
-                val category3 = Category(categoryName = "Funny", categoryIcon = "animals_fish", categoryType = CategoryType.Expense, position = 2)
+                val colorsHelper = ColorsHelper(context)
 
-                val category4 = Category(categoryName = "Salary", categoryIcon = "animals_dog", categoryType = CategoryType.Income, position = 0)
-                val category5 = Category(categoryName = "Investing", categoryIcon = "animals_egg", categoryType = CategoryType.Income, position = 1)
+                val category1 = Category(categoryName = food, categoryIcon = "animals_dog", categoryType = CategoryType.Expense, categoryColor = "chart_blue", position = 0)
+                val category2 = Category(categoryName = "Car", categoryIcon = "animals_egg", categoryType = CategoryType.Expense, categoryColor = "chart_orange", position = 1)
+                val category3 = Category(categoryName = "Funny", categoryIcon = "animals_fish", categoryType = CategoryType.Expense, categoryColor = "chart_pink", position = 2)
+
+                val category4 = Category(categoryName = "Salary", categoryIcon = "animals_dog", categoryType = CategoryType.Income, categoryColor = "chart_indigo", position = 0)
+                val category5 = Category(categoryName = "Investing", categoryIcon = "animals_egg", categoryType = CategoryType.Income, categoryColor = "chart_violet", position = 1)
 
                 CoroutineScope(Dispatchers.IO).launch {
 
@@ -102,12 +105,12 @@ abstract class MoneyManagerDatabase : RoomDatabase() {
 
                 val food = context.getString(R.string.home)
 
-                val category1 = Category(categoryName = food, categoryIcon = "animals_dog", categoryType = CategoryType.Expense, position = 0)
-                val category2 = Category(categoryName = "Car", categoryIcon = "animals_egg", categoryType = CategoryType.Expense, position = 1)
-                val category3 = Category(categoryName = "Funny", categoryIcon = "animals_fish", categoryType = CategoryType.Expense, position = 2)
+                val category1 = Category(categoryName = food, categoryIcon = "animals_dog", categoryType = CategoryType.Expense, categoryColor = "chart_blue", position = 0)
+                val category2 = Category(categoryName = "Car", categoryIcon = "animals_egg", categoryType = CategoryType.Expense, categoryColor = "chart_orange", position = 1)
+                val category3 = Category(categoryName = "Funny", categoryIcon = "animals_fish", categoryType = CategoryType.Expense, categoryColor = "chart_pink", position = 2)
 
-                val category4 = Category(categoryName = "Salary", categoryIcon = "animals_dog", categoryType = CategoryType.Income, position = 0)
-                val category5 = Category(categoryName = "Investing", categoryIcon = "animals_egg", categoryType = CategoryType.Income, position = 1)
+                val category4 = Category(categoryName = "Salary", categoryIcon = "animals_dog", categoryType = CategoryType.Income, categoryColor = "chart_indigo", position = 0)
+                val category5 = Category(categoryName = "Investing", categoryIcon = "animals_egg", categoryType = CategoryType.Income, categoryColor = "chart_violet", position = 1)
 
                 CoroutineScope(Dispatchers.IO).launch {
 

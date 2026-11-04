@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="chart_colors">
+        <item>@color/chart_blue</item>
+        <item>@color/chart_red</item>
+        <item>@color/chart_green</item>
+        <item>@color/chart_orange</item>
+        <item>@color/chart_purple</item>
+        <item>@color/chart_teal</item>
+        <item>@color/chart_pink</item>
+        <item>@color/chart_yellow</item>
+        <item>@color/chart_cyan</item>
+        <item>@color/chart_indigo</item>
+        <item>@color/chart_lime</item>
+        <item>@color/chart_coral</item>
+        <item>@color/chart_amber</item>
+        <item>@color/chart_violet</item>
+        <item>@color/chart_light_blue</item>
+        <item>@color/chart_light_green</item>
+        <item>@color/chart_magenta</item>
+        <item>@color/chart_turquoise</item>
+        <item>@color/chart_salmon</item>
+        <item>@color/chart_lavender</item>
+        <item>@color/chart_sky</item>
+        <item>@color/chart_mint</item>
+        <item>@color/chart_fuchsia</item>
+        <item>@color/chart_peach</item>
+    </array>
+</resources>

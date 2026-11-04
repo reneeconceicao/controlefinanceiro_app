@@ -9,6 +9,8 @@
     <string name="register">Registrar</string>
     <string name="save">GUARDAR</string>
     <string name="notes">Notas</string>
+    <string name="income">Ingreso</string>
+    <string name="expense">Gasto</string>
     <string name="add_income">+ Ingreso</string>
     <string name="add_expense">- Gasto</string>
     <string name="select_the_date">Seleccionar la fecha</string>
@@ -55,5 +57,8 @@
     <string name="no_expenses_found">No se encontraron gastos</string>
     <string name="total_expenses">Total de gastos</string>
     <string name="total_incomes">Total de ingresos</string>
+    <string name="date">Fecha</string>
+    <string name="value">Valor</string>
+    <string name="photos">Fotos</string>
 
 </resources>
