@@ -5,7 +5,7 @@ enum class AppDestination(
     val routeWithArgs: String = ""
 ) {
     MAIN("main"),
-    REGISTER("register"),
+    REGISTER("register", routeWithArgs = "register/{initialOption}"),
 
     CAMERA("camera"),
 

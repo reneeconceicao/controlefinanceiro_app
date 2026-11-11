@@ -3,6 +3,7 @@ package com.firebaseapp.controlefinanceiro.ui.screens.register
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -148,7 +149,6 @@ fun RegisterScreen(
                 .consumeWindowInsets(innerPadding)
                 .imePadding(),
         ) {
-
 
             RegisterScreenBody(
                 registerUiState = registerUiState,

@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -65,6 +67,11 @@ dependencies {
     implementation("com.google.code.gson:gson:2.13.2")
     implementation("net.engawapg.lib:zoomable:2.11.1")
     implementation("io.coil-kt.coil3:coil-compose:3.3.0")
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material)
+    implementation ("androidx.core:core-splashscreen:1.2.0")
+
+
     ksp(libs.room.compiler)
 
     dependencies {

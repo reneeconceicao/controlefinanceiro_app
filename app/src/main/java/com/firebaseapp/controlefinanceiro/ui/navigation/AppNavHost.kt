@@ -1,5 +1,6 @@
 package com.firebaseapp.controlefinanceiro.ui.navigation
 
+import android.appwidget.AppWidgetManager
 import android.util.Log
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
@@ -7,11 +8,15 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.firebaseapp.controlefinanceiro.MainActivity
 import com.firebaseapp.controlefinanceiro.ui.screens.camera.MainCameraScreen
 import com.firebaseapp.controlefinanceiro.ui.screens.categories.ExpenseCategoriesScreen
 import com.firebaseapp.controlefinanceiro.ui.screens.categories.IncomeCategoriesScreen
@@ -22,13 +27,32 @@ import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterScreen
 
 @Composable
 fun AppNavHost(navController: NavHostController, startDestination: AppDestination) {
+
+    val context = LocalContext.current
+
+    val widgetId = (context as MainActivity).intent.extras?.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID)
+
+    LaunchedEffect(widgetId) {
+
+        if (widgetId == -1) {
+            return@LaunchedEffect
+        }
+
+        widgetId?.let {
+            navController.navigate("${AppDestination.REGISTER.route}/${it}")
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination.route,
         enterTransition = { fadeIn() },
         exitTransition = { ExitTransition.None }) {
 
+
+
         composable(AppDestination.MAIN.route) {
+
             MainScreen(
                 navigateToRegister = { navController.navigate(AppDestination.REGISTER.route) },
                 navigateToEdit = {
@@ -48,7 +72,38 @@ fun AppNavHost(navController: NavHostController, startDestination: AppDestinatio
         }
 
         composable(
-            AppDestination.REGISTER.route,
+            route = AppDestination.REGISTER.routeWithArgs,
+            arguments = listOf(navArgument("initialOption") {
+                type = NavType.IntType
+            }),
+            enterTransition = { slideInHorizontally { it } }) {
+
+            var camera: String? = navController.currentBackStackEntry?.savedStateHandle["photoUri"]
+
+            navController.currentBackStackEntry
+                ?.savedStateHandle
+                ?.remove<String>("photoUri")
+
+
+            RegisterScreen(
+                navigateBack = { navController.popBackStack() },
+                navigateCategories = {
+                    val route = if (it == 0) {
+                        AppDestination.EXPENSE_CATEGORIES.route
+                    } else {
+                        AppDestination.INCOME_CATEGORIES.route
+                    }
+                    navController.navigate(route)
+                },
+                navigateCamera = {
+                    navController.navigate(AppDestination.CAMERA.route)
+                },
+                resultForCamera = camera,
+            )
+        }
+
+        composable(
+            route = AppDestination.REGISTER.route,
             enterTransition = { slideInHorizontally { it } }) {
 
             var camera: String? = navController.currentBackStackEntry?.savedStateHandle["photoUri"]

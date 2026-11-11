@@ -28,7 +28,9 @@ class RegisterViewModel(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    var registerState = MutableStateFlow(RegisterDetails())
+    val initialOption = savedStateHandle.get<Int?>("initialOption")
+
+    var registerState = MutableStateFlow(RegisterDetails(selectedOption = initialOption ?: 0))
 
     val lastPhotoUri = savedStateHandle
         .getStateFlow<String?>("photoUri", null)
@@ -48,7 +50,7 @@ class RegisterViewModel(
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000L),
-        RegisterUiState()
+        RegisterUiState(details = RegisterDetails(selectedOption = initialOption ?: 0))
     )
 
     val categoriesExpense: StateFlow<List<Category>> = categoryRepository.getCategoriesByTypeStream(
