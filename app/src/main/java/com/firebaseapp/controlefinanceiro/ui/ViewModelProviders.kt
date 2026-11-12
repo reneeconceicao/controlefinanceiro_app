@@ -12,6 +12,7 @@ import com.firebaseapp.controlefinanceiro.ui.screens.budgets.BudgetViewModel
 import com.firebaseapp.controlefinanceiro.ui.screens.categories.ExpenseCategoriesViewModel
 import com.firebaseapp.controlefinanceiro.ui.screens.categories.IncomeCategoriesViewModel
 import com.firebaseapp.controlefinanceiro.ui.screens.edit.EditViewModel
+import com.firebaseapp.controlefinanceiro.ui.screens.graphics.GraphicsViewModel
 import com.firebaseapp.controlefinanceiro.ui.screens.home.DetailsViewModel
 import com.firebaseapp.controlefinanceiro.ui.screens.home.HomeViewModel
 import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterViewModel
@@ -27,6 +28,10 @@ object ViewModelProviders {
 
         initializer {
             ReportViewModel(getApplication().wordRepository)
+        }
+
+        initializer {
+            GraphicsViewModel(getApplication().wordRepository)
         }
 
         initializer {

@@ -9,6 +9,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.content.FileProvider
 import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.data.entities.WordType
+import com.firebaseapp.controlefinanceiro.ui.screens.graphics.GraphicsUiState
 import com.firebaseapp.controlefinanceiro.ui.screens.reports.ReportDateFilter
 import com.firebaseapp.controlefinanceiro.ui.screens.reports.ReportUiState
 import java.io.File
@@ -133,5 +134,9 @@ class ShareHelper(private val context: Context) {
             intent.putExtra(Intent.EXTRA_STREAM, fileUri)
             context.startActivity(intent)
         }
+    }
+
+    fun shareGraphicsScreenToText(subject: String, graphicsUiState: GraphicsUiState) {
+
     }
 }

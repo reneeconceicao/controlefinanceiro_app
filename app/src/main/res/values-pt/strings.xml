@@ -4,13 +4,16 @@
     <string name="budgets">Orçamentos</string>
     <string name="reporting">Relatórios</string>
     <string name="report">Relatório</string>
+    <string name="charts">Gráficos</string>
     <string name="settings">Ajustes</string>
     <string name="back">Voltar</string>
     <string name="register">Registro</string>
     <string name="save">SALVAR</string>
     <string name="notes">Notas</string>
     <string name="income">Entrada</string>
+    <string name="incomes">Entradas</string>
     <string name="expense">Despesa</string>
+    <string name="expenses">Despesas</string>
     <string name="add_income">+ Entrada</string>
     <string name="add_expense">- Saída</string>
     <string name="select_the_date">Escolha a data</string>
@@ -63,5 +66,9 @@
     <string name="value">Valor</string>
     <string name="photos">Fotos</string>
     <string name="totals">Totais</string>
+    <string name="expense_trends">Evolução das despesas</string>
+    <string name="days">Dias</string>
+    <string name="months">Meses</string>
+
 
 </resources>

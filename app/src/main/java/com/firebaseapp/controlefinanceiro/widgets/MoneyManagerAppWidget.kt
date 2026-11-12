@@ -1,8 +1,10 @@
 package com.firebaseapp.controlefinanceiro.widgets
 
 import android.annotation.SuppressLint
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.Context
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -57,8 +59,11 @@ class MoneyManagerAppWidget : GlanceAppWidget() {
 @SuppressLint("RestrictedApi")
 @Composable
 private fun Content() {
+
     val widgetIdKey = ActionParameters.Key<Int>(AppWidgetManager.EXTRA_APPWIDGET_ID)
+
     val context = LocalContext.current
+
     Scaffold(
         backgroundColor = GlanceTheme.colors.widgetBackground,
         modifier = GlanceModifier.fillMaxSize(),
@@ -79,9 +84,10 @@ private fun Content() {
 
                 Button(
                     text = context.getString(R.string.expense),
-                    onClick = actionStartActivity<MainActivity>(
-                        parameters = actionParametersOf(widgetIdKey to 0),
-                    ),
+                    onClick =
+                        actionStartActivity<MainActivity>(
+                            parameters = actionParametersOf(widgetIdKey to 0),
+                        ),
                     colors = ButtonDefaults.buttonColors(
                         backgroundColor = ColorProvider(R.color.dark_red),
                         contentColor = ColorProvider(Color.White)

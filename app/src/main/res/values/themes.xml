@@ -5,9 +5,7 @@
 
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
 
-        <item name="windowSplashScreenBackground">@color/chart_blue</item>
-
-        <item name="windowSplashScreenAnimatedIcon">@drawable/__banknote_arrow_up</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_default_icon_load</item>
 
         <item name="postSplashScreenTheme">@style/Theme.ControleFinanceiro</item>
 

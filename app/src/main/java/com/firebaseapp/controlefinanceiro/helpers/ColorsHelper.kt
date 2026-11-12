@@ -31,4 +31,6 @@ class ColorsHelper(context: Context) {
     @Composable
     fun colorByName(colorName: String): Color = chartColors[colorName] ?: Color.Transparent
 
+    fun colorByNameNonComposable(colorName: String): Color = chartColors[colorName] ?: Color.Transparent
+
 }

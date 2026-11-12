@@ -84,8 +84,7 @@ class CalculatorViewModal(initialValue: String = "0") : ViewModel() {
                 _input.value = _output.value
 
                 if (buttonState.value == ButtonState.DONE) {
-                    _input.value = _output.value.replace(separator, ".")
-                    onSave(_input.value)
+                    onSave(_input.value.replace(separator, "."))
                 }
             }
 

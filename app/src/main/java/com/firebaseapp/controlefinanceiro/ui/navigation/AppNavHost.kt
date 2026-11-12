@@ -9,6 +9,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.LocalContext
 
 import androidx.navigation.NavHostController
@@ -40,6 +41,7 @@ fun AppNavHost(navController: NavHostController, startDestination: AppDestinatio
 
         widgetId?.let {
             navController.navigate("${AppDestination.REGISTER.route}/${it}")
+            (context as MainActivity).intent.removeExtra(AppWidgetManager.EXTRA_APPWIDGET_ID)
         }
     }
 
@@ -231,4 +233,7 @@ fun AppNavHost(navController: NavHostController, startDestination: AppDestinatio
         }
 
     }
+
+
+
 }

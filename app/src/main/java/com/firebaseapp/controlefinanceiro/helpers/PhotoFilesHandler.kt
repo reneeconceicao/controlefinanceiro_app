@@ -8,7 +8,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 
-class PhotoFilesHandler (
+class PhotoFilesHandler(
     private val context: Context,
 ) {
     fun saveBitmapToCache(bitmap: Bitmap): String {
@@ -20,6 +20,20 @@ class PhotoFilesHandler (
         }
 
         return fileName//Uri.fromFile(file)
+    }
+
+    suspend fun deleteFiles(word: Word) {
+        withContext(Dispatchers.IO) {
+            if (word.images.isNotEmpty()) {
+
+                word.images.forEach { image ->
+                    val currentFile = File(context.filesDir, image)
+                    if (currentFile.exists()) { // if the file is previously is saved...
+                        currentFile.delete()
+                    }
+                }
+            }
+        }
     }
 
     suspend fun saveFiles(word: Word) {

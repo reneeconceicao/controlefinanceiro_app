@@ -54,7 +54,24 @@ class WordRepository(private val context: Context, private val itemDao: WordDao)
 
     suspend fun insertWordException(word: WordException) = itemDao.insertException(word)
 
-    suspend fun deleteWord(word: Word) = itemDao.delete(word)
+    suspend fun deleteWord(word: Word) {
+
+        if (!word.isRecurring) {
+            PhotoFilesHandler(context).deleteFiles(word)
+        }
+
+
+        if (word.isRecurring && word.recurringGroup.isNotEmpty()) {
+            val exceptions = itemDao.wordsByRecurringGroup(word.recurringGroup)
+            val words = itemDao.wordsByRecurringGroup(word.recurringGroup)
+            val notFoundRecurringGroup = exceptions.isEmpty() && words.isEmpty()
+            if (notFoundRecurringGroup) {
+                PhotoFilesHandler(context).deleteFiles(word)
+            }
+        }
+
+        itemDao.delete(word)
+    }
 
     suspend fun deleteException(wordException: WordException) = itemDao.deleteException(wordException)
 

@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.firebaseapp.controlefinanceiro.ui.screens.budgets.BudgetScreen
+import com.firebaseapp.controlefinanceiro.ui.screens.graphics.GraphicsScreen
 import com.firebaseapp.controlefinanceiro.ui.screens.home.HomeScreen
 import com.firebaseapp.controlefinanceiro.ui.screens.reports.ReportScreen
 import com.firebaseapp.controlefinanceiro.ui.screens.settings.SettingsScreen
@@ -35,8 +36,9 @@ fun MenuNavHost(
                         navigateToEditRecurring = navigateToEditRecurring,
                     )
 
-                    MenuDestination.BUDGET -> BudgetScreen(modifier = modifier, {}, {})
+//                    MenuDestination.BUDGET -> BudgetScreen(modifier = modifier, {}, {})
                     MenuDestination.REPORT -> ReportScreen(modifier = modifier)
+                    MenuDestination.GRAPHICS -> GraphicsScreen(modifier = modifier)
                     MenuDestination.SETTINGS -> SettingsScreen(
                         modifier = modifier,
                         navigateExpenseCategories = navigateExpenseCategories,
