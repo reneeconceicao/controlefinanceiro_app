@@ -1,6 +1,5 @@
 package com.firebaseapp.controlefinanceiro.ui.screens.reports
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,7 +50,6 @@ import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLargest
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
-import com.firebaseapp.controlefinanceiro.helpers.ColorsHelper
 import com.firebaseapp.controlefinanceiro.helpers.ShareHelper
 import com.firebaseapp.controlefinanceiro.helpers.currencyFormat
 import com.firebaseapp.controlefinanceiro.helpers.dateToDateWeekString
@@ -62,13 +60,6 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 import kotlin.collections.component1
 import kotlin.collections.component2
-
-import com.touzalab.composecharts.components.LineChart
-import com.touzalab.composecharts.components.PieChart
-import com.touzalab.composecharts.data.DataPoint
-import com.touzalab.composecharts.data.DataSeries
-import com.touzalab.composecharts.data.PieChartSegment
-import com.touzalab.composecharts.theme.ColorPalettes
 
 @Composable
 fun ReportScreen(

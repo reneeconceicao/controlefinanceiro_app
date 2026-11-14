@@ -68,8 +68,11 @@
     <string name="photos">Photos</string>
     <string name="totals">Totals</string>
     <string name="expense_trends">Expense Trends</string>
+    <string name="income_trends">Income Trends</string>
+    <string name="income_x_expenses_trends">Income x Expense Trends</string>
     <string name="days">Days</string>
     <string name="months">Months</string>
+    <string name="expenses_x_incomes">Expenses x Incomes</string>
 
 
 </resources>

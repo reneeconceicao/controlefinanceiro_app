@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -22,15 +23,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.EditCalendar
+import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material.icons.filled.Notes
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DividerDefaults
@@ -58,6 +64,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -68,8 +75,12 @@ import com.firebaseapp.controlefinanceiro.data.entities.WordType
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingLarge
+import com.firebaseapp.controlefinanceiro.defaults.paddingMedium
+import com.firebaseapp.controlefinanceiro.defaults.paddingMicro
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
 import com.firebaseapp.controlefinanceiro.defaults.paddingTiny
+import com.firebaseapp.controlefinanceiro.defaults.paddingTinyLarge
+import com.firebaseapp.controlefinanceiro.defaults.paddingZero
 import com.firebaseapp.controlefinanceiro.helpers.ColorsHelper
 import com.firebaseapp.controlefinanceiro.helpers.currencyFormat
 import com.firebaseapp.controlefinanceiro.helpers.dateToDateWeekString
@@ -268,7 +279,7 @@ fun HomeList(
                         ) {
 
                             Row(
-                                Modifier.padding(start = paddingDefault()),
+                                Modifier.padding(start = paddingDefault()).fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
 
@@ -285,7 +296,18 @@ fun HomeList(
                                     categoryIcon = icon,
                                     color = color,
                                     type = type,
-                                    word.images.isNotEmpty()
+                                    hasPhotos = word.images.isNotEmpty()
+                                )
+
+                                Text(
+                                    word.notes.ifEmpty { word.categoryName },
+                                    Modifier
+                                        .padding(paddingDefault())
+                                        .padding(vertical = paddingSmall())
+                                        .weight(1f),
+                                    maxLines = 1,
+                                    textAlign = TextAlign.Start,
+                                    overflow = TextOverflow.Ellipsis
                                 )
 
                                 Text(
@@ -293,8 +315,11 @@ fun HomeList(
                                     Modifier
                                         .padding(paddingDefault())
 
-                                        .padding(vertical = paddingSmall()),
+                                        .padding(vertical = paddingSmall())
+                                        ,
                                     fontSize = 18.sp,
+                                    maxLines = 1,
+                                    softWrap = false,
                                     fontWeight = FontWeight.Bold,
                                     color = if (word.type == WordType.Income)
                                         colorResource(R.color.dark_green)
@@ -348,33 +373,36 @@ fun CategoryContainer(
                         .size(24.dp),
                     tint = colorResource(R.color.dark_light_gray)
                 )
-                if (hasPhotos) {
 
+                if (hasPhotos) {
 
                     Box(
                         Modifier
-                            .size(paddingLarge())
                             .align(Alignment.BottomStart)
                             .offset(-paddingSmall(), paddingTiny())
                     ) {
+
                         Box(
                             Modifier
                                 .background(
-                                    color = colorResource(R.color.yellow), shape = CircleShape
+                                    color = colorResource(R.color.yellow),
+                                    shape = CircleShape
                                 )
-                                .size(paddingLarge())
+                                .padding(paddingTiny())
+
                         ) {
+
                             Icon(
                                 Icons.Default.CameraAlt,
                                 "",
                                 Modifier
-                                    .align(Alignment.Center)
                                     .size(paddingDefault()),
                                 tint = Color.Black
                             )
                         }
                     }
                 }
+
             }
 
         } else {
@@ -647,11 +675,12 @@ fun PeriodSelector(
             }
         } else {
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                Row(Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        showDatePicker = true
-                    },
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            showDatePicker = true
+                        },
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
 

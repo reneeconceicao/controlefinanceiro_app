@@ -2,8 +2,12 @@ package com.firebaseapp.controlefinanceiro.defaults
 
 import androidx.compose.ui.unit.dp
 
+fun paddingZero() = 0.dp
+fun paddingMicro() = 2.dp
 fun paddingTiny() = 4.dp
+fun paddingTinyLarge() = 6.dp
 fun paddingSmall() = 8.dp
+fun paddingMedium() = 12.dp
 fun paddingDefault() = 16.dp
 
 fun padding12() = 10.dp

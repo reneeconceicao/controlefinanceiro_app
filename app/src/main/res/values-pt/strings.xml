@@ -67,8 +67,11 @@
     <string name="photos">Fotos</string>
     <string name="totals">Totais</string>
     <string name="expense_trends">Evolução das despesas</string>
+    <string name="income_trends">Evolução das entradas</string>
+    <string name="income_x_expenses_trends">Evolução das despesas x entradas</string>
     <string name="days">Dias</string>
     <string name="months">Meses</string>
+    <string name="expenses_x_incomes">Despesas x Entradas</string>
 
 
 </resources>

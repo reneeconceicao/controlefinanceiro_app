@@ -70,7 +70,7 @@ dependencies {
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material)
     implementation ("androidx.core:core-splashscreen:1.2.0")
-    implementation("com.github.2zalab:composecharts:1.0.0")
+
 
 
     ksp(libs.room.compiler)

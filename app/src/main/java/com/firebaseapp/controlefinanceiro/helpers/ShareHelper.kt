@@ -2,10 +2,11 @@ package com.firebaseapp.controlefinanceiro.helpers
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.core.content.FileProvider
 import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.data.entities.WordType
@@ -13,6 +14,7 @@ import com.firebaseapp.controlefinanceiro.ui.screens.graphics.GraphicsUiState
 import com.firebaseapp.controlefinanceiro.ui.screens.reports.ReportDateFilter
 import com.firebaseapp.controlefinanceiro.ui.screens.reports.ReportUiState
 import java.io.File
+import java.io.FileOutputStream
 
 class ShareHelper(private val context: Context) {
 
@@ -136,7 +138,57 @@ class ShareHelper(private val context: Context) {
         }
     }
 
+    fun sharePDF(fileName: String) {
+        val currentFolder = if (File(context.filesDir, fileName).exists())
+            context.filesDir else context.cacheDir
+
+        val pdfFile = File(currentFolder, fileName)
+
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            pdfFile
+        )
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "application/pdf"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+
+        context.startActivity(
+            Intent.createChooser(intent, null)
+        )
+    }
+
     fun shareGraphicsScreenToText(subject: String, graphicsUiState: GraphicsUiState) {
 
+    }
+
+    fun shareGraphics(bitmap: ImageBitmap) {
+        val file = File(context.cacheDir, "fileName.png")
+        FileOutputStream(file).use { out ->
+            bitmap.asAndroidBitmap().compress(
+                Bitmap.CompressFormat.PNG,
+                100,
+                out
+            )
+        }
+
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "image/*"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+
+        context.startActivity(
+            Intent.createChooser(intent, null)
+        )
     }
 }

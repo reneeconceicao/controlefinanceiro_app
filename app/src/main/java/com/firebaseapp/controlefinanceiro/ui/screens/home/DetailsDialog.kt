@@ -144,6 +144,7 @@ fun DetailsDialog(
                     MaterialTheme.colorScheme.surface,
                     RoundedCornerShape(paddingDefault())
                 )
+                .verticalScroll(rememberScrollState())
                 .fillMaxWidth()
                 .padding(vertical = paddingTiny())
                 .padding(start = paddingSmall())
