@@ -70,7 +70,7 @@ fun PhotosModal(
         Box(Modifier.fillMaxWidth()) {
 
             Text(
-                stringResource(R.string.select_a_category),
+                stringResource(R.string.photos),
                 modifier = Modifier.align(Alignment.Center),
                 fontWeight = FontWeight.Bold
             )

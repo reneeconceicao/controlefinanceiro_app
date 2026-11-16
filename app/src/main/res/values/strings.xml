@@ -70,9 +70,10 @@
     <string name="expense_trends">Expense Trends</string>
     <string name="income_trends">Income Trends</string>
     <string name="income_x_expenses_trends">Income x Expense Trends</string>
+    <string name="income_x_expenses">Income x Expense</string>
     <string name="days">Days</string>
     <string name="months">Months</string>
-    <string name="expenses_x_incomes">Expenses x Incomes</string>
+    <string name="summary">Summary</string>
 
 
 </resources>

@@ -69,9 +69,10 @@
     <string name="expense_trends">Evolución de los gastos</string>
     <string name="income_trends">Evolución de los ingresos</string>
     <string name="income_x_expenses_trends">Evolución de los gastos x ingresos</string>
+    <string name="income_x_expenses">Gastos x Ingresos</string>
     <string name="days">Días</string>
     <string name="months">Meses</string>
-    <string name="expenses_x_incomes">Gastos x Ingresos</string>
+    <string name="summary">Resumen</string>
 
 
 </resources>

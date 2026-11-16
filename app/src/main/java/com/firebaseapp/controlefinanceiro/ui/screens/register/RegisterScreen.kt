@@ -653,6 +653,7 @@ fun FieldsCalculator(
             fontSize = 40.sp,
             textAlign = TextAlign.End,
         )
+
     )
 
     Box(Modifier.fillMaxWidth()) {
@@ -748,23 +749,28 @@ fun FieldsCalculator(
     }
 
     if (!details.isEditRecurring) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = paddingTiny())
-        ) {
-            Checkbox(
 
-                details.isRecurring,
-                onCheckedChange = hapticOnCheckedChange(details.isRecurring) {
-                    onUpdateRecurrency(it)
-                },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = colorResource(R.color.yellow),
-                ),
-            )
-            Text(stringResource(R.string.repeat_every_month), Modifier.hapticClick(interactionSource = null, indication = null) {
-                onUpdateRecurrency(!details.isRecurring)
-            })
+        if (visible) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(start = paddingTiny())
+            ) {
+                Checkbox(
+
+                    details.isRecurring,
+                    onCheckedChange = hapticOnCheckedChange(details.isRecurring) {
+                        onUpdateRecurrency(it)
+                    },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = colorResource(R.color.yellow),
+                    ),
+                )
+                Text(
+                    stringResource(R.string.repeat_every_month),
+                    Modifier.hapticClick(interactionSource = null, indication = null) {
+                        onUpdateRecurrency(!details.isRecurring)
+                    })
+            }
         }
     }
 

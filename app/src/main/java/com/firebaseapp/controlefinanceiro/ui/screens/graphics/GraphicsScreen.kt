@@ -34,6 +34,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -50,7 +51,6 @@ import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -163,7 +163,7 @@ fun GraphicsBody(
 
     val tabs = listOf(
         stringResource(R.string.expenses), stringResource(R.string.incomes),
-        stringResource(R.string.expenses_x_incomes)
+        stringResource(R.string.summary)
     )
 
     val pagerState = rememberPagerState(pageCount = { tabs.size })
@@ -173,13 +173,21 @@ fun GraphicsBody(
     var selectedTab by remember { mutableIntStateOf(0) }
 
     Column() {
-        PrimaryTabRow(pagerState.currentPage) {
+        PrimaryTabRow(
+            pagerState.currentPage,
+            Modifier.background(MaterialTheme.colorScheme.background),
+        ) {
             tabs.forEachIndexed { index, title ->
-                Tab(selected = selectedTab == index, onClick = {
-                    scope.launch {
-                        pagerState.animateScrollToPage(index)
-                    }
-                }, text = { Text(title) })
+                Tab(
+                    selected = selectedTab == index,
+                    onClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    },
+                    text = { Text(title) },
+                    modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                )
             }
         }
 
@@ -555,23 +563,17 @@ fun ExpensePage(
     Column(
         Modifier
             .background(color = MaterialTheme.colorScheme.background)
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
 
+        val isSharing = remember { mutableStateOf(false) }
+
         Column(
             Modifier
                 .background(color = MaterialTheme.colorScheme.background)
-                .fillMaxWidth()
-                .drawWithContent {
-                    graphicsLayer.record {
-                        drawRect(color = backgroundColor, size = size)
-                        this@drawWithContent.drawContent()
-                    }
-                    drawLayer(graphicsLayer)
-                },
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
@@ -584,147 +586,181 @@ fun ExpensePage(
                 onChangeToPeriodDate = onChangeToPeriodDate,
             )
 
-            Text(
-                stringResource(R.string.expenses_by_category),
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(top = paddingLarge())
-            )
+            Column(
+                Modifier
+                    .background(color = MaterialTheme.colorScheme.background)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .drawWithContent {
+                        graphicsLayer.record {
+                            drawRect(color = backgroundColor, size = size)
+                            this@drawWithContent.drawContent()
+                        }
+                        drawLayer(graphicsLayer)
+                    },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top,
+            ) {
 
-            var pieChartSegmentsExpenses = mutableListOf<PieChartSegment>()
-            groupedExpense.forEach { (category, pairs) ->
-                val total = pairs.sumOf { it.first.value }
-                val segment = PieChartSegment(
-                    category,
-                    value = total.toFloat(),
-                    ColorsHelper(context).colorByNameNonComposable(pairs[0].first.categoryColor)
-                )
-                pieChartSegmentsExpenses.add(segment)
-            }
-
-            if (pieChartSegmentsExpenses.isNotEmpty()) {
-                PieChart(
-                    segments = pieChartSegmentsExpenses.sortedByDescending { it.value },
-                    modifier = Modifier
-                        .fillMaxWidth(0.7f),
-                    donut = true,
-                    donutRatio = 0.6f,
-                )
-            } else {
-                Box(contentAlignment = Alignment.Center) {
+                if (isSharing.value) {
                     Text(
-                        stringResource(R.string.no_expenses_found),
-                        Modifier.padding(top = paddingLarge())
+                        graphicsUiState.periodLabel,
+                        Modifier.padding(paddingDefault()),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
                     )
-                }
-            }
-
-            var points = mutableListOf<DataPoint>()
-
-            var tempDate = fromDate
-
-            var count = 1.0f
-
-            if (graphicsUiState.currentFilter == GraphicsDateFilter.MONTH) {
-
-                while (tempDate.toLocalDate() <= toDate.toLocalDate()) {
-
-                    val pairs = groupedDateExpense[tempDate]?.toList().orEmpty()
-
-                    val total = pairs.sumOf { it.first.value }
-
-                    points.add(
-                        DataPoint(
-                            x = count,
-                            y = total.toFloat(),
-                            label = ""
-                        )
-                    )
-
-                    tempDate = tempDate.plusDays(1)
-                    count++
+                    LaunchedEffect(isSharing.value) {
+                        scope.launch {
+                            val bitmap = graphicsLayer.toImageBitmap()
+                            ShareHelper(context).shareGraphics(bitmap)
+                            isSharing.value = false
+                        }
+                    }
                 }
 
-            }
-
-            if (graphicsUiState.currentFilter == GraphicsDateFilter.YEAR) {
-
-                while (tempDate.toLocalDate() <= toDate.toLocalDate()) {
-
-                    val pairs =
-                        groupedDateExpenseMonthYear[YearMonth.from(tempDate)]?.toList()
-                            .orEmpty()
-
-                    val total = pairs.sumOf { it.first.value }
-
-                    points.add(
-                        DataPoint(
-                            x = count,
-                            y = total.toFloat(),
-                            label = ""
-                        )
-                    )
-
-                    tempDate = tempDate.plusMonths(1)
-                    count++
-                }
-
-            }
-
-
-            val data = listOf(
-                DataSeries(
-                    stringResource(R.string.expenses),
-                    colorResource(R.color.dark_red),
-                    points
+                Text(
+                    stringResource(R.string.expenses_by_category),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(top = paddingLarge())
                 )
-            )
 
-            Text(
-                stringResource(R.string.expense_trends),
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(top = paddingLarge())
-            )
-
-            val locale = LocalConfiguration.current.locales[0]
-            val currencySymbol = Currency.getInstance(locale).symbol
-
-            if (pieChartSegmentsExpenses.isNotEmpty()) {
-                LineChart(
-                    dataSeries = data,
-                    xAxisTitle = if (graphicsUiState.currentFilter == GraphicsDateFilter.MONTH) stringResource(
-                        R.string.days
-                    ) else stringResource(R.string.months),
-                    yAxisTitle = "${stringResource(R.string.value)} ($currencySymbol)",
-                    smoothCurve = false,
-                    showPoints = false,
-                    fillArea = true,
-                    showGrid = false,
-                    showTooltip = false
-                )
-            } else {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        stringResource(R.string.no_expenses_found),
-                        Modifier.padding(top = paddingLarge())
+                var pieChartSegmentsExpenses = mutableListOf<PieChartSegment>()
+                groupedExpense.forEach { (category, pairs) ->
+                    val total = pairs.sumOf { it.first.value }
+                    val segment = PieChartSegment(
+                        category,
+                        value = total.toFloat(),
+                        ColorsHelper(context).colorByNameNonComposable(pairs[0].first.categoryColor)
                     )
+                    pieChartSegmentsExpenses.add(segment)
+                }
+
+                if (pieChartSegmentsExpenses.isNotEmpty()) {
+                    PieChart(
+                        segments = pieChartSegmentsExpenses.sortedByDescending { it.value },
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f),
+                        donut = true,
+                        donutRatio = 0.6f,
+                    )
+                } else {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            stringResource(R.string.no_expenses_found),
+                            Modifier.padding(top = paddingLarge())
+                        )
+                    }
+                }
+
+                var points = mutableListOf<DataPoint>()
+
+                var tempDate = fromDate
+
+                var count = 1.0f
+
+                if (graphicsUiState.currentFilter == GraphicsDateFilter.MONTH) {
+
+                    while (tempDate.toLocalDate() <= toDate.toLocalDate()) {
+
+                        val pairs = groupedDateExpense[tempDate]?.toList().orEmpty()
+
+                        val total = pairs.sumOf { it.first.value }
+
+                        points.add(
+                            DataPoint(
+                                x = count,
+                                y = total.toFloat(),
+                                label = ""
+                            )
+                        )
+
+                        tempDate = tempDate.plusDays(1)
+                        count++
+                    }
+
+                }
+
+                if (graphicsUiState.currentFilter == GraphicsDateFilter.YEAR) {
+
+                    while (tempDate.toLocalDate() <= toDate.toLocalDate()) {
+
+                        val pairs =
+                            groupedDateExpenseMonthYear[YearMonth.from(tempDate)]?.toList()
+                                .orEmpty()
+
+                        val total = pairs.sumOf { it.first.value }
+
+                        points.add(
+                            DataPoint(
+                                x = count,
+                                y = total.toFloat(),
+                                label = ""
+                            )
+                        )
+
+                        tempDate = tempDate.plusMonths(1)
+                        count++
+                    }
+
+                }
+
+
+                val data = listOf(
+                    DataSeries(
+                        stringResource(R.string.expenses),
+                        colorResource(R.color.dark_red),
+                        points
+                    )
+                )
+
+                Text(
+                    stringResource(R.string.expense_trends),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(top = paddingLarge())
+                )
+
+                val locale = LocalConfiguration.current.locales[0]
+                val currencySymbol = Currency.getInstance(locale).symbol
+
+                if (pieChartSegmentsExpenses.isNotEmpty()) {
+                    LineChart(
+                        dataSeries = data,
+                        xAxisTitle = if (graphicsUiState.currentFilter == GraphicsDateFilter.MONTH) stringResource(
+                            R.string.days
+                        ) else stringResource(R.string.months),
+                        yAxisTitle = "${stringResource(R.string.value)} ($currencySymbol)",
+                        smoothCurve = false,
+                        showPoints = false,
+                        fillArea = true,
+                        showGrid = false,
+                        showTooltip = false
+                    )
+                } else {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            stringResource(R.string.no_expenses_found),
+                            Modifier.padding(top = paddingLarge())
+                        )
+                    }
+                }
+
+                if (!isSharing.value) {
+                    Button(
+                        onClick = {
+                            isSharing.value = true
+
+                        },
+                        modifier = Modifier.padding(top = paddingLarge())
+                    ) {
+                        Text(stringResource(R.string.share))
+                    }
+                    Spacer(Modifier.height(paddingExtraLargest()))
                 }
             }
+        }
 
-        }
-        Button(
-            onClick = {
-                scope.launch {
-                    val bitmap = graphicsLayer.toImageBitmap()
-                    ShareHelper(context).shareGraphics(bitmap)
-                }
-            },
-            modifier = Modifier.padding(top = paddingLarge())
-        ) {
-            Text(stringResource(R.string.share))
-        }
-        Spacer(Modifier.height(paddingExtraLargest()))
     }
 }
 
@@ -769,23 +805,17 @@ fun IncomePage(
     Column(
         Modifier
             .background(color = MaterialTheme.colorScheme.background)
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
 
+        val isSharing = remember { mutableStateOf(false) }
+
         Column(
             Modifier
                 .background(color = MaterialTheme.colorScheme.background)
-                .fillMaxWidth()
-                .drawWithContent {
-                    graphicsLayer.record {
-                        drawRect(color = backgroundColor, size = size)
-                        this@drawWithContent.drawContent()
-                    }
-                    drawLayer(graphicsLayer)
-                },
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
@@ -798,151 +828,187 @@ fun IncomePage(
                 onChangeToPeriodDate = onChangeToPeriodDate,
             )
 
+            Column(
+                Modifier
+                    .background(color = MaterialTheme.colorScheme.background)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .drawWithContent {
+                        graphicsLayer.record {
+                            drawRect(color = backgroundColor, size = size)
+                            this@drawWithContent.drawContent()
+                        }
+                        drawLayer(graphicsLayer)
+                    },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top,
+            ) {
 
-            Text(
-                stringResource(R.string.incomes_by_category),
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(top = paddingLarge())
-            )
-
-            var pieChartSegmentsIncomes = mutableListOf<PieChartSegment>()
-            groupedIncome.forEach { (category, pairs) ->
-                val total = pairs.sumOf { it.first.value }
-                val segment = PieChartSegment(
-                    category,
-                    value = total.toFloat(),
-                    ColorsHelper(context).colorByNameNonComposable(pairs[0].first.categoryColor)
-                )
-                pieChartSegmentsIncomes.add(segment)
-            }
-            AnimatedVisibility(pieChartSegmentsIncomes.isNotEmpty()) {
-                PieChart(
-                    segments = pieChartSegmentsIncomes.sortedByDescending { it.value },
-                    modifier = Modifier
-                        .fillMaxWidth(0.7f),
-                    donut = true,
-                    donutRatio = 0.6f,
-
-                    //style = if (isSystemInDarkTheme()) ChartThemes.Dark else ChartThemes.Light
-                )
-            }
-            if (pieChartSegmentsIncomes.isEmpty()) {
-                Box(contentAlignment = Alignment.Center) {
+                if (isSharing.value) {
                     Text(
-                        stringResource(R.string.no_incomes_found),
-                        Modifier.padding(top = paddingLarge())
+                        graphicsUiState.periodLabel,
+                        Modifier.padding(paddingDefault()),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
                     )
-                }
-            }
-
-            var points = mutableListOf<DataPoint>()
-
-            var tempDate = fromDate
-
-            var count = 1.0f
-
-            if (graphicsUiState.currentFilter == GraphicsDateFilter.MONTH) {
-
-                while (tempDate.toLocalDate() <= toDate.toLocalDate()) {
-
-                    val pairs = groupedDateIncome[tempDate]?.toList().orEmpty()
-
-                    val total = pairs.sumOf { it.first.value }
-
-                    points.add(
-                        DataPoint(
-                            x = count,
-                            y = total.toFloat(),
-                            label = ""
-                        )
-                    )
-
-                    tempDate = tempDate.plusDays(1)
-                    count++
+                    LaunchedEffect(isSharing.value) {
+                        scope.launch {
+                            val bitmap = graphicsLayer.toImageBitmap()
+                            ShareHelper(context).shareGraphics(bitmap)
+                            isSharing.value = false
+                        }
+                    }
                 }
 
-            }
-
-            if (graphicsUiState.currentFilter == GraphicsDateFilter.YEAR) {
-
-                while (tempDate.toLocalDate() <= toDate.toLocalDate()) {
-
-                    val pairs =
-                        groupedDateIncomeMonthYear[YearMonth.from(tempDate)]?.toList()
-                            .orEmpty()
-
-                    val total = pairs.sumOf { it.first.value }
-
-                    points.add(
-                        DataPoint(
-                            x = count,
-                            y = total.toFloat(),
-                            label = ""
-                        )
-                    )
-
-                    tempDate = tempDate.plusMonths(1)
-                    count++
-                }
-
-            }
-
-
-            val data = listOf(
-                DataSeries(
-                    stringResource(R.string.incomes),
-                    colorResource(R.color.dark_green),
-                    points
+                Text(
+                    stringResource(R.string.incomes_by_category),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(top = paddingLarge())
                 )
-            )
 
-            Text(
-                stringResource(R.string.income_trends),
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(top = paddingLarge())
-            )
+                val pieChartSegmentsIncomes = mutableListOf<PieChartSegment>()
+                groupedIncome.forEach { (category, pairs) ->
+                    val total = pairs.sumOf { it.first.value }
+                    val segment = PieChartSegment(
+                        category,
+                        value = total.toFloat(),
+                        ColorsHelper(context).colorByNameNonComposable(pairs[0].first.categoryColor)
+                    )
+                    pieChartSegmentsIncomes.add(segment)
+                }
+                AnimatedVisibility(pieChartSegmentsIncomes.isNotEmpty()) {
+                    PieChart(
+                        segments = pieChartSegmentsIncomes.sortedByDescending { it.value },
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f),
+                        donut = true,
+                        donutRatio = 0.6f,
 
-            val locale = LocalConfiguration.current.locales[0]
-            val currencySymbol = Currency.getInstance(locale).symbol
-
-            if (pieChartSegmentsIncomes.isNotEmpty()) {
-                LineChart(
-                    dataSeries = data,
-                    xAxisTitle = if (graphicsUiState.currentFilter == GraphicsDateFilter.MONTH) stringResource(
-                        R.string.days
-                    ) else stringResource(R.string.months),
-                    yAxisTitle = "${stringResource(R.string.value)} ($currencySymbol)",
-                    smoothCurve = false,
-                    showPoints = false,
-                    fillArea = true,
-                    showGrid = false,
-                    showTooltip = false
-                )
-            } else {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        stringResource(R.string.no_incomes_found),
-                        Modifier.padding(top = paddingLarge())
+                        //style = if (isSystemInDarkTheme()) ChartThemes.Dark else ChartThemes.Light
                     )
                 }
-            }
+                if (pieChartSegmentsIncomes.isEmpty()) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            stringResource(R.string.no_incomes_found),
+                            Modifier.padding(top = paddingLarge())
+                        )
+                    }
+                }
 
+                var points = mutableListOf<DataPoint>()
+
+                var tempDate = fromDate
+
+                var count = 1.0f
+
+                if (graphicsUiState.currentFilter == GraphicsDateFilter.MONTH) {
+
+                    while (tempDate.toLocalDate() <= toDate.toLocalDate()) {
+
+                        val pairs = groupedDateIncome[tempDate]?.toList().orEmpty()
+
+                        val total = pairs.sumOf { it.first.value }
+
+                        points.add(
+                            DataPoint(
+                                x = count,
+                                y = total.toFloat(),
+                                label = ""
+                            )
+                        )
+
+                        tempDate = tempDate.plusDays(1)
+                        count++
+                    }
+
+                }
+
+                if (graphicsUiState.currentFilter == GraphicsDateFilter.YEAR) {
+
+                    while (tempDate.toLocalDate() <= toDate.toLocalDate()) {
+
+                        val pairs =
+                            groupedDateIncomeMonthYear[YearMonth.from(tempDate)]?.toList()
+                                .orEmpty()
+
+                        val total = pairs.sumOf { it.first.value }
+
+                        points.add(
+                            DataPoint(
+                                x = count,
+                                y = total.toFloat(),
+                                label = ""
+                            )
+                        )
+
+                        tempDate = tempDate.plusMonths(1)
+                        count++
+                    }
+
+                }
+
+
+                val data = listOf(
+                    DataSeries(
+                        stringResource(R.string.incomes),
+                        colorResource(R.color.dark_green),
+                        points
+                    )
+                )
+
+                Text(
+                    stringResource(R.string.income_trends),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(top = paddingLarge())
+                )
+
+                val locale = LocalConfiguration.current.locales[0]
+                val currencySymbol = Currency.getInstance(locale).symbol
+
+                if (pieChartSegmentsIncomes.isNotEmpty()) {
+                    LineChart(
+                        dataSeries = data,
+                        xAxisTitle = if (graphicsUiState.currentFilter == GraphicsDateFilter.MONTH) stringResource(
+                            R.string.days
+                        ) else stringResource(R.string.months),
+                        yAxisTitle = "${stringResource(R.string.value)} ($currencySymbol)",
+                        smoothCurve = false,
+                        showPoints = false,
+                        fillArea = true,
+                        showGrid = false,
+                        showTooltip = false
+                    )
+                } else {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            stringResource(R.string.no_incomes_found),
+                            Modifier.padding(top = paddingLarge())
+                        )
+                    }
+                }
+
+
+
+                if (!isSharing.value) {
+                    Button(
+                        onClick = {
+                            isSharing.value = true
+
+                        },
+                        modifier = Modifier.padding(top = paddingLarge())
+                    ) {
+                        Text(stringResource(R.string.share))
+                    }
+                    Spacer(Modifier.height(paddingExtraLargest()))
+                }
+
+
+            }
 
         }
-        Button(
-            onClick = {
-                scope.launch {
-                    val bitmap = graphicsLayer.toImageBitmap()
-                    ShareHelper(context).shareGraphics(bitmap)
-                }
-            },
-            modifier = Modifier.padding(top = paddingLarge())
-        ) {
-            Text(stringResource(R.string.share))
-        }
-        Spacer(Modifier.height(paddingExtraLargest()))
     }
 }
 
@@ -999,26 +1065,21 @@ fun ComparatePage(
     Column(
         Modifier
             .background(color = MaterialTheme.colorScheme.background)
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
 
+        val isSharing = remember { mutableStateOf(false) }
+
         Column(
             Modifier
                 .background(color = MaterialTheme.colorScheme.background)
-                .fillMaxWidth()
-                .drawWithContent {
-                    graphicsLayer.record {
-                        drawRect(color = backgroundColor, size = size)
-                        this@drawWithContent.drawContent()
-                    }
-                    drawLayer(graphicsLayer)
-                },
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
+
 
             GraphicsPeriodSelector(
                 reportUiState = graphicsUiState,
@@ -1028,189 +1089,223 @@ fun ComparatePage(
                 onChangeToPeriodDate = onChangeToPeriodDate,
             )
 
-            Text(
-                stringResource(R.string.expenses_x_incomes),
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(top = paddingLarge())
-            )
+            Column(
+                Modifier
+                    .background(color = MaterialTheme.colorScheme.background)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .drawWithContent {
+                        graphicsLayer.record {
+                            drawRect(color = backgroundColor, size = size)
+                            this@drawWithContent.drawContent()
+                        }
+                        drawLayer(graphicsLayer)
+                    },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top,
+            ) {
 
+                if (isSharing.value) {
+                    Text(
+                        graphicsUiState.periodLabel,
+                        Modifier.padding(paddingDefault()),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    LaunchedEffect(isSharing.value) {
+                        scope.launch {
+                            val bitmap = graphicsLayer.toImageBitmap()
+                            ShareHelper(context).shareGraphics(bitmap)
+                            isSharing.value = false
+                        }
+                    }
+                }
 
-            val incomeTotal = incomes.sumOf { it.first.value }
-            val incomeSegment = PieChartSegment(
-                stringResource(R.string.incomes),
-                value = incomeTotal.toFloat(),
-                colorResource(R.color.dark_green)
-            )
-
-            val expenseTotal = expenses.sumOf { it.first.value }
-            val expenseSegment = PieChartSegment(
-                stringResource(R.string.expenses),
-                value = expenseTotal.toFloat(),
-                colorResource(R.color.dark_red)
-            )
-
-
-            AnimatedVisibility(incomes.isNotEmpty() || expenses.isNotEmpty()) {
-                PieChart(
-                    segments = listOf(expenseSegment, incomeSegment),
-                    modifier = Modifier
-                        .fillMaxWidth(0.7f),
-                    donut = true,
-                    donutRatio = 0.6f,
-                    //style = if (isSystemInDarkTheme()) ChartThemes.Dark else ChartThemes.Light
+                Text(
+                    stringResource(R.string.income_x_expenses),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(top = paddingLarge())
                 )
-            }
-
-            if (incomes.isEmpty() && expenses.isEmpty()) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        stringResource(R.string.no_register_found),
-                        Modifier.padding(top = paddingLarge())
-                    )
-                }
-            }
-
-            var pointsIncome = mutableListOf<DataPoint>()
-
-            var pointsExpense = mutableListOf<DataPoint>()
-
-            var tempDate = fromDate
-
-            var count = 1.0f
-
-            if (graphicsUiState.currentFilter == GraphicsDateFilter.MONTH) {
-
-                while (tempDate.toLocalDate() <= toDate.toLocalDate()) {
-
-                    val pairsIncome = groupedDateIncome[tempDate]?.toList().orEmpty()
-
-                    val pairsExpense = groupedDateExpense[tempDate]?.toList().orEmpty()
-
-                    val totalIncome = pairsIncome.sumOf { it.first.value }
-
-                    val totalExpense = pairsExpense.sumOf { it.first.value }
-
-                    pointsIncome.add(
-                        DataPoint(
-                            x = count,
-                            y = totalIncome.toFloat(),
-                            label = ""
-                        )
-                    )
-
-                    pointsExpense.add(
-                        DataPoint(
-                            x = count,
-                            y = totalExpense.toFloat(),
-                            label = ""
-                        )
-                    )
-
-                    tempDate = tempDate.plusDays(1)
-                    count++
-                }
-
-            }
-
-            if (graphicsUiState.currentFilter == GraphicsDateFilter.YEAR) {
-
-                while (tempDate.toLocalDate() <= toDate.toLocalDate()) {
-
-                    val pairsIncome =
-                        groupedDateIncomeMonthYear[YearMonth.from(tempDate)]?.toList()
-                            .orEmpty()
-
-                    val pairsExpense =
-                        groupedDateExpenseMonthYear[YearMonth.from(tempDate)]?.toList()
-                            .orEmpty()
-
-                    val totalIncome = pairsIncome.sumOf { it.first.value }
-
-                    val totalExpense = pairsExpense.sumOf { it.first.value }
-
-                    pointsIncome.add(
-                        DataPoint(
-                            x = count,
-                            y = totalIncome.toFloat(),
-                            label = ""
-                        )
-                    )
-
-                    pointsExpense.add(
-                        DataPoint(
-                            x = count,
-                            y = totalExpense.toFloat(),
-                            label = ""
-                        )
-                    )
-
-                    tempDate = tempDate.plusMonths(1)
-                    count++
-                }
-
-            }
 
 
-            val data = listOf(
-                DataSeries(
-                    stringResource(R.string.expenses),
-                    colorResource(R.color.dark_red),
-                    pointsExpense
-                ),
-                DataSeries(
+                val incomeTotal = incomes.sumOf { it.first.value }
+                val incomeSegment = PieChartSegment(
                     stringResource(R.string.incomes),
-                    colorResource(R.color.dark_green),
-                    pointsIncome
-                ),
-            )
+                    value = incomeTotal.toFloat(),
+                    colorResource(R.color.dark_green)
+                )
 
-            Text(
-                stringResource(R.string.income_x_expenses_trends),
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(top = paddingLarge())
-            )
+                val expenseTotal = expenses.sumOf { it.first.value }
+                val expenseSegment = PieChartSegment(
+                    stringResource(R.string.expenses),
+                    value = expenseTotal.toFloat(),
+                    colorResource(R.color.dark_red)
+                )
 
-            val locale = LocalConfiguration.current.locales[0]
-            val currencySymbol = Currency.getInstance(locale).symbol
 
-            if (incomes.isNotEmpty() || expenses.isNotEmpty()) {
-                LineChart(
-                    dataSeries = data,
-                    xAxisTitle = if (graphicsUiState.currentFilter == GraphicsDateFilter.MONTH) stringResource(
-                        R.string.days
-                    ) else stringResource(R.string.months),
-                    yAxisTitle = "${stringResource(R.string.value)} ($currencySymbol)",
-                    smoothCurve = false,
-                    showPoints = false,
-                    fillArea = true,
-                    showGrid = false,
-                    showTooltip = false,
-
+                AnimatedVisibility(incomes.isNotEmpty() || expenses.isNotEmpty()) {
+                    PieChart(
+                        segments = listOf(expenseSegment, incomeSegment),
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f),
+                        donut = true,
+                        donutRatio = 0.6f,
+                        //style = if (isSystemInDarkTheme()) ChartThemes.Dark else ChartThemes.Light
                     )
-            } else {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        stringResource(R.string.no_register_found),
-                        Modifier.padding(top = paddingLarge())
-                    )
+                }
+
+                if (incomes.isEmpty() && expenses.isEmpty()) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            stringResource(R.string.no_register_found),
+                            Modifier.padding(top = paddingLarge())
+                        )
+                    }
+                }
+
+                var pointsIncome = mutableListOf<DataPoint>()
+
+                var pointsExpense = mutableListOf<DataPoint>()
+
+                var tempDate = fromDate
+
+                var count = 1.0f
+
+                if (graphicsUiState.currentFilter == GraphicsDateFilter.MONTH) {
+
+                    while (tempDate.toLocalDate() <= toDate.toLocalDate()) {
+
+                        val pairsIncome = groupedDateIncome[tempDate]?.toList().orEmpty()
+
+                        val pairsExpense = groupedDateExpense[tempDate]?.toList().orEmpty()
+
+                        val totalIncome = pairsIncome.sumOf { it.first.value }
+
+                        val totalExpense = pairsExpense.sumOf { it.first.value }
+
+                        pointsIncome.add(
+                            DataPoint(
+                                x = count,
+                                y = totalIncome.toFloat(),
+                                label = ""
+                            )
+                        )
+
+                        pointsExpense.add(
+                            DataPoint(
+                                x = count,
+                                y = totalExpense.toFloat(),
+                                label = ""
+                            )
+                        )
+
+                        tempDate = tempDate.plusDays(1)
+                        count++
+                    }
+
+                }
+
+                if (graphicsUiState.currentFilter == GraphicsDateFilter.YEAR) {
+
+                    while (tempDate.toLocalDate() <= toDate.toLocalDate()) {
+
+                        val pairsIncome =
+                            groupedDateIncomeMonthYear[YearMonth.from(tempDate)]?.toList()
+                                .orEmpty()
+
+                        val pairsExpense =
+                            groupedDateExpenseMonthYear[YearMonth.from(tempDate)]?.toList()
+                                .orEmpty()
+
+                        val totalIncome = pairsIncome.sumOf { it.first.value }
+
+                        val totalExpense = pairsExpense.sumOf { it.first.value }
+
+                        pointsIncome.add(
+                            DataPoint(
+                                x = count,
+                                y = totalIncome.toFloat(),
+                                label = ""
+                            )
+                        )
+
+                        pointsExpense.add(
+                            DataPoint(
+                                x = count,
+                                y = totalExpense.toFloat(),
+                                label = ""
+                            )
+                        )
+
+                        tempDate = tempDate.plusMonths(1)
+                        count++
+                    }
+
+                }
+
+
+                val data = listOf(
+                    DataSeries(
+                        stringResource(R.string.expenses),
+                        colorResource(R.color.dark_red),
+                        pointsExpense
+                    ),
+                    DataSeries(
+                        stringResource(R.string.incomes),
+                        colorResource(R.color.dark_green),
+                        pointsIncome
+                    ),
+                )
+
+                Text(
+                    stringResource(R.string.income_x_expenses_trends),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(top = paddingLarge())
+                )
+
+                val locale = LocalConfiguration.current.locales[0]
+                val currencySymbol = Currency.getInstance(locale).symbol
+
+                if (incomes.isNotEmpty() || expenses.isNotEmpty()) {
+                    LineChart(
+                        dataSeries = data,
+                        xAxisTitle = if (graphicsUiState.currentFilter == GraphicsDateFilter.MONTH) stringResource(
+                            R.string.days
+                        ) else stringResource(R.string.months),
+                        yAxisTitle = "${stringResource(R.string.value)} ($currencySymbol)",
+                        smoothCurve = false,
+                        showPoints = false,
+                        fillArea = true,
+                        showGrid = false,
+                        showTooltip = false,
+
+                        )
+                } else {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            stringResource(R.string.no_register_found),
+                            Modifier.padding(top = paddingLarge())
+                        )
+                    }
+                }
+
+                if (!isSharing.value) {
+                    Button(
+                        onClick = {
+                            isSharing.value = true
+
+                        },
+                        modifier = Modifier.padding(top = paddingLarge())
+                    ) {
+                        Text(stringResource(R.string.share))
+                    }
+                    Spacer(Modifier.height(paddingExtraLargest()))
                 }
             }
-        }
 
-        Button(
-            onClick = {
-                scope.launch {
-                    val bitmap = graphicsLayer.toImageBitmap()
-                    ShareHelper(context).shareGraphics(bitmap)
-                }
-            },
-            modifier = Modifier.padding(top = paddingLarge())
-        ) {
-            Text(stringResource(R.string.share))
-        }
 
-        Spacer(Modifier.height(paddingExtraLargest()))
+        }
     }
 }

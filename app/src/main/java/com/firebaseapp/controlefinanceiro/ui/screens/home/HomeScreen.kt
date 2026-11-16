@@ -591,7 +591,7 @@ fun BalancePanel(homeUiState: HomeUiState) {
                     .fillMaxWidth()
                     .animateContentSize(),
                 textAlign = TextAlign.Center,
-                fontSize = 24.sp,
+                fontSize = 20.sp,
                 color = colorText,
                 fontWeight = FontWeight.Bold
             )
