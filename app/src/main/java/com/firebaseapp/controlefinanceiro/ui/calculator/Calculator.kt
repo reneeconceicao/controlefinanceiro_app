@@ -397,7 +397,7 @@ fun Calculator(
                         }
                     }
                     .clip(RoundedCornerShape(paddingTiny()))
-                    .background(color = if (enabled) colorResource(R.color.yellow) else Color.Gray)
+                    .background(color = if (enabled) colorResource(R.color.yellow) else MaterialTheme.colorScheme.outlineVariant)
                     .padding(vertical = paddingSmall()),
                 contentAlignment = Alignment.Center)
             {

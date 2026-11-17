@@ -3,6 +3,7 @@ package com.firebaseapp.controlefinanceiro.ui.screens.graphics
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -77,6 +79,7 @@ import com.firebaseapp.controlefinanceiro.charts.components.PieChart
 import com.firebaseapp.controlefinanceiro.charts.data.DataPoint
 import com.firebaseapp.controlefinanceiro.charts.data.DataSeries
 import com.firebaseapp.controlefinanceiro.charts.data.PieChartSegment
+import com.firebaseapp.controlefinanceiro.defaults.paddingTiny
 import kotlinx.coroutines.launch
 import java.time.YearMonth
 import java.util.Currency
@@ -159,96 +162,78 @@ fun GraphicsBody(
 
     ) {
 
-    val context = LocalContext.current
 
-    val tabs = listOf(
-        stringResource(R.string.expenses), stringResource(R.string.incomes),
-        stringResource(R.string.summary)
-    )
+    var current by rememberSaveable { mutableIntStateOf(0) }
 
-    val pagerState = rememberPagerState(pageCount = { tabs.size })
-
-    val scope = rememberCoroutineScope()
-
-    var selectedTab by remember { mutableIntStateOf(0) }
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(paddingDefault()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        GraphicsFilterChips(
+            onChangeToExpense = {
+                current = 0
+            },
+            onChangeToIncome = {
+                current = 1
+            },
+            onChangeToSummary = {
+                current = 2
+            }
+        )
+    }
 
     Column() {
-        PrimaryTabRow(
-            pagerState.currentPage,
-            Modifier.background(MaterialTheme.colorScheme.background),
-        ) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTab == index,
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(index)
-                        }
-                    },
-                    text = { Text(title) },
-                    modifier = Modifier.background(MaterialTheme.colorScheme.background)
-                )
-            }
-        }
 
-
-        HorizontalPager(
-            state = pagerState,
+        Column(
             modifier = Modifier.weight(1f)
-        ) { page ->
+        ) {
 
-            Column() {
+            when (current) {
+                0 -> {
 
-
-                when (page) {
-                    0 -> {
-
-                        ExpensePage(
-                            graphicsUiState,
-                            onNextMonthClick = onNextMonthClick,
-                            onPreviousMonthClick = onPreviousMonthClick,
-                            onChangeToPeriodDate = onChangeToPeriodDate,
-                            onChangeFromPeriodDate = onChangeFromPeriodDate
-                        )
-                    }
-
-                    1 -> {
-                        IncomePage(
-                            graphicsUiState,
-                            onNextMonthClick = onNextMonthClick,
-                            onPreviousMonthClick = onPreviousMonthClick,
-                            onChangeToPeriodDate = onChangeToPeriodDate,
-                            onChangeFromPeriodDate = onChangeFromPeriodDate
-                        )
-                    }
-
-                    2 -> {
-                        ComparatePage(
-                            graphicsUiState,
-                            onNextMonthClick = onNextMonthClick,
-                            onPreviousMonthClick = onPreviousMonthClick,
-                            onChangeToPeriodDate = onChangeToPeriodDate,
-                            onChangeFromPeriodDate = onChangeFromPeriodDate
-                        )
-                    }
-
+                    ExpensePage(
+                        graphicsUiState,
+                        onNextMonthClick = onNextMonthClick,
+                        onPreviousMonthClick = onPreviousMonthClick,
+                        onChangeToPeriodDate = onChangeToPeriodDate,
+                        onChangeFromPeriodDate = onChangeFromPeriodDate
+                    )
                 }
+
+                1 -> {
+                    IncomePage(
+                        graphicsUiState,
+                        onNextMonthClick = onNextMonthClick,
+                        onPreviousMonthClick = onPreviousMonthClick,
+                        onChangeToPeriodDate = onChangeToPeriodDate,
+                        onChangeFromPeriodDate = onChangeFromPeriodDate
+                    )
+                }
+
+                2 -> {
+                    ComparatePage(
+                        graphicsUiState,
+                        onNextMonthClick = onNextMonthClick,
+                        onPreviousMonthClick = onPreviousMonthClick,
+                        onChangeToPeriodDate = onChangeToPeriodDate,
+                        onChangeFromPeriodDate = onChangeFromPeriodDate
+                    )
+                }
+
             }
         }
-
-
     }
+
 
     Spacer(Modifier.height(paddingExtraLarge()))
 
 
-// Use the composable
-
-
-    Spacer(Modifier.height(paddingExtraLargest()))
-
-
 }
+
+
+// Use the composable
 
 
 @Composable
@@ -263,7 +248,7 @@ fun GraphicsHeader(
             .padding(paddingDefault()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        GraphicsFilterChips(
+        PeriodFilterChips(
             onChangeToPeriodFilter = onChangeToAllFilter,
             onChangeToMonthFilter = onChangeToMonthFilter,
             onChangeToYearFilter = onChangeToPeriodFilter
@@ -277,6 +262,106 @@ fun GraphicsHeader(
 
 @Composable
 fun GraphicsFilterChips(
+    onChangeToExpense: () -> Unit,
+    onChangeToIncome: () -> Unit,
+    onChangeToSummary: () -> Unit,
+) {
+    Row(
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(paddingDefault()),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+
+        var selected by rememberSaveable { mutableIntStateOf(0) }
+
+        FilterChip(
+            onClick = {
+                selected = 0
+                onChangeToExpense()
+            },
+            label = {
+                Text(
+                    stringResource(R.string.expenses),
+                    Modifier.padding(vertical = paddingSmall()),
+                    fontSize = 16.sp,
+                    maxLines = 1
+                )
+            },
+            selected = selected == 0,
+            leadingIcon = if (selected == 0) {
+                {
+                    Icon(
+                        imageVector = Icons.Filled.Done,
+                        contentDescription = "",
+                        modifier = Modifier.size(FilterChipDefaults.IconSize)
+                    )
+                }
+            } else {
+                null
+            },
+            shape = RoundedCornerShape(paddingExtraLarge())
+        )
+
+        FilterChip(
+            onClick = {
+                selected = 1
+                onChangeToIncome()
+            },
+            label = {
+                Text(
+                    stringResource(R.string.incomes),
+                    Modifier.padding(vertical = paddingSmall()),
+                    fontSize = 16.sp,
+                    maxLines = 1
+                )
+            },
+            selected = selected == 1,
+            leadingIcon = if (selected == 1) {
+                {
+                    Icon(
+                        imageVector = Icons.Filled.Done,
+                        contentDescription = "",
+                        modifier = Modifier.size(FilterChipDefaults.IconSize)
+                    )
+                }
+            } else {
+                null
+            },
+            shape = RoundedCornerShape(paddingExtraLarge())
+        )
+
+        FilterChip(
+            onClick = {
+                selected = 2
+                onChangeToSummary()
+            },
+            label = {
+                Text(
+                    stringResource(R.string.summary),
+                    Modifier.padding(vertical = paddingSmall()),
+                    fontSize = 16.sp,
+                    maxLines = 1
+                )
+            },
+            selected = selected == 2,
+            leadingIcon = if (selected == 2) {
+                {
+                    Icon(
+                        imageVector = Icons.Filled.Done,
+                        contentDescription = "",
+                        modifier = Modifier.size(FilterChipDefaults.IconSize)
+                    )
+                }
+            } else {
+                null
+            },
+            shape = RoundedCornerShape(paddingExtraLarge())
+        )
+    }
+}
+
+@Composable
+fun PeriodFilterChips(
     onChangeToPeriodFilter: () -> Unit,
     onChangeToMonthFilter: () -> Unit,
     onChangeToYearFilter: () -> Unit,
@@ -296,7 +381,7 @@ fun GraphicsFilterChips(
             label = {
                 Text(
                     stringResource(R.string.month),
-                    Modifier.padding(paddingSmall()),
+                    Modifier.padding(vertical = paddingSmall()),
                     fontSize = 16.sp
                 )
             },
@@ -323,7 +408,7 @@ fun GraphicsFilterChips(
             label = {
                 Text(
                     stringResource(R.string.year),
-                    Modifier.padding(paddingSmall()),
+                    Modifier.padding(vertical = paddingSmall()),
                     fontSize = 16.sp
                 )
             },

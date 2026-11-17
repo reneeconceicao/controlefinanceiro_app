@@ -385,7 +385,7 @@ fun ReportFilterChips(
             label = {
                 Text(
                     stringResource(R.string.month),
-                    Modifier.padding(paddingSmall()),
+                    Modifier.padding(vertical = paddingSmall()),
                     fontSize = 16.sp
                 )
             },
@@ -412,7 +412,7 @@ fun ReportFilterChips(
             label = {
                 Text(
                     stringResource(R.string.year),
-                    Modifier.padding(paddingSmall()),
+                    Modifier.padding(vertical = paddingSmall()),
                     fontSize = 16.sp
                 )
             },
@@ -439,7 +439,7 @@ fun ReportFilterChips(
             label = {
                 Text(
                     stringResource(R.string.period),
-                    Modifier.padding(paddingSmall()),
+                    Modifier.padding(vertical = paddingSmall()),
                     fontSize = 16.sp
                 )
             },

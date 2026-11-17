@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -32,6 +33,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -52,8 +55,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
@@ -64,6 +69,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -104,7 +110,9 @@ import com.firebaseapp.controlefinanceiro.ui.components.ImageOptionsDialog
 import com.firebaseapp.controlefinanceiro.ui.components.PhotosModal
 import com.firebaseapp.controlefinanceiro.ui.components.hapticClick
 import com.firebaseapp.controlefinanceiro.ui.components.hapticOnCheckedChange
+import com.firebaseapp.controlefinanceiro.ui.navigation.MenuDestination
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
 
@@ -191,8 +199,10 @@ fun RegisterScreenBody(
     var showPhotoOptionsDialog by rememberSaveable { mutableStateOf(false) }
     var showPhotosDialog by rememberSaveable { mutableStateOf(false) }
 
-    val launcher = rememberLauncherForActivityResult(contract =
-        ActivityResultContracts.GetContent()) { uri: Uri? ->
+    val launcher = rememberLauncherForActivityResult(
+        contract =
+            ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
         uri?.let {
             val stream = context.contentResolver.openInputStream(uri)
             val bitmap = BitmapFactory.decodeStream(stream)
@@ -271,32 +281,89 @@ fun RegisterScreenBody(
                     .padding(bottom = 120.dp)
             ) {
 
-                ButtonsOptions(
-                    registerUiState.details.selectedOption,
-                    onOptionSelected = { option ->
-                        if (registerUiState.details.selectedOption != option) {
-                            onUpdate(
-                                registerUiState.details.copy(
-                                    selectedOption = option,
-                                    currentCategoryId = 0,
-                                    categoryName = "",
-                                    categoryIcon = "",
-                                    categoryColor = ""
-                                )
+                val options = listOf(stringResource(R.string.add_expense), stringResource(R.string.add_income))
+                val pagerState = rememberPagerState(initialPage = registerUiState.details.selectedOption, pageCount = { 2 })
+                val scope = rememberCoroutineScope()
+
+                LaunchedEffect(pagerState.currentPage) {
+                    if (registerUiState.details.selectedOption != pagerState.currentPage) {
+                        onUpdate(
+                            registerUiState.details.copy(
+                                selectedOption = pagerState.currentPage,
+                                currentCategoryId = 0,
+                                categoryName = "",
+                                categoryIcon = "",
+                                categoryColor = ""
+                            )
+                        )
+                    }
+                }
+
+                PrimaryTabRow(
+                    pagerState.currentPage,
+                    Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .navigationBarsPadding(),
+                    indicator = {
+                    },
+                    divider = {
+                    }
+                ) {
+
+                    options.forEachIndexed { index, string ->
+                        val selected = pagerState.currentPage == index
+                        var color = Color.Transparent
+                        color = if (selected && index == 0) {
+                            colorResource(
+                                R.color.dark_red
+                            )
+                        } else if (selected && index == 1) {
+                            colorResource(
+                                R.color.dark_green
                             )
                         } else {
-                            onUpdate(registerUiState.details.copy(selectedOption = option))
+                            Color.Gray
                         }
-                    })
+                        Card(
+                            Modifier
+                                .padding(paddingSmall())
+                                .weight(1f)
+                                .hapticClick {
+                                    scope.launch {
+                                        pagerState.animateScrollToPage(index)
+                                    }
+                                },
+                            colors = CardDefaults.cardColors(
+                                containerColor = color,
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text(
+                                string,
+                                Modifier
+                                    .padding(paddingDefault())
+                                    .fillMaxWidth(),
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
 
-                CategoryGrid(
-                    registerUiState = registerUiState,
-                    categoriesExpense = categoriesExpense,
-                    categoriesIncome = categoriesIncome,
-                    onUpdate = onUpdate,
-                    navigateCategories = navigateCategories
-                )
+                HorizontalPager(
+                    state = pagerState,
+                ) { page ->
 
+                    CategoryGrid(
+                        categoriesType = page,
+                        registerUiState = registerUiState,
+                        categoriesExpense = categoriesExpense,
+                        categoriesIncome = categoriesIncome,
+                        onUpdate = onUpdate,
+                        navigateCategories = navigateCategories
+                    )
+
+                }
             }
 
 
@@ -355,8 +422,6 @@ fun RegisterScreenBody(
                                 }
                             }
                         )
-
-
                     }
                 }
             }
@@ -365,68 +430,8 @@ fun RegisterScreenBody(
 }
 
 @Composable
-fun ButtonsOptions(selectedOption: Int, onOptionSelected: (Int) -> Unit) {
-    Row(
-        Modifier
-            .padding(paddingSmall())
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-    ) {
-
-
-        Card(
-            Modifier
-                .padding(paddingSmall())
-                .weight(1f)
-                .hapticClick {
-                    onOptionSelected(0)
-                },
-            colors = CardDefaults.cardColors(
-                containerColor = if (selectedOption == 0) colorResource(
-                    R.color.dark_red
-                ) else Color.Gray,
-                contentColor = Color.White//if (selectedOption == 1) MaterialTheme.colorScheme.onPrimary else Color.White
-            )
-        ) {
-            Text(
-                stringResource(R.string.add_expense),
-                Modifier
-                    .padding(paddingDefault())
-                    .fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        Card(
-            Modifier
-                .padding(paddingSmall())
-                .weight(1f)
-                .hapticClick {
-                    onOptionSelected(1)
-                },
-            colors = CardDefaults.cardColors(
-                containerColor = if (selectedOption == 1) colorResource(
-                    R.color.dark_green
-                ) else Color.Gray,
-                contentColor = Color.White//if (selectedOption == 0) Color.White else Color.LightGray
-            )
-        ) {
-            Text(
-                stringResource(R.string.add_income),
-                Modifier
-                    .padding(paddingDefault())
-                    .fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
-
-
-@Composable
 fun CategoryGrid(
+    categoriesType: Int,
     registerUiState: RegisterUiState,
     categoriesExpense: List<Category> = listOf(),
     categoriesIncome: List<Category> = listOf(),
@@ -434,9 +439,10 @@ fun CategoryGrid(
     navigateCategories: (Int) -> Unit,
 ) {
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 96.dp)
+        columns = GridCells.Adaptive(minSize = 96.dp),
+        modifier = Modifier.fillMaxSize()
     ) {
-        items(if (registerUiState.details.selectedOption == 0) categoriesExpense else categoriesIncome) { category ->
+        items(if (categoriesType == 0) categoriesExpense else categoriesIncome) { category ->
 
             Column(
                 modifier = Modifier

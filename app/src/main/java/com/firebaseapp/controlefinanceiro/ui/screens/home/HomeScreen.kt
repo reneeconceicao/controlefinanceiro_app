@@ -475,7 +475,7 @@ fun FilterChips(
             label = {
                 Text(
                     stringResource(R.string.month),
-                    Modifier.padding(paddingSmall()),
+                    Modifier.padding(vertical = paddingSmall()),
                     fontSize = 16.sp
                 )
             },
@@ -502,7 +502,7 @@ fun FilterChips(
             label = {
                 Text(
                     stringResource(R.string.day),
-                    Modifier.padding(paddingSmall()),
+                    Modifier.padding(vertical = paddingSmall()),
                     fontSize = 16.sp
                 )
             },
