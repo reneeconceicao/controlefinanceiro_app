@@ -73,6 +73,7 @@
     <string name="days">Días</string>
     <string name="months">Meses</string>
     <string name="summary">Resumen</string>
+    <string name="repeating_every_month">Repitiéndose cada mes</string>
 
 
 </resources>

@@ -15,6 +15,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -26,7 +27,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
 import com.firebaseapp.controlefinanceiro.ui.components.SaveOptionsDialog
 import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterScreenBody
@@ -56,15 +60,17 @@ fun EditScreen(
             topBar = {
                 TopAppBar(
                     windowInsets = TopAppBarDefaults.windowInsets,
-                    title = { Text("Register") },
+                    title = { Text(stringResource(R.string.register), color = MaterialTheme.colorScheme.background) },
                     navigationIcon = {
                         IconButton(onClick = navigateBack) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                "Back"
+                                "Back",
+                                tint = MaterialTheme.colorScheme.background
                             )
                         }
                     },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
                 )
             }
         ) { innerPadding ->

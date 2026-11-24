@@ -113,8 +113,7 @@ fun HomeScreen(
                 onClick = hapticClick {
                     navigateToRegister()
                 },
-                containerColor = colorResource(R.color.purple_300),
-                contentColor = Color.White
+                containerColor = MaterialTheme.colorScheme.primary,
             ) {
                 Row(
                     Modifier.padding(horizontal = paddingDefault(), vertical = paddingSmall()),
@@ -178,14 +177,14 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                Text(
-                    text = stringResource(R.string.app_name),
-                    Modifier
-                        .padding(paddingDefault()),
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = colorResource(R.color.purple_300)
-                )
+//                Text(
+//                    text = stringResource(R.string.app_name),
+//                    Modifier
+//                        .padding(paddingDefault()),
+//                    fontSize = 24.sp,
+//                    fontWeight = FontWeight.SemiBold,
+//                    color = colorResource(R.color.purple_300)
+//                )
 
                 HomeHeader(
                     homeUiState = homeUiState.value,

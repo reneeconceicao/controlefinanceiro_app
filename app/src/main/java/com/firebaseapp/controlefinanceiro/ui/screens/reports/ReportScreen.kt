@@ -80,12 +80,12 @@ fun ReportScreen(
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = stringResource(R.string.reporting),
-                Modifier
-                    .padding(paddingDefault()),
-                fontSize = 24.sp,
-            )
+//            Text(
+//                text = stringResource(R.string.reporting),
+//                Modifier
+//                    .padding(paddingDefault()),
+//                fontSize = 24.sp,
+//            )
 
             ReportHeader(
                 reportUiState = reportUiState,

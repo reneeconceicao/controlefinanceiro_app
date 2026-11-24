@@ -41,8 +41,8 @@ fun SettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .safeDrawingPadding()
-            .padding(paddingDefault())
+            //.safeDrawingPadding()
+            .padding(horizontal = paddingDefault())
             .verticalScroll(rememberScrollState()),
     ) {
 

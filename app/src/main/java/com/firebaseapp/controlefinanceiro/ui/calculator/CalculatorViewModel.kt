@@ -63,6 +63,11 @@ class CalculatorViewModal(initialValue: String = "0") : ViewModel() {
 
         when (btn) {
 
+            "C" -> {
+                _input.value = "0"
+                _output.value = "0"
+            }
+
             "⌫" -> {
                 if (_input.value.isNotEmpty()) {
                     _input.value = _input.value.dropLast(1)

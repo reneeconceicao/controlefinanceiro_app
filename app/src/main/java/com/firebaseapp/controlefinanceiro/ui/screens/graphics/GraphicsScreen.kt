@@ -108,12 +108,12 @@ fun GraphicsScreen(
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = stringResource(R.string.charts),
-                Modifier
-                    .padding(paddingDefault()),
-                fontSize = 24.sp,
-            )
+//            Text(
+//                text = stringResource(R.string.charts),
+//                Modifier
+//                    .padding(paddingDefault()),
+//                fontSize = 24.sp,
+//            )
 
             GraphicsHeader(
                 onChangeToAllFilter = {

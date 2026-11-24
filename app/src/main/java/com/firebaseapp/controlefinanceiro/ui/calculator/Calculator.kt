@@ -1,20 +1,22 @@
 package com.firebaseapp.controlefinanceiro.ui.calculator
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.EditCalendar
+import androidx.compose.material.icons.outlined.AccountBalanceWallet
+import androidx.compose.material.icons.outlined.Repeat
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,9 +27,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -41,7 +44,6 @@ import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
 import com.firebaseapp.controlefinanceiro.defaults.paddingTiny
 import com.firebaseapp.controlefinanceiro.helpers.dateToString
-import com.firebaseapp.controlefinanceiro.ui.components.hapticClick
 import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterDetails
 import java.text.DecimalFormatSymbols
 
@@ -54,6 +56,7 @@ fun Calculator(
     },
     onEntryValue: (RegisterDetails) -> Unit,
     showDateDialog: () -> Unit,
+    onRepeatChange: (Boolean) -> Unit,
     onUpdatePrice: (String) -> Unit,
     onUpdateInput: (String) -> Unit,
     isCompleteCalculator: Boolean = false
@@ -76,7 +79,7 @@ fun Calculator(
         modifier = Modifier
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
-            .padding(paddingDefault()),
+            .padding(paddingSmall()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(paddingTiny())
     ) {
@@ -96,14 +99,121 @@ fun Calculator(
             )
         }
 
-        //First row 7, 8, 9,Date
-        val firstRow = listOf("7", "8", "9") // and Date
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(paddingTiny())) {
+            Box(
+                modifier = Modifier
+                    .weight(0.49f)
+                    .clickable(interactionSource = null, indication = null) {
+                        showDateDialog()
+                    }
+                    .clip(RoundedCornerShape(paddingTiny()))
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(paddingSmall()),
+                contentAlignment = Alignment.Center) {
+                Row(
+                    Modifier
+                        .padding(vertical = 2.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(imageVector = Icons.Outlined.AccountBalanceWallet, null)
+                }
+
+            }
+
+            Box(
+                modifier = Modifier
+                    .weight(0.49f)
+                    .clickable(interactionSource = null, indication = null) {
+                        if (!details.isEditRecurring) {
+                            onRepeatChange(!details.isRecurring)
+                        }
+                    }
+                    .clip(RoundedCornerShape(paddingTiny()))
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(paddingSmall()),
+                contentAlignment = Alignment.Center) {
+                Row(
+                    Modifier
+                        .padding(vertical = 2.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    if (details.isEditRecurring) {
+
+                        Text(
+                            stringResource(R.string.repeating_every_month),
+                            Modifier.alpha(0.5f),
+                            color = colorResource(R.color.yellow),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            lineHeight = 11.sp,
+                            textAlign = TextAlign.Center
+                        )
+
+
+                    } else {
+                        Icon(
+                            imageVector = Icons.Outlined.Repeat,
+                            contentDescription = null,
+                            tint = if (details.isRecurring) colorResource(R.color.yellow) else MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+                }
+
+            }
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable(interactionSource = null, indication = null) {
+                        showDateDialog()
+                    }
+                    .clip(RoundedCornerShape(paddingTiny()))
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(paddingSmall()),
+                contentAlignment = Alignment.Center) {
+                Box(
+                    Modifier
+                        .padding(vertical = 2.dp)
+                        .fillMaxWidth(),
+                ) {
+
+                    val date = dateToString(details.date)
+
+                    Text(
+                        text = date,
+                        color = colorResource(R.color.yellow),
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = FontFamily.Monospace,
+                        maxLines = 1,
+                        modifier = Modifier.align(Alignment.Center)
+
+                    )
+
+                    Icon(
+                        imageVector = Icons.Default.EditCalendar,
+                        "",
+                        tint = colorResource(R.color.yellow),
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .padding(end = paddingTiny())
+                    )
+                }
+
+            }
+        }
+
+        //First row 7, 8, 9, C
+        val firstRow = listOf("7", "8", "9", "C") // and C
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(paddingTiny())) {
             firstRow.forEach {
                 Box(
                     modifier = Modifier
                         .weight(0.5f)
-                        .hapticClick(interactionSource = null, indication = null) {
+                        .clickable(interactionSource = null, indication = null) {
                             viewModel.onClick(it, {}, onUpdateValue = onUpdatePrice)
                         }
                         .clip(RoundedCornerShape(paddingTiny()))
@@ -119,41 +229,6 @@ fun Calculator(
                 }
             }
 
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .hapticClick(interactionSource = null, indication = null) {
-                        showDateDialog()
-                    }
-                    .clip(RoundedCornerShape(paddingTiny()))
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(vertical = paddingSmall()),
-                contentAlignment = Alignment.Center) {
-                Row(
-                    Modifier
-                        .padding(vertical = 2.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CalendarMonth,
-                        "",
-                        tint = colorResource(R.color.yellow)
-                    )
-                    val date = dateToString(details.date)
-                    Spacer(Modifier.padding(horizontal = 1.dp))
-                    Text(
-                        text = date,
-                        color = colorResource(R.color.yellow),
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = FontFamily.Monospace,
-                        maxLines = 1,
-                        fontSize = 14.sp
-                    )
-                }
-
-            }
 
         }
 
@@ -163,7 +238,7 @@ fun Calculator(
                 Box(
                     modifier = Modifier
                         .weight(0.5f)
-                        .hapticClick(interactionSource = null, indication = null) {
+                        .clickable(interactionSource = null, indication = null) {
                             viewModel.onClick(it, {}, onUpdateValue = onUpdatePrice)
                         }
                         .clip(RoundedCornerShape(paddingTiny()))
@@ -180,13 +255,13 @@ fun Calculator(
             }
 
             Row(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(0.5f),
                 horizontalArrangement = Arrangement.spacedBy(paddingTiny())
             ) {
                 Box(
                     modifier = Modifier
                         .weight(0.5f)
-                        .hapticClick(interactionSource = null, indication = null) {
+                        .clickable(interactionSource = null, indication = null) {
                             viewModel.onClick(
                                 "-",
                                 {},
@@ -212,7 +287,7 @@ fun Calculator(
                     Box(
                         modifier = Modifier
                             .weight(0.5f)
-                            .hapticClick(interactionSource = null, indication = null) {
+                            .clickable(interactionSource = null, indication = null) {
                                 viewModel.onClick(
                                     "x",
                                     {},
@@ -244,7 +319,7 @@ fun Calculator(
                 Box(
                     modifier = Modifier
                         .weight(0.5f)
-                        .hapticClick(interactionSource = null, indication = null) {
+                        .clickable(interactionSource = null, indication = null) {
                             viewModel.onClick(
                                 it,
                                 {},
@@ -266,13 +341,13 @@ fun Calculator(
             }
 
             Row(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(0.5f),
                 horizontalArrangement = Arrangement.spacedBy(paddingTiny())
             ) {
                 Box(
                     modifier = Modifier
                         .weight(0.5f)
-                        .hapticClick(interactionSource = null, indication = null) {
+                        .clickable(interactionSource = null, indication = null) {
                             viewModel.onClick(
                                 "+",
                                 {},
@@ -299,7 +374,7 @@ fun Calculator(
                     Box(
                         modifier = Modifier
                             .weight(0.5f)
-                            .hapticClick(interactionSource = null, indication = null) {
+                            .clickable(interactionSource = null, indication = null) {
                                 viewModel.onClick(
                                     "÷",
                                     {},
@@ -333,7 +408,7 @@ fun Calculator(
                 Box(
                     modifier = Modifier
                         .weight(0.5f)
-                        .hapticClick(interactionSource = null, indication = null) {
+                        .clickable(interactionSource = null, indication = null) {
                             viewModel.onClick(
                                 it,
                                 {},
@@ -360,7 +435,7 @@ fun Calculator(
                     .combinedClickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
-                        onClick = hapticClick {
+                        onClick = {
                             viewModel.onClick("⌫", {}, onUpdateValue = onUpdatePrice)
                         },
                         onLongClick = {
@@ -386,8 +461,8 @@ fun Calculator(
 
             Box(
                 modifier = Modifier
-                    .weight(1f)
-                    .hapticClick(enabled = enabled, interactionSource = null, indication = null) {
+                    .weight(0.5f)
+                    .clickable(enabled = enabled, interactionSource = null, indication = null) {
                         if (buttonState == CalculatorViewModal.ButtonState.DONE) {
                             viewModel.onClick(
                                 "=",
@@ -407,9 +482,13 @@ fun Calculator(
                     } else {
                         "✓"
                     },
-                    fontSize = 20.sp,
+                    fontSize = if (buttonState == CalculatorViewModal.ButtonState.EQUAL) {
+                        22.sp
+                    } else {
+                        20.sp
+                    },
                     fontWeight = FontWeight.Normal,
-                    fontFamily = FontFamily.Monospace
+                    fontFamily = FontFamily.Monospace,
                 )
             }
 

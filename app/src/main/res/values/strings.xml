@@ -74,6 +74,7 @@
     <string name="days">Days</string>
     <string name="months">Months</string>
     <string name="summary">Summary</string>
+    <string name="repeating_every_month">Repeating every month</string>
 
 
 </resources>

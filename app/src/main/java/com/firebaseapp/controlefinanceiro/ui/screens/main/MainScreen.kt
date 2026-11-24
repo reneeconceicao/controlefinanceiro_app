@@ -22,14 +22,24 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.glance.LocalContext
+import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.ui.navigation.MenuDestination
 import com.firebaseapp.controlefinanceiro.ui.screens.graphics.GraphicsScreen
 import com.firebaseapp.controlefinanceiro.ui.screens.home.HomeScreen
@@ -47,12 +57,34 @@ fun MainScreen(
     navigateIncomeCategories: () -> Unit,
 ) {
 
+
     val pagerState = rememberPagerState(pageCount = { MenuDestination.entries.size })
-
+    var currentTitle by rememberSaveable { mutableStateOf("") }
     val scope = rememberCoroutineScope()
+    val homeTitle = stringResource(R.string.app_name)
+    val reportingTitle = stringResource(R.string.reporting)
+    val graphicsTitle = stringResource(R.string.charts)
+    val settingsTitle = stringResource(R.string.settings)
 
+    LaunchedEffect(pagerState.currentPage) {
+
+        currentTitle = when (pagerState.currentPage) {
+            MenuDestination.HOME.ordinal -> homeTitle
+            MenuDestination.REPORT.ordinal -> reportingTitle
+            MenuDestination.GRAPHICS.ordinal -> graphicsTitle
+            MenuDestination.SETTINGS.ordinal -> settingsTitle
+            else -> homeTitle
+        }
+
+    }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text(currentTitle, color = MaterialTheme.colorScheme.background) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
+            )
+        },
         contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
             Column() {
@@ -70,6 +102,7 @@ fun MainScreen(
                     MenuDestination.entries.forEachIndexed { index, destination ->
 
                         val selected = pagerState.currentPage == index
+
                         CompositionLocalProvider(
                             LocalRippleConfiguration provides null
                         ) {

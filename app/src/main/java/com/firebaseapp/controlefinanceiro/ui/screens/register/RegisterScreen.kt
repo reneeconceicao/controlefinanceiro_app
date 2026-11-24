@@ -3,6 +3,7 @@ package com.firebaseapp.controlefinanceiro.ui.screens.register
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -41,6 +43,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
 import androidx.compose.material3.Badge
@@ -84,11 +87,13 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -138,16 +143,17 @@ fun RegisterScreen(
         topBar = {
             TopAppBar(
                 windowInsets = TopAppBarDefaults.windowInsets,
-                title = { Text(stringResource(R.string.register)) },
+                title = { Text(stringResource(R.string.register), color = MaterialTheme.colorScheme.background) },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            stringResource(R.string.back)
+                            stringResource(R.string.back),
+                            tint = MaterialTheme.colorScheme.background
                         )
                     }
                 },
-
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
                 )
         }
     ) { innerPadding ->
@@ -263,9 +269,9 @@ fun RegisterScreenBody(
     Box(
         Modifier
             .fillMaxSize()
-            .padding(
-                paddingSmall()
-            )
+//            .padding(
+//                paddingSmall()
+//            )
     ) {
 
 
@@ -278,11 +284,17 @@ fun RegisterScreenBody(
                 Modifier
                     .fillMaxWidth()
                     .align(Alignment.TopCenter)
+                    .padding(top = paddingDefault())
                     .padding(bottom = 120.dp)
             ) {
 
-                val options = listOf(stringResource(R.string.add_expense), stringResource(R.string.add_income))
-                val pagerState = rememberPagerState(initialPage = registerUiState.details.selectedOption, pageCount = { 2 })
+                val options = listOf(
+                    stringResource(R.string.expense),
+                    stringResource(R.string.income)
+                )
+                val pagerState = rememberPagerState(
+                    initialPage = registerUiState.details.selectedOption,
+                    pageCount = { 2 })
                 val scope = rememberCoroutineScope()
 
                 LaunchedEffect(pagerState.currentPage) {
@@ -333,10 +345,13 @@ fun RegisterScreenBody(
                                         pagerState.animateScrollToPage(index)
                                     }
                                 },
+                            shape = CircleShape,
                             colors = CardDefaults.cardColors(
                                 containerColor = color,
                                 contentColor = Color.White
-                            )
+                            ),
+
+
                         ) {
                             Text(
                                 string,
@@ -382,7 +397,7 @@ fun RegisterScreenBody(
                 Surface(
                     Modifier
                         .align(Alignment.BottomCenter)
-                        .padding(bottom = paddingLarge())
+                        .padding(bottom = paddingSmall())
                         .fillMaxWidth()
                         .imePadding(),
 
@@ -392,10 +407,10 @@ fun RegisterScreenBody(
                         bottomEnd = 20.dp,
                         bottomStart = 20.dp
                     ),
-                    shadowElevation = 8.dp,
+                    //shadowElevation = 8.dp,
                     color = colorResource(R.color.dark_gray)//MaterialTheme.colorScheme.surfaceVariant
                 ) {
-                    Column(Modifier.padding(vertical = paddingDefault())) {
+                    Column(Modifier.navigationBarsPadding().padding(vertical = paddingDefault())) {
 
 
                         FieldsCalculator(
@@ -412,6 +427,13 @@ fun RegisterScreenBody(
                             },
                             onUpdateRecurrency = {
                                 onUpdate(registerUiState.details.copy(isRecurring = it))
+                                if (it) {
+                                    Toast.makeText(
+                                        context,
+                                        R.string.repeat_every_month,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
                             },
                             showDateDialog = { showDatePicker = true },
                             showTakePhotoDialog = {
@@ -648,11 +670,15 @@ fun FieldsCalculator(
     }
 
 
+
+
+
+
     Text(
         text = result,
         Modifier
             .fillMaxWidth()
-            .padding(end = paddingDefault()),
+            .padding(end = paddingSmall()),
         overflow = TextOverflow.Ellipsis,
         maxLines = 1,
         style = TextStyle(
@@ -675,7 +701,7 @@ fun FieldsCalculator(
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = paddingDefault())
+                .padding(horizontal = paddingSmall())
                 .padding(top = paddingSmall()),
             //label = { Text(stringResource(R.string.notes)) },
             keyboardOptions = KeyboardOptions(
@@ -725,6 +751,9 @@ fun FieldsCalculator(
     }
 
 
+
+
+
     AnimatedVisibility(!visible) {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End) {
             Button(
@@ -748,38 +777,14 @@ fun FieldsCalculator(
             onUpdatePrice = {
                 onUpdatePrice(it)
             },
+            onRepeatChange = {
+                onUpdateRecurrency(it)
+            },
             onUpdateInput = { result = it },
             showDateDialog = showDateDialog,
             isCompleteCalculator = isCompleteCalculator,
         )
     }
-
-    if (!details.isEditRecurring) {
-
-        if (visible) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = paddingTiny())
-            ) {
-                Checkbox(
-
-                    details.isRecurring,
-                    onCheckedChange = hapticOnCheckedChange(details.isRecurring) {
-                        onUpdateRecurrency(it)
-                    },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = colorResource(R.color.yellow),
-                    ),
-                )
-                Text(
-                    stringResource(R.string.repeat_every_month),
-                    Modifier.hapticClick(interactionSource = null, indication = null) {
-                        onUpdateRecurrency(!details.isRecurring)
-                    })
-            }
-        }
-    }
-
 
 }
 
