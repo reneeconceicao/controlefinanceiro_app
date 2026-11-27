@@ -49,6 +49,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -68,6 +69,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequest
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import com.firebaseapp.compose_lucide_icons.helpers.IconsHelper
 import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.data.entities.CategoryType
@@ -85,14 +91,21 @@ import com.firebaseapp.controlefinanceiro.helpers.ColorsHelper
 import com.firebaseapp.controlefinanceiro.helpers.currencyFormat
 import com.firebaseapp.controlefinanceiro.helpers.dateToDateWeekString
 import com.firebaseapp.controlefinanceiro.helpers.formatedPriceIndicator
+import com.firebaseapp.controlefinanceiro.helpers.notifications.NotificationWorker
 import com.firebaseapp.controlefinanceiro.helpers.toDay
 import com.firebaseapp.controlefinanceiro.ui.ViewModelProviders
 import com.firebaseapp.controlefinanceiro.ui.components.CardBordered
 import com.firebaseapp.controlefinanceiro.ui.components.DatePickerModal
 import com.firebaseapp.controlefinanceiro.ui.components.hapticClick
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.util.concurrent.TimeUnit
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
@@ -129,6 +142,24 @@ fun HomeScreen(
         }) { innerPadding ->
 
         val context = LocalContext.current
+
+        val notificationPermissionState: PermissionState = rememberPermissionState(android.Manifest.permission.POST_NOTIFICATIONS)
+
+
+        LaunchedEffect(notificationPermissionState.status.isGranted) {
+            if (!notificationPermissionState.status.isGranted) {
+                notificationPermissionState.launchPermissionRequest()
+            } else {
+                val notificationWorkRequest: PeriodicWorkRequest = PeriodicWorkRequestBuilder<NotificationWorker>(15, TimeUnit.MINUTES).build()
+                WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+                    "notification_work",
+                    ExistingPeriodicWorkPolicy.REPLACE,
+                    notificationWorkRequest
+                )
+            }
+        }
+
+
         var showWordOptions by rememberSaveable { mutableStateOf(false) }
 
         //save id and index from current word selection

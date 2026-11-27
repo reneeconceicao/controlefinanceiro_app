@@ -27,30 +27,13 @@ import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterScreen
 
 
 @Composable
-fun AppNavHost(navController: NavHostController, startDestination: AppDestination) {
-
-    val context = LocalContext.current
-
-    val widgetId = (context as MainActivity).intent.extras?.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID)
-
-    LaunchedEffect(widgetId) {
-
-        if (widgetId == -1) {
-            return@LaunchedEffect
-        }
-
-        widgetId?.let {
-            navController.navigate("${AppDestination.REGISTER.route}/${it}")
-            (context as MainActivity).intent.removeExtra(AppWidgetManager.EXTRA_APPWIDGET_ID)
-        }
-    }
+fun AppNavHost(navController: NavHostController, startRoute: String) {
 
     NavHost(
         navController = navController,
-        startDestination = startDestination.route,
+        startDestination = startRoute,
         enterTransition = { fadeIn() },
         exitTransition = { ExitTransition.None }) {
-
 
 
         composable(AppDestination.MAIN.route) {
@@ -88,7 +71,15 @@ fun AppNavHost(navController: NavHostController, startDestination: AppDestinatio
 
 
             RegisterScreen(
-                navigateBack = { navController.popBackStack() },
+                navigateBack = {
+                    //navController.popBackStack()
+                    navController.navigate(AppDestination.MAIN.route) {
+                        popUpTo(AppDestination.REGISTER.routeWithArgs) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                },
                 navigateCategories = {
                     val route = if (it == 0) {
                         AppDestination.EXPENSE_CATEGORIES.route
@@ -116,7 +107,15 @@ fun AppNavHost(navController: NavHostController, startDestination: AppDestinatio
 
 
             RegisterScreen(
-                navigateBack = { navController.popBackStack() },
+                navigateBack = {
+                    //navController.popBackStack()
+                    navController.navigate(AppDestination.MAIN.route) {
+                        popUpTo(AppDestination.REGISTER.route) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                },
                 navigateCategories = {
                     val route = if (it == 0) {
                         AppDestination.EXPENSE_CATEGORIES.route
@@ -233,7 +232,6 @@ fun AppNavHost(navController: NavHostController, startDestination: AppDestinatio
         }
 
     }
-
 
 
 }

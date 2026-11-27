@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -29,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -41,8 +44,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
+import com.firebaseapp.controlefinanceiro.defaults.paddingMicro
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
 import com.firebaseapp.controlefinanceiro.defaults.paddingTiny
+import com.firebaseapp.controlefinanceiro.defaults.paddingTinyLarge
 import com.firebaseapp.controlefinanceiro.helpers.dateToString
 import com.firebaseapp.controlefinanceiro.ui.screens.register.RegisterDetails
 import java.text.DecimalFormatSymbols
@@ -85,129 +90,136 @@ fun Calculator(
     ) {
         // Output display
         if (showResultEmbedded) {
-            Text(
-                text = input,
+            Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(end = paddingDefault()),
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-                style = TextStyle(
-                    fontSize = 40.sp,
-                    textAlign = TextAlign.End,
+            ) {
+
+                Text(
+                    text = input,
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(end = paddingDefault()),
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                    style = TextStyle(
+                        fontSize = 40.sp,
+                        textAlign = TextAlign.End,
+                    )
                 )
-            )
+            }
+
         }
 
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(paddingTiny())) {
-            Box(
-                modifier = Modifier
-                    .weight(0.49f)
-                    .clickable(interactionSource = null, indication = null) {
-                        showDateDialog()
-                    }
-                    .clip(RoundedCornerShape(paddingTiny()))
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(paddingSmall()),
-                contentAlignment = Alignment.Center) {
-                Row(
-                    Modifier
-                        .padding(vertical = 2.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(imageVector = Icons.Outlined.AccountBalanceWallet, null)
-                }
+//        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(paddingTiny())) {
+//            Box(
+//                modifier = Modifier
+//                    .weight(0.49f)
+//                    .clickable(interactionSource = null, indication = null) {
+//                        showDateDialog()
+//                    }
+//                    .clip(RoundedCornerShape(paddingTiny()))
+//                    .background(MaterialTheme.colorScheme.background)
+//                    .padding(paddingSmall()),
+//                contentAlignment = Alignment.Center) {
+//                Row(
+//                    Modifier
+//                        .padding(vertical = 2.dp)
+//                        .fillMaxWidth(),
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    horizontalArrangement = Arrangement.Center
+//                ) {
+//                    Icon(imageVector = Icons.Outlined.AccountBalanceWallet, null)
+//                }
+//
+//            }
+//
+//            Box(
+//                modifier = Modifier
+//                    .weight(0.49f)
+//                    .clickable(interactionSource = null, indication = null) {
+//                        if (!details.isEditRecurring) {
+//                            onRepeatChange(!details.isRecurring)
+//                        }
+//                    }
+//                    .clip(RoundedCornerShape(paddingTiny()))
+//                    .background(MaterialTheme.colorScheme.background)
+//                    .padding(paddingSmall()),
+//                contentAlignment = Alignment.Center) {
+//                Row(
+//                    Modifier
+//                        .padding(vertical = 2.dp)
+//                        .fillMaxWidth(),
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    horizontalArrangement = Arrangement.Center
+//                ) {
+//                    if (details.isEditRecurring) {
+//
+//                        Text(
+//                            stringResource(R.string.repeating_every_month),
+//                            Modifier.alpha(0.5f),
+//                            color = colorResource(R.color.yellow),
+//                            fontSize = 11.sp,
+//                            fontWeight = FontWeight.SemiBold,
+//                            lineHeight = 11.sp,
+//                            textAlign = TextAlign.Center
+//                        )
+//
+//
+//                    } else {
+//                        Icon(
+//                            imageVector = Icons.Outlined.Repeat,
+//                            contentDescription = null,
+//                            tint = if (details.isRecurring) colorResource(R.color.yellow) else MaterialTheme.colorScheme.onBackground
+//                        )
+//                    }
+//                }
+//
+//            }
+//
+//            Box(
+//                modifier = Modifier
+//                    .weight(1f)
+//                    .clickable(interactionSource = null, indication = null) {
+//                        showDateDialog()
+//                    }
+//                    .clip(RoundedCornerShape(paddingTiny()))
+//                    .background(MaterialTheme.colorScheme.background)
+//                    .padding(paddingSmall()),
+//                contentAlignment = Alignment.Center) {
+//                Box(
+//                    Modifier
+//                        .padding(vertical = 2.dp)
+//                        .fillMaxWidth(),
+//                ) {
+//
+//                    val date = dateToString(details.date)
+//
+//                    Text(
+//                        text = date,
+//                        color = colorResource(R.color.yellow),
+//                        fontWeight = FontWeight.SemiBold,
+//                        fontFamily = FontFamily.Monospace,
+//                        maxLines = 1,
+//                        modifier = Modifier.align(Alignment.Center)
+//
+//                    )
+//
+//                    Icon(
+//                        imageVector = Icons.Default.EditCalendar,
+//                        "",
+//                        tint = colorResource(R.color.yellow),
+//                        modifier = Modifier
+//                            .align(Alignment.CenterEnd)
+//                            .padding(end = paddingTiny())
+//                    )
+//                }
+//
+//            }
+//        }
 
-            }
-
-            Box(
-                modifier = Modifier
-                    .weight(0.49f)
-                    .clickable(interactionSource = null, indication = null) {
-                        if (!details.isEditRecurring) {
-                            onRepeatChange(!details.isRecurring)
-                        }
-                    }
-                    .clip(RoundedCornerShape(paddingTiny()))
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(paddingSmall()),
-                contentAlignment = Alignment.Center) {
-                Row(
-                    Modifier
-                        .padding(vertical = 2.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    if (details.isEditRecurring) {
-
-                        Text(
-                            stringResource(R.string.repeating_every_month),
-                            Modifier.alpha(0.5f),
-                            color = colorResource(R.color.yellow),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            lineHeight = 11.sp,
-                            textAlign = TextAlign.Center
-                        )
-
-
-                    } else {
-                        Icon(
-                            imageVector = Icons.Outlined.Repeat,
-                            contentDescription = null,
-                            tint = if (details.isRecurring) colorResource(R.color.yellow) else MaterialTheme.colorScheme.onBackground
-                        )
-                    }
-                }
-
-            }
-
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable(interactionSource = null, indication = null) {
-                        showDateDialog()
-                    }
-                    .clip(RoundedCornerShape(paddingTiny()))
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(paddingSmall()),
-                contentAlignment = Alignment.Center) {
-                Box(
-                    Modifier
-                        .padding(vertical = 2.dp)
-                        .fillMaxWidth(),
-                ) {
-
-                    val date = dateToString(details.date)
-
-                    Text(
-                        text = date,
-                        color = colorResource(R.color.yellow),
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = FontFamily.Monospace,
-                        maxLines = 1,
-                        modifier = Modifier.align(Alignment.Center)
-
-                    )
-
-                    Icon(
-                        imageVector = Icons.Default.EditCalendar,
-                        "",
-                        tint = colorResource(R.color.yellow),
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .padding(end = paddingTiny())
-                    )
-                }
-
-            }
-        }
-
-        //First row 7, 8, 9, C
-        val firstRow = listOf("7", "8", "9", "C") // and C
+        //First row 7, 8, 9, Date
+        val firstRow = listOf("7", "8", "9") // and Date
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(paddingTiny())) {
             firstRow.forEach {
                 Box(
@@ -227,6 +239,48 @@ fun Calculator(
                         fontFamily = FontFamily.Monospace
                     )
                 }
+            }
+
+            Box(
+                modifier = Modifier
+                    .weight(0.5f)
+                    .clickable(interactionSource = null, indication = null) {
+                        showDateDialog()
+                    }
+                    .clip(RoundedCornerShape(paddingTiny()))
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(paddingSmall()),
+                contentAlignment = Alignment.Center) {
+                Row(
+                    Modifier
+                        .padding(vertical = 2.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+
+                    val date = dateToString(details.date)
+
+                    Text(
+                        text = date,
+                        modifier = Modifier.padding(vertical = 5.dp).padding(end = paddingMicro()),
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 11.sp,
+                        lineHeight = 11.sp,
+                        maxLines = 1,
+
+                        )
+
+                    Icon(
+                        imageVector = Icons.Default.EditCalendar,
+                        "",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(paddingDefault())
+                    )
+                }
+
             }
 
 
@@ -472,7 +526,7 @@ fun Calculator(
                         }
                     }
                     .clip(RoundedCornerShape(paddingTiny()))
-                    .background(color = if (enabled) colorResource(R.color.yellow) else MaterialTheme.colorScheme.outlineVariant)
+                    .background(color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
                     .padding(vertical = paddingSmall()),
                 contentAlignment = Alignment.Center)
             {
@@ -487,6 +541,7 @@ fun Calculator(
                     } else {
                         20.sp
                     },
+                    color = if (enabled) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.outline,
                     fontWeight = FontWeight.Normal,
                     fontFamily = FontFamily.Monospace,
                 )

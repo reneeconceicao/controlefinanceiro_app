@@ -15,8 +15,8 @@
     <string name="incomes">Incomes</string>
     <string name="expense">Expense</string>
     <string name="expenses">Expenses</string>
-    <string name="add_income">+ Income</string>
-    <string name="add_expense">- Expense</string>
+    <string name="add_income">+  Income</string>
+    <string name="add_expense">+  Expense</string>
     <string name="select_the_date">Select the date</string>
     <string name="category_two_dots">"Category: "</string>
     <string name="no_category">No Category</string>
@@ -38,6 +38,7 @@
     <string name="tomorrow">Tomorrow</string>
     <string name="camera">Camera</string>
     <string name="gallery">Gallery</string>
+    <string name="repeat">Repeat</string>
     <string name="repeat_every_month">Repeat every month</string>
     <string name="to_take_photos_grant_the_app_permission_to_access_the_camera">To take photos, grant the app permission to access the camera.</string>
     <string name="later">Later</string>

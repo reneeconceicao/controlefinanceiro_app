@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -32,6 +31,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.visible
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -43,16 +43,15 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -61,7 +60,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
@@ -77,6 +75,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -87,13 +86,11 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -101,9 +98,9 @@ import com.firebaseapp.compose_lucide_icons.helpers.IconsHelper
 import com.firebaseapp.controlefinanceiro.R
 import com.firebaseapp.controlefinanceiro.data.datastore.DataStoreViewModel
 import com.firebaseapp.controlefinanceiro.data.entities.Category
+import com.firebaseapp.controlefinanceiro.defaults.padding20
 import com.firebaseapp.controlefinanceiro.defaults.paddingDefault
 import com.firebaseapp.controlefinanceiro.defaults.paddingExtraLarge
-import com.firebaseapp.controlefinanceiro.defaults.paddingLarge
 import com.firebaseapp.controlefinanceiro.defaults.paddingSmall
 import com.firebaseapp.controlefinanceiro.defaults.paddingTiny
 import com.firebaseapp.controlefinanceiro.helpers.PhotoFilesHandler
@@ -114,8 +111,6 @@ import com.firebaseapp.controlefinanceiro.ui.components.DatePickerModal
 import com.firebaseapp.controlefinanceiro.ui.components.ImageOptionsDialog
 import com.firebaseapp.controlefinanceiro.ui.components.PhotosModal
 import com.firebaseapp.controlefinanceiro.ui.components.hapticClick
-import com.firebaseapp.controlefinanceiro.ui.components.hapticOnCheckedChange
-import com.firebaseapp.controlefinanceiro.ui.navigation.MenuDestination
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -136,6 +131,10 @@ fun RegisterScreen(
 
     Log.d("TAG", "Back: $resultForCamera")
 
+    BackHandler(true) {
+        navigateBack()
+    }
+
     Scaffold(
         modifier = modifier
             .fillMaxSize(),
@@ -143,7 +142,12 @@ fun RegisterScreen(
         topBar = {
             TopAppBar(
                 windowInsets = TopAppBarDefaults.windowInsets,
-                title = { Text(stringResource(R.string.register), color = MaterialTheme.colorScheme.background) },
+                title = {
+                    Text(
+                        stringResource(R.string.register),
+                        color = MaterialTheme.colorScheme.background
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
                         Icon(
@@ -154,7 +158,7 @@ fun RegisterScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
-                )
+            )
         }
     ) { innerPadding ->
         Column(
@@ -352,7 +356,7 @@ fun RegisterScreenBody(
                             ),
 
 
-                        ) {
+                            ) {
                             Text(
                                 string,
                                 Modifier
@@ -408,9 +412,13 @@ fun RegisterScreenBody(
                         bottomStart = 20.dp
                     ),
                     //shadowElevation = 8.dp,
-                    color = colorResource(R.color.dark_gray)//MaterialTheme.colorScheme.surfaceVariant
+                    color = colorResource(R.color.yellow_dark_gray)//MaterialTheme.colorScheme.surfaceVariant
                 ) {
-                    Column(Modifier.navigationBarsPadding().padding(vertical = paddingDefault())) {
+                    Column(
+                        Modifier
+                            .navigationBarsPadding()
+                            .padding(vertical = paddingDefault())
+                    ) {
 
 
                         FieldsCalculator(
@@ -509,6 +517,7 @@ fun CategoryGrid(
                                 Icon(
                                     painter = IconsHelper.iconByName(category.categoryIcon),
                                     contentDescription = "",
+                                    tint = Color.Black
                                 )
                             }
                         }
@@ -673,20 +682,49 @@ fun FieldsCalculator(
 
 
 
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .padding(start = paddingSmall())
+                .clip(RoundedCornerShape(size = paddingSmall()))
+                .background(if (details.isRecurring) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+                .visible(!details.isEditRecurring)
+                .clickable(interactionSource = null, indication = null) {
+                    if (!details.isEditRecurring) {
+                        onUpdateRecurrency(!details.isRecurring)
+                    }
+                }
+                .padding(paddingSmall())
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+//                Text(stringResource(R.string.repeat), fontSize = 11.sp)
+                Icon(
+                    imageVector = if (details.isRecurring) Icons.Default.Refresh else Icons.Outlined.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(padding20()),
+                    tint = if (details.isRecurring) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.outline,
+                    //if (details.isRecurring) colorResource(R.color.yellow) else MaterialTheme.colorScheme.onBackground
+                )
+            }
 
-    Text(
-        text = result,
-        Modifier
-            .fillMaxWidth()
-            .padding(end = paddingSmall()),
-        overflow = TextOverflow.Ellipsis,
-        maxLines = 1,
-        style = TextStyle(
-            fontSize = 40.sp,
-            textAlign = TextAlign.End,
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        Text(
+            text = result,
+            Modifier
+                //.fillMaxWidth()
+                .padding(end = paddingSmall()),
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            style = TextStyle(
+                fontSize = 40.sp,
+                textAlign = TextAlign.End,
+            )
+
         )
-
-    )
+    }
 
     Box(Modifier.fillMaxWidth()) {
         OutlinedTextField(

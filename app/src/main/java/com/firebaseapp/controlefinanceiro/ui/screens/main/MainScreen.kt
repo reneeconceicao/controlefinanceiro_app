@@ -39,15 +39,26 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.glance.LocalContext
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequest
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import com.firebaseapp.controlefinanceiro.R
+import com.firebaseapp.controlefinanceiro.helpers.notifications.NotificationWorker
 import com.firebaseapp.controlefinanceiro.ui.navigation.MenuDestination
 import com.firebaseapp.controlefinanceiro.ui.screens.graphics.GraphicsScreen
 import com.firebaseapp.controlefinanceiro.ui.screens.home.HomeScreen
 import com.firebaseapp.controlefinanceiro.ui.screens.reports.ReportScreen
 import com.firebaseapp.controlefinanceiro.ui.screens.settings.SettingsScreen
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun MainScreen(
     navigateToRegister: () -> Unit,

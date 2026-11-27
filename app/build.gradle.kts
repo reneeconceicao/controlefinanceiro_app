@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material)
     implementation ("androidx.core:core-splashscreen:1.2.0")
+    implementation(libs.androidx.work.runtime.ktx)
 
 
 
